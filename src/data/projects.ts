@@ -94,17 +94,19 @@ export const PROJECTS: Project[] = [
       'Distributed as an Android APK via EAS Build, with the web version auto-deploying to Vercel on push to main.',
       'Written up with developer onboarding docs covering environment setup, release builds and schema-migration practice, so friends could contribute.',
     ],
-    shots: [
-      { src: '/media/lockedin-feed.png', caption: 'Feed and leaderboard' },
-      { src: '/media/lockedin-post.png', caption: 'Posting a workout' },
-      { src: '/media/lockedin-extract.png', caption: 'Gemini reading a workout screenshot' },
-    ],
+    // Shot at phone width and paired on a dark field: it's a portrait
+    // mobile app, and a single tall screenshot dropped into a landscape
+    // slot is a thin strip stranded in empty space. The squad stopped
+    // using the app, so the leaderboard totals are placeholders written
+    // into the rendered page — the names, the ranking and the app itself
+    // are real.
+    shots: [{ src: '/media/lockedin-feed.png', caption: 'Feed, stories and the weekly leaderboard' }],
     video: '/media/lockedin-demo.mp4',
     repo: 'https://github.com/TusharLachman25/workout-tracker',
   },
   {
     slug: 'ai-meal',
-    name: 'AI Meal Suggestion',
+    name: 'Kitchen OS',
     tagline: 'Know what is in your pantry, what you can cook, and what it does to your macros.',
     period: 'February — March 2026',
     status: '~3,500 lines of Python',
