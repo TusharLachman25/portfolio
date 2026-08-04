@@ -30,15 +30,16 @@ export const PROJECTS: Project[] = [
     period: 'June 2026 — Present',
     status: 'Sold · paid monthly subscription',
     accent: '#38bdf8',
-    stack: ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Deno', 'Capacitor', 'Tailwind CSS'],
+    stack: ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Deno', 'Capacitor', 'Claude API', 'Firebase Cloud Messaging'],
     blurb:
-      'I spent three years as a medical assistant digitising patient records by hand. This is the software that replaced that job. It started as something I built for myself to use, and the practice now licenses it on a paid monthly subscription — patients, appointments, billing, clinical documents and messaging in one place, on the web and on Android.',
+      'I spent three years as a medical assistant digitising patient records by hand. This is the software that replaced that job. It started as something I built for myself to use, and the practice now licenses it on a paid monthly subscription — patients, appointments, billing, insurance claims, clinical documents and messaging in one place, on the web and on Android.',
     highlights: [
-      'Around 40 serverless Deno edge functions on Supabase, covering authenticated CRUD, atomic document numbering and third-party integrations, backed by PostgreSQL.',
-      'A TypeScript monorepo spanning a React dashboard, a shared domain library and two separate Android apps packaged with Capacitor.',
-      'WhatsApp Business API integration that sends invoices, prescriptions and appointment reminders bilingually in English and Bahasa Indonesia.',
-      'Google Calendar and Drive integration for scheduling and per-patient document storage.',
-      'Claude drafts consultation reports and triages patient messages behind a propose-then-approve flow — nothing clinical is ever sent without the doctor reviewing it first.',
+      '66 serverless Deno edge functions and 31 PostgreSQL migrations across a TypeScript monorepo — a React dashboard, a shared document library and two Android apps packaged with Capacitor — covered by 269 unit tests.',
+      'An insurance claims module that fills insurers’ own reimbursement forms rather than producing a lookalike: PDFs with real form fields are filled by name, and scanned or photographed ones by a percentage-based coordinate map that survives a re-scan at any size.',
+      'Nothing is signed until she has read it — the signature and stamp go on only at the moment of approval, so a signed claim she has not seen cannot exist.',
+      'WhatsApp Business API integration for bilingual invoices, prescriptions, reminders, appointment booking and claim intake, in English and Bahasa Indonesia.',
+      'Notifications for everything worth knowing about: an in-app bell on the laptop and Android push via Firebase Cloud Messaging, configurable per channel.',
+      'Claude (Opus 5) runs as an eight-tool assistant that books appointments and produces documents, and drafts consultation reports and medical certificates — always behind a propose-then-approve flow.',
       'Documents carry a server-assigned sequential number issued from an atomic counter, so paperwork cannot be forged or duplicated.',
     ],
     shots: [
