@@ -109,7 +109,10 @@ export const PROJECTS: Project[] = [
     // into the rendered page — the names, the ranking and the app itself
     // are real.
     shots: [{ src: '/media/lockedin-feed.png', caption: 'Feed, stories and the weekly leaderboard' }],
+    // A made trailer rather than a screen recording — the app's tab bar
+    // ignores synthetic input, so a real walkthrough couldn't be driven.
     video: '/media/lockedin-demo.mp4',
+    poster: '/media/lockedin-poster.jpg',
     repo: 'https://github.com/TusharLachman25/workout-tracker',
   },
   {
