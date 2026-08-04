@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design-system build artifacts — regenerate with `npx tsx design-system/build.ts`
+/design-system/.media-cache/
+/design-system/.verify/

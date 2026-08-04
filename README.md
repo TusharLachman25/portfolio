@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio — Tushar Lachman
 
-## Getting Started
+The source for my personal site: four project write-ups, each with a trailer, a
+full walkthrough recording and screenshots.
 
-First, run the development server:
+Built with Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS 4.
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+npm run build && npm run start   # production build
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`next start` serves the last build — after changing anything you have to
+rebuild *and* restart, not just rebuild.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Layout
 
-## Learn More
+```
+src/data/projects.ts     every project's copy, stack, media and accent colour
+src/app/page.tsx         the whole page — hero, project blocks, skills, contact
+src/components/Media.tsx video and screenshot slots, with placeholder fallbacks
+public/media/            trailers, walkthroughs and screenshots
+design-system/           standalone HTML previews of each component
+```
 
-To learn more about Next.js, take a look at the following resources:
+Adding or editing a project means editing `src/data/projects.ts` and dropping
+files into `public/media/`. Nothing else has to be wired up: a media slot whose
+file is missing renders a labelled placeholder naming the exact filename it
+wants, so the layout never breaks half-finished.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Design system
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`design-system/` builds a set of self-contained HTML previews — one per
+component, plus the foundations and the whole page — with the tokens inlined as
+plain CSS and the screenshots embedded, so each file opens and renders on its
+own with no build step.
 
-## Deploy on Vercel
+```bash
+npx tsx design-system/build.ts   # rebuild bundle/ from src/data/projects.ts
+node design-system/verify.mjs    # screenshot every card, fail on breakage
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`design-system/tokens.ts` mirrors the Tailwind classes used in `page.tsx` and
+`globals.css`. It's a mirror, not a source of truth — a change made in a design
+tool has to be carried back into the React components by hand.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## A note on the media
+
+Everything on screen is the real application. The data in it is not always
+real, and where it isn't, that's deliberate:
+
+- **Medical platform** — invented demo patients only. No document is shown at
+  all: the letterhead carries a real doctor's registration numbers, signature
+  seal and bank details.
+- **Jarvis** — my own account, with the financial figures masked in the rendered
+  page before capture. The masking is display-only and never touched the
+  database; balances are scaled by a constant factor so the totals still add up.
+- **Locked In** — the squad stopped using the app, so the leaderboard totals are
+  placeholders written into the page at capture time. The names, the ranking
+  logic and the app itself are real.
+- **Kitchen OS** — a demo pantry, seeded through the app's own functions rather
+  than written straight into the tables, so ingredient lookup and the pantry
+  write ran exactly as they do in use.

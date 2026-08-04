@@ -1,0 +1,110 @@
+[
+  {
+    "group": "Foundations",
+    "name": "Colour",
+    "subtitle": "Neutral ramp, primary, per-project accents",
+    "width": 900,
+    "path": "foundations/color.html"
+  },
+  {
+    "group": "Foundations",
+    "name": "Type scale",
+    "subtitle": "Inter for text, JetBrains Mono for labels",
+    "width": 900,
+    "path": "foundations/type.html"
+  },
+  {
+    "group": "Chrome",
+    "name": "Header",
+    "subtitle": "Sticky, blurred, résumé call to action",
+    "width": 1200,
+    "height": 160,
+    "path": "components/header.html"
+  },
+  {
+    "group": "Chrome",
+    "name": "Footer",
+    "subtitle": "Hairline rule, mono copyright",
+    "width": 1200,
+    "height": 160,
+    "path": "components/footer.html"
+  },
+  {
+    "group": "Sections",
+    "name": "Hero",
+    "subtitle": "Eyebrow, name, positioning, three actions",
+    "width": 1200,
+    "path": "components/hero.html"
+  },
+  {
+    "group": "Sections",
+    "name": "Skills table",
+    "subtitle": "Five labelled rows on hairline rules",
+    "width": 1100,
+    "path": "components/skills.html"
+  },
+  {
+    "group": "Sections",
+    "name": "Academic cards",
+    "subtitle": "Two-up grid, course code, stack pills",
+    "width": 1100,
+    "path": "components/academic.html"
+  },
+  {
+    "group": "Sections",
+    "name": "Contact",
+    "subtitle": "Closing statement and two actions",
+    "width": 1100,
+    "path": "components/contact.html"
+  },
+  {
+    "group": "Project block",
+    "name": "Project header",
+    "subtitle": "Title, status chip, tagline — all four accents",
+    "width": 1100,
+    "path": "components/project-header.html"
+  },
+  {
+    "group": "Project block",
+    "name": "Highlights",
+    "subtitle": "Accent bullet, 14.5px, 48rem measure",
+    "width": 1000,
+    "path": "components/highlights.html"
+  },
+  {
+    "group": "Project block",
+    "name": "Stack pills",
+    "subtitle": "Mono, hairline border, raised surface",
+    "width": 1000,
+    "path": "components/stack.html"
+  },
+  {
+    "group": "Project block",
+    "name": "Video figure",
+    "subtitle": "Trailer and walkthrough, poster + caption",
+    "width": 1100,
+    "path": "components/media-figure.html"
+  },
+  {
+    "group": "Project block",
+    "name": "Screenshot grid",
+    "subtitle": "Two-up, 16:10, captioned",
+    "width": 1100,
+    "path": "components/shot-grid.html"
+  },
+  {
+    "group": "Project block",
+    "name": "Project block, whole",
+    "subtitle": "Everything one project renders",
+    "width": 1200,
+    "path": "components/project-block.html"
+  },
+  {
+    "group": "Pages",
+    "name": "Full portfolio page",
+    "subtitle": "The whole thing, top to bottom",
+    "width": 1280,
+    "height": 900,
+    "path": "pages/full-page.html"
+  }
+]
