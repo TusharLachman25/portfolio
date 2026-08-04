@@ -17,6 +17,10 @@ export interface Project {
   highlights: string[];
   /** Optional 60-90s screen recording under /public/media. */
   video?: string;
+  /** Idle frame for the video. Without one the browser shows frame 0,
+   * which on a screen recording is the app mid-load — a blank white
+   * rectangle sitting in the middle of the page. */
+  poster?: string;
   shots: Shot[];
   repo?: string;
   repoNote?: string;
@@ -47,6 +51,8 @@ export const PROJECTS: Project[] = [
     // product with no clinical data in them. Deliberately no document
     // screenshot: the letterhead carries the doctor's registration numbers,
     // signature seal and bank details.
+    video: '/media/medical-demo.mp4',
+    poster: '/media/medical-poster.jpg',
     shots: [
       { src: '/media/medical-dashboard.png', caption: 'The daily overview' },
       { src: '/media/medical-patients.png', caption: 'Patient record — demo data' },
@@ -72,6 +78,8 @@ export const PROJECTS: Project[] = [
       'Claude also reads uploaded bank statements and Gmail receipts and returns structured transactions — unstructured documents become queryable records.',
       'An AUD-to-IDR remittance tracker that compares the live rate against a 30-day average and flags good windows to transfer money home.',
     ],
+    video: '/media/jarvis-demo.mp4',
+    poster: '/media/jarvis-poster.jpg',
     shots: [
       { src: '/media/jarvis-home.png', caption: 'Home — tasks, calendar and both watches in one view' },
       { src: '/media/jarvis-finance.png', caption: 'Finance and remittance — figures anonymised' },
@@ -125,6 +133,8 @@ export const PROJECTS: Project[] = [
     // than written straight into the tables, so ingredient lookup, image
     // fetching and the pantry write all ran exactly as they do in use.
     // The groceries are invented; the app is not.
+    video: '/media/kitchenos-demo.mp4',
+    poster: '/media/kitchenos-poster.jpg',
     shots: [
       { src: '/media/kitchenos-pantry.png', caption: 'Pantry stock, with editable quantities' },
       { src: '/media/kitchenos-shopping.png', caption: 'Shopping list — items flow back to the pantry once bought' },

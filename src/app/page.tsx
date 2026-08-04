@@ -207,7 +207,7 @@ function ProjectBlock({ project }: { project: Project }) {
 
       {project.video && (
         <div className="mt-8">
-          <Video src={project.video} accent={accent} />
+          <Video src={project.video} poster={project.poster} accent={accent} />
         </div>
       )}
 
