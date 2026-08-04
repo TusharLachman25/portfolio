@@ -21,9 +21,12 @@ export interface Project {
    * which on a screen recording is the app mid-load — a blank white
    * rectangle sitting in the middle of the page. */
   poster?: string;
-  /** A made trailer, shown above the walkthrough where both exist: the
-   * trailer earns the attention, the recording proves the thing is real.
-   * Labelled so the two are never mistaken for each other. */
+  /** Overrides the default caption under the recording, for the cases where
+   * "full walkthrough" would overstate what the take actually shows. */
+  videoNote?: string;
+  /** A trailer, shown above the walkthrough where both exist: the trailer
+   * earns the attention, the recording proves the thing is real. Labelled so
+   * the two are never mistaken for each other. */
   trailer?: string;
   trailerPoster?: string;
   shots: Shot[];
@@ -85,6 +88,10 @@ export const PROJECTS: Project[] = [
       'Claude also reads uploaded bank statements and Gmail receipts and returns structured transactions — unstructured documents become queryable records.',
       'An AUD-to-IDR remittance tracker that compares the live rate against a 30-day average and flags good windows to transfer money home.',
     ],
+    // Cut from real footage of the running app, with one built scene for the
+    // two-wearable story that no single screen shows well.
+    trailer: '/media/jarvis-trailer.mp4',
+    trailerPoster: '/media/jarvis-trailer-poster.jpg',
     video: '/media/jarvis-demo.mp4',
     poster: '/media/jarvis-poster.jpg',
     shots: [
@@ -116,10 +123,14 @@ export const PROJECTS: Project[] = [
     // into the rendered page — the names, the ranking and the app itself
     // are real.
     shots: [{ src: '/media/lockedin-feed.png', caption: 'Feed, stories and the weekly leaderboard' }],
-    // A made trailer rather than a screen recording — the app's tab bar
-    // ignores synthetic input, so a real walkthrough couldn't be driven.
+    // Both of these are the same real take of the app running. The tab bar
+    // ignores synthetic taps so scrolling is the only navigation available,
+    // which is enough — the feed carries the stories and the leaderboard.
+    trailer: '/media/lockedin-trailer.mp4',
+    trailerPoster: '/media/lockedin-trailer-poster.jpg',
     video: '/media/lockedin-demo.mp4',
     poster: '/media/lockedin-poster.jpg',
+    videoNote: 'The take itself — scrolling the feed at phone size, uncut',
     repo: 'https://github.com/TusharLachman25/workout-tracker',
   },
   {
@@ -143,6 +154,10 @@ export const PROJECTS: Project[] = [
     // than written straight into the tables, so ingredient lookup, image
     // fetching and the pantry write all ran exactly as they do in use.
     // The groceries are invented; the app is not.
+    // Cut from the same recording as the walkthrough below, minus the login
+    // screen — that part of the take caught a real account.
+    trailer: '/media/kitchenos-trailer.mp4',
+    trailerPoster: '/media/kitchenos-trailer-poster.jpg',
     video: '/media/kitchenos-demo.mp4',
     poster: '/media/kitchenos-poster.jpg',
     shots: [

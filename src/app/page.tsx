@@ -216,7 +216,8 @@ function ProjectBlock({ project }: { project: Project }) {
         <figure className="mt-8 flex flex-col gap-2">
           <Video src={project.video} poster={project.poster} accent={accent} />
           <figcaption className="text-[13px] text-slate-500">
-            {project.trailer ? 'Full walkthrough — the app running, unedited' : 'Walkthrough'}
+            {project.videoNote ??
+              (project.trailer ? 'Full walkthrough — the app running, unedited' : 'Walkthrough')}
           </figcaption>
         </figure>
       )}
