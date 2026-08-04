@@ -42,9 +42,15 @@ export const PROJECTS: Project[] = [
       'Claude (Opus 5) runs as an eight-tool assistant that books appointments and produces documents, and drafts consultation reports and medical certificates — always behind a propose-then-approve flow.',
       'Documents carry a server-assigned sequential number issued from an atomic counter, so paperwork cannot be forged or duplicated.',
     ],
+    // Captured from the real app running in demo mode, where it falls back
+    // to invented patients — so these are genuine screenshots of the
+    // product with no clinical data in them. Deliberately no document
+    // screenshot: the letterhead carries the doctor's registration numbers,
+    // signature seal and bank details.
     shots: [
-      { src: '/media/medical-dashboard.png', caption: 'Practice dashboard' },
-      { src: '/media/medical-document.png', caption: 'Generated prescription' },
+      { src: '/media/medical-dashboard.png', caption: 'The daily overview' },
+      { src: '/media/medical-patients.png', caption: 'Patient record — demo data' },
+      { src: '/media/medical-ai.png', caption: 'The assistant, with real tool access' },
     ],
     repoNote: 'Private repository — it holds real clinical data. Walkthrough available on request.',
   },
