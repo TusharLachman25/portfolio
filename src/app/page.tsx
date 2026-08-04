@@ -1,5 +1,5 @@
 import { Shot, Video } from "@/components/Media";
-import { ALSO_BUILT, PROJECTS, type Project } from "@/data/projects";
+import { ACADEMIC, ALSO_BUILT, PROJECTS, type AcademicItem, type Project } from "@/data/projects";
 
 const EMAIL = "tusharbudhrani@gmail.com";
 const GITHUB = "https://github.com/TusharLachman25";
@@ -7,17 +7,20 @@ const LINKEDIN = "https://www.linkedin.com/in/tusharlachman-505264345";
 const RESUME = "/Tushar-Lachman-Resume.pdf";
 
 const SKILLS: { label: string; items: string }[] = [
-  { label: "Languages", items: "Python · TypeScript · JavaScript · Java · C · C++ · SQL" },
-  { label: "Frameworks", items: "React · React Native (Expo) · Next.js · Node.js · Streamlit · Tailwind CSS" },
+  { label: "Languages", items: "Python · TypeScript · JavaScript · Java · C · C++ · SQL · Prolog" },
+  { label: "Frameworks", items: "React · React Native (Expo) · Next.js · Node.js · Flask · Streamlit · Tailwind CSS" },
+  {
+    label: "Cloud & DevOps",
+    items: "AWS (EC2, ECS, S3, DynamoDB) · Docker · Vercel · EAS Build · Firebase Cloud Messaging · Git",
+  },
   {
     label: "Backend & data",
     items: "PostgreSQL · Supabase · REST API design · serverless functions · OAuth 2.0 · schema design & migrations",
   },
   {
-    label: "AI integration",
-    items: "Claude API · Google Gemini (text & vision) · structured extraction from documents and images",
+    label: "AI & data science",
+    items: "Claude API · Google Gemini (text & vision) · scikit-learn · pandas · NLTK · transformers · NetworkX",
   },
-  { label: "Delivery", items: "Git · EAS Build · Vercel · Vitest · Capacitor" },
 ];
 
 export default function Home() {
@@ -38,6 +41,7 @@ export default function Home() {
             {ALSO_BUILT}
           </p>
         </section>
+        <Academic />
         <Skills />
         <Contact />
       </main>
@@ -59,6 +63,9 @@ function Header() {
         <nav className="flex items-center gap-5 text-[13px] text-slate-400">
           <a href="#work" className="transition hover:text-slate-100">
             Work
+          </a>
+          <a href="#academic" className="hidden transition hover:text-slate-100 sm:inline">
+            Academic
           </a>
           <a href="#skills" className="hidden transition hover:text-slate-100 sm:inline">
             Skills
@@ -211,6 +218,39 @@ function ProjectBlock({ project }: { project: Project }) {
           ))}
         </div>
       )}
+    </article>
+  );
+}
+
+function Academic() {
+  return (
+    <section id="academic" className="scroll-mt-24 pt-24">
+      <SectionLabel>Academic work</SectionLabel>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {ACADEMIC.map((a) => (
+          <AcademicCard key={a.name} item={a} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AcademicCard({ item }: { item: AcademicItem }) {
+  return (
+    <article className="flex flex-col rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
+      <h3 className="text-[16px] font-semibold text-slate-100">{item.name}</h3>
+      <p className="mt-1 font-[family-name:var(--font-mono)] text-[11px] tracking-wide text-slate-500">{item.course}</p>
+      <p className="mt-3 flex-1 text-[14px] leading-relaxed text-slate-400">{item.blurb}</p>
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {item.stack.map((s) => (
+          <span
+            key={s}
+            className="rounded-md border border-white/[0.08] bg-white/[0.03] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[10.5px] text-slate-500"
+          >
+            {s}
+          </span>
+        ))}
+      </div>
     </article>
   );
 }

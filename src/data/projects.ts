@@ -123,3 +123,44 @@ export const PROJECTS: Project[] = [
 /** Small enough not to warrant a full section, real enough to mention. */
 export const ALSO_BUILT =
   'Bets — a React Native and Supabase app for logging and settling informal bets in a friend group.';
+
+export interface AcademicItem {
+  name: string;
+  course: string;
+  stack: string[];
+  blurb: string;
+}
+
+/** Coursework, kept deliberately below the projects above: every graduate
+ * from the same degree has some of it, so it supports the personal work
+ * rather than competing with it. */
+export const ACADEMIC: AcademicItem[] = [
+  {
+    name: 'Cloud Music Web App',
+    course: 'Cloud Computing · RMIT',
+    stack: ['Python', 'Flask', 'boto3', 'Docker', 'AWS EC2', 'ECS', 'S3', 'DynamoDB'],
+    blurb:
+      'A Flask REST API backed by DynamoDB and S3, deployed two ways so the trade-off could actually be compared: straight onto an EC2 instance with provisioning scripts, and containerised with Docker and gunicorn on ECS.',
+  },
+  {
+    name: 'The GOAT Debate — social media analytics',
+    course: 'Social Media & Network Analytics · RMIT · team project',
+    stack: ['Python', 'NetworkX', 'transformers', 'BERTopic', 'gensim', 'NLTK'],
+    blurb:
+      'A six-stage pipeline over YouTube comment data on football’s greatest-of-all-time argument: collection and EDA, sentiment with VADER and RoBERTa, topic modelling with LDA and BERTopic, then a comment network analysed for betweenness centrality, Louvain communities and homophily — does agreement cluster, or do people actually argue across camps?',
+  },
+  {
+    name: 'Exam timetabling solver',
+    course: 'Intelligent Decision Making · RMIT',
+    stack: ['Answer Set Programming', 'Clingo', 'Python', 'pytest'],
+    blurb:
+      'Allocating exams to rooms and timeslots under capacity limits, clashes and per-slot costs — expressed declaratively in ASP and solved with Clingo, then measured against a benchmark suite rather than a single happy case.',
+  },
+  {
+    name: 'Price regression & wildfire classification',
+    course: 'Machine Learning · RMIT',
+    stack: ['Python', 'scikit-learn', 'pandas', 'Jupyter'],
+    blurb:
+      'Two supervised-learning studies: predicting listing prices across ~8,600 rows with linear, Ridge and Lasso regression, and a multi-class wildfire problem comparing decision trees, an MLP and an SVM.',
+  },
+];
