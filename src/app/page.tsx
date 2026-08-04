@@ -205,10 +205,20 @@ function ProjectBlock({ project }: { project: Project }) {
         </p>
       )}
 
+      {project.trailer && (
+        <figure className="mt-8 flex flex-col gap-2">
+          <Video src={project.trailer} poster={project.trailerPoster} accent={accent} />
+          <figcaption className="text-[13px] text-slate-500">Trailer</figcaption>
+        </figure>
+      )}
+
       {project.video && (
-        <div className="mt-8">
+        <figure className="mt-8 flex flex-col gap-2">
           <Video src={project.video} poster={project.poster} accent={accent} />
-        </div>
+          <figcaption className="text-[13px] text-slate-500">
+            {project.trailer ? 'Full walkthrough — the app running, unedited' : 'Walkthrough'}
+          </figcaption>
+        </figure>
       )}
 
       {project.shots.length > 0 && (

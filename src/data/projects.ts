@@ -21,6 +21,11 @@ export interface Project {
    * which on a screen recording is the app mid-load — a blank white
    * rectangle sitting in the middle of the page. */
   poster?: string;
+  /** A made trailer, shown above the walkthrough where both exist: the
+   * trailer earns the attention, the recording proves the thing is real.
+   * Labelled so the two are never mistaken for each other. */
+  trailer?: string;
+  trailerPoster?: string;
   shots: Shot[];
   repo?: string;
   repoNote?: string;
@@ -51,6 +56,8 @@ export const PROJECTS: Project[] = [
     // product with no clinical data in them. Deliberately no document
     // screenshot: the letterhead carries the doctor's registration numbers,
     // signature seal and bank details.
+    trailer: '/media/medical-trailer.mp4',
+    trailerPoster: '/media/medical-trailer-poster.jpg',
     video: '/media/medical-demo.mp4',
     poster: '/media/medical-poster.jpg',
     shots: [
