@@ -121,9 +121,13 @@ export const PROJECTS: Project[] = [
       'Personalised calorie and macronutrient targets calculated from body metrics and activity level, with daily and weekly history.',
       'Shopping list that flows back into the pantry when items are marked as bought.',
     ],
+    // Seeded with a demo pantry through the app's own functions rather
+    // than written straight into the tables, so ingredient lookup, image
+    // fetching and the pantry write all ran exactly as they do in use.
+    // The groceries are invented; the app is not.
     shots: [
-      { src: '/media/meal-pantry.png', caption: 'Pantry and shopping list' },
-      { src: '/media/meal-macros.png', caption: 'Macro tracking' },
+      { src: '/media/kitchenos-pantry.png', caption: 'Pantry stock, with editable quantities' },
+      { src: '/media/kitchenos-shopping.png', caption: 'Shopping list — items flow back to the pantry once bought' },
     ],
     repo: 'https://github.com/TusharLachman25/AI-Meal-Suggestion',
   },
