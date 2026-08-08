@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { PROJECTS, ACADEMIC, ALSO_BUILT, type Project } from '../src/data/projects';
+import { PROJECTS, ACADEMIC, type Project } from '../src/data/projects';
 import { ACCENTS, BASE_CSS, COLOR } from './tokens';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -386,9 +386,6 @@ ${heroHtml}
         <div style="display: flex; flex-direction: column; gap: 96px">
 ${PROJECTS.map((p) => projectBlockHtml(p, 420, 380)).join('\n')}
         </div>
-        <p style="margin-top: 56px; border-top: 1px solid var(--line-strong); padding-top: 24px; font-size: 14px; color: var(--slate-500)">
-          <span style="color: var(--slate-400)">Also built &mdash; </span>${esc(ALSO_BUILT)}
-        </p>
       </section>
       <section style="padding-top: 96px">
         <h2 class="section-label">Academic work</h2>

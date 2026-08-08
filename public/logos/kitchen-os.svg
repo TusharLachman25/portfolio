@@ -1,0 +1,14 @@
+<svg width="124" height="124" viewBox="0 0 124 124" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kitchen OS">
+  <defs>
+    <linearGradient id="kitchen-bg" x1="9.7%" y1="6.4%" x2="90.3%" y2="93.6%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+  <rect width="124" height="124" rx="33" fill="url(#kitchen-bg)"/>
+  <g fill="#ffffff">
+    <circle cx="62" cy="27" r="6.5"/>
+    <rect x="24" y="36" width="76" height="13" rx="6.5"/>
+    <path d="M34 55h56v29a12 12 0 0 1-12 12H46a12 12 0 0 1-12-12V55Z"/>
+  </g>
+</svg>

@@ -1,34 +1,254 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Workbench — design tokens
+
+   Dark is the default. The theme is set on <html data-theme> by an inline
+   script in the document head so the first paint is already correct; without
+   it a dark-mode visitor gets a white flash on every cold load.
+   --------------------------------------------------------------------------- */
+
+:root,
+[data-theme="dark"] {
+  --bg: #0a0e13;
+  --grid: rgba(255, 255, 255, 0.032);
+  --panel: #121821;
+  --panel-2: #0e141b;
+  --bd: rgba(255, 255, 255, 0.09);
+  --bd-2: rgba(255, 255, 255, 0.2);
+  --ink: #e9eef4;
+  --ink-2: #aeb9c7;
+  --ink-3: #7d8a99;
+  --ink-4: #5b6878;
+  --side: #0d1219;
+  --hover: rgba(255, 255, 255, 0.05);
+  --sel: rgba(255, 255, 255, 0.09);
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+  --scrim: rgba(4, 7, 11, 0.6);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #f1f4f7;
+  --grid: rgba(27, 36, 48, 0.05);
+  --panel: #ffffff;
+  --panel-2: #f7f9fb;
+  --bd: rgba(27, 36, 48, 0.12);
+  --bd-2: rgba(27, 36, 48, 0.22);
+  --ink: #111a24;
+  --ink-2: #3c4859;
+  --ink-3: #6b7788;
+  --ink-4: #9aa4b2;
+  --side: #ffffff;
+  --hover: rgba(27, 36, 48, 0.045);
+  --sel: rgba(27, 36, 48, 0.08);
+  --shadow: 0 10px 30px rgba(17, 26, 36, 0.07);
+  --scrim: rgba(120, 133, 148, 0.45);
+  color-scheme: light;
+}
+
+:root {
+  --brand: #0ea5e9;
+  --brand-hi: #38bdf8;
+
+  --side-open: 262px;
+  --side-w: 262px;
+  --side-x: 0;
+  --pad: 36px;
+  --topbar-h: 0px;
+
+  --hero-cols: minmax(0, 1fr) minmax(0, 0.92fr);
+  --two-cols: minmax(0, 1fr) minmax(0, 1fr);
+  --card-cols: minmax(0, 1fr) 288px;
+  --title-cols: minmax(0, 1fr) 330px;
+  --hl-cols: 96px minmax(0, 1fr);
+  --spec-cols: 186px minmax(0, 1fr);
+
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* Collapsed icon rail. Set on <html> so the sidebar width and the content
+   margin animate off the same variable and can never disagree. */
+[data-rail="1"] {
+  --side-open: 66px;
+  --side-w: 66px;
+}
+
+/* --- Tight: hero, card internals and paired columns each go single-column - */
+@media (max-width: 1179px) {
+  :root {
+    --pad: 26px;
+    --hero-cols: minmax(0, 1fr);
+    --two-cols: minmax(0, 1fr);
+    --card-cols: minmax(0, 1fr);
+    --title-cols: minmax(0, 1fr);
+  }
+}
+
+/* --- Phone: the sidebar becomes an off-canvas drawer ---------------------- */
+@media (max-width: 779px) {
+  :root,
+  [data-rail="1"] {
+    --side-open: 262px;
+    --side-w: 0px;
+    --side-x: -100%;
+    --pad: 18px;
+    --topbar-h: 61px;
+    --hl-cols: 52px minmax(0, 1fr);
+    --spec-cols: minmax(0, 1fr);
+  }
+
+  [data-drawer="1"] {
+    --side-x: 0;
+  }
+
+  /* Six architecture chips, each wrapping to its own line, turn every card into
+     a wall of text you have to scroll past to reach the screenshot. Three is
+     enough to signal the shape of the system; the sheet has the full list. */
+  .sheet-card .chips > :nth-child(n + 4) {
+    display: none;
+  }
+
+  /* The card's screenshot matters more than the chip list on a phone. */
+  .sheet-card__body {
+    gap: 18px;
+  }
+
+  /* A 16:10 "no captures yet" box is 220px of empty dashed rectangle on a
+     phone. Let it shrink to its own text — the point is the sentence. */
+  .thumb--empty {
+    aspect-ratio: auto;
+    padding: 22px 14px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
-  /* the sticky header shouldn't cover a section you just jumped to */
-  scroll-padding-top: 5rem;
+  /* the sticky bars shouldn't cover a section you just jumped to */
+  scroll-padding-top: calc(var(--topbar-h) + 72px);
 }
 
 body {
-  background: #06080c;
-  color: #e2e8f0;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-display), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
 }
 
-/* A faint grid fading out down the page — enough texture to stop the dark
-   background reading as flat, quiet enough to stay behind the content. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(120% 70% at 50% 0%, #000 0%, transparent 75%);
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
 }
 
 ::selection {
   background: rgba(56, 189, 248, 0.28);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-hi);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Scroll regions that deliberately hide their scrollbar. */
+.noscroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.noscroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes softIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Scroll reveal. The hidden state is only applied once the inline head script
+   has confirmed JavaScript is running — without that guard, a failed bundle
+   would leave the whole page invisible. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.75s var(--ease), transform 0.75s var(--ease);
+}
+.js [data-reveal].revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* No scroll reveal on touch. Phone scrolling is flick-and-momentum, and it
+   routinely outruns a 0.75s fade — you arrive at a section that is still
+   invisible and it reads as a blank page, not as an animation. The effect was
+   only ever decoration; correctness on the device most people will open this
+   on matters more. */
+@media (hover: none), (max-width: 779px) {
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -41,4 +261,2049 @@ body::before {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Shell — sidebar, rail, drawer, top bar
+   --------------------------------------------------------------------------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 44;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  background: var(--side);
+  border-bottom: 1px solid var(--bd);
+}
+
+@media (max-width: 779px) {
+  .topbar {
+    display: flex;
+  }
+}
+
+.topbar__burger {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--panel-2);
+  border: 1px solid var(--bd);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.topbar__burger span {
+  width: 15px;
+  height: 1.5px;
+  background: var(--ink-2);
+  border-radius: 2px;
+}
+
+.topbar__id {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__sub {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: var(--scrim);
+  backdrop-filter: blur(3px);
+  animation: softIn 0.2s both;
+  border: 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.side {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--side-open);
+  transform: translateX(var(--side-x));
+  z-index: 46;
+  background: var(--side);
+  border-right: 1px solid var(--bd);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 13px;
+  overflow: hidden;
+  transition: width 0.28s var(--ease), transform 0.28s var(--ease), background 0.3s,
+    border-color 0.3s;
+}
+
+/* Expanded sidebar and icon rail are both in the DOM; CSS picks one. Deriving
+   this from React state would flash the wrong one on every cold load, because
+   the rail preference is restored from localStorage before React runs. */
+.side__full {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.side__rail {
+  display: none;
+}
+[data-rail="1"] .side__full {
+  display: none;
+}
+[data-rail="1"] .side__rail {
+  display: flex;
+}
+
+/* The rail is a desktop affordance — inside the phone drawer there is room for
+   the real thing, so the full sidebar wins back regardless of the setting. */
+@media (max-width: 779px) {
+  [data-rail="1"] .side__full {
+    display: flex;
+  }
+  [data-rail="1"] .side__rail {
+    display: none;
+  }
+}
+
+.only-dark,
+.only-light {
+  display: none;
+}
+[data-theme="dark"] .only-dark,
+[data-theme="light"] .only-light {
+  display: inline;
+}
+
+/* Collapse belongs to the desktop sidebar, close belongs to the phone drawer.
+   Scoped through .side__head so these beat .icon-btn's own `display`, which is
+   declared later in the file. */
+.side__head .side__close {
+  display: none;
+}
+@media (max-width: 779px) {
+  .side__head .side__collapse {
+    display: none;
+  }
+  .side__head .side__close {
+    display: grid;
+  }
+}
+
+.side__head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 4px 16px;
+}
+
+.side__brand {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: linear-gradient(140deg, #0ea5e9, #22d3ee);
+  display: grid;
+  place-items: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #04121a;
+  flex: none;
+}
+
+.side__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.side__sub {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.icon-btn {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  font-size: 12px;
+  color: var(--ink-4);
+  cursor: pointer;
+  transition: all 0.18s;
+  display: grid;
+  place-items: center;
+}
+.icon-btn:hover {
+  border-color: var(--bd-2);
+  color: var(--ink);
+  background: var(--hover);
+}
+
+.side__tools {
+  display: flex;
+  gap: 7px;
+  flex: none;
+}
+
+.side__search {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--bd);
+  border-radius: 11px;
+  padding: 9px 11px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.side__search:hover {
+  border-color: var(--bd-2);
+  color: var(--ink);
+}
+
+.side__kbd {
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  padding: 2px 5px;
+}
+
+.side__theme {
+  flex: none;
+  width: 38px;
+  background: var(--panel-2);
+  border: 1px solid var(--bd);
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.side__theme:hover {
+  border-color: var(--bd-2);
+  color: var(--ink);
+  background: var(--hover);
+}
+
+.side__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.side__section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 18px 0 6px;
+  padding: 0 9px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--ink-4);
+}
+.side__count {
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.side__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav:hover {
+  background: var(--hover);
+}
+.nav[aria-current="page"] {
+  background: var(--sel);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.nav__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  flex: none;
+}
+.nav__dot--hollow {
+  border: 1px solid var(--bd-2);
+}
+.nav__dot--brand {
+  background: linear-gradient(140deg, #0ea5e9, #22d3ee);
+}
+
+.side__cta {
+  flex: none;
+  padding-top: 12px;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--brand);
+  color: #04121a;
+  border: none;
+  border-radius: 11px;
+  padding: 11px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+  white-space: nowrap;
+}
+.btn-primary:hover {
+  background: var(--brand-hi);
+  transform: translateY(-1px);
+}
+
+/* --- Collapsed rail ------------------------------------------------------- */
+
+/* Deliberately no `display` here — .side__rail owns whether the rail is shown,
+   and a `display: flex` in this rule would override it and paint both the rail
+   and the full sidebar on top of each other. */
+.rail {
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  height: 100%;
+}
+
+.rail__btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--bd);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--ink-3);
+  cursor: pointer;
+  flex: none;
+  transition: all 0.18s;
+}
+.rail__btn:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.rail__btn[aria-current="page"] {
+  background: var(--sel);
+  border-color: var(--bd-2);
+}
+
+.rail__mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #0ea5e9, #22d3ee);
+  border: none;
+  display: grid;
+  place-items: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #04121a;
+  cursor: pointer;
+  flex: none;
+  transition: transform 0.18s;
+}
+.rail__mark:hover {
+  transform: scale(1.06);
+}
+
+.rail__rule {
+  width: 22px;
+  height: 1px;
+  background: var(--bd);
+  margin: 5px 0;
+  flex: none;
+}
+
+.rail__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.rail__mail {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--brand);
+  border: none;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: #04121a;
+  cursor: pointer;
+  flex: none;
+  transition: background 0.18s;
+}
+.rail__mail:hover {
+  background: var(--brand-hi);
+}
+
+/* --- Content area --------------------------------------------------------- */
+
+.content {
+  margin-left: var(--side-w);
+  min-height: 100vh;
+  transition: margin-left 0.28s var(--ease);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  /* Backstop only — every known wide row wraps or scrolls on its own. `clip`
+     rather than `hidden` so it can't turn descendant `position: sticky` into a
+     scroll container and silently kill the sticky bars. */
+  overflow-x: clip;
+}
+
+.wrap {
+  max-width: 1240px;
+  padding-left: var(--pad);
+  padding-right: var(--pad);
+}
+
+.stickybar {
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 30;
+  background: var(--bg);
+  border-bottom: 1px solid var(--bd);
+  padding: 15px var(--pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Wraps rather than pushing the page wider than the phone it is on: two mono
+     labels at this tracking are a few pixels too wide for a 390px screen. */
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  transition: background 0.3s;
+}
+
+/* The phone app bar already names the site, so a second sticky strip under it
+   costs 61px of an 844px screen to repeat what the hero says next. Declared
+   here rather than up with the breakpoint tokens so it outranks the
+   `display: flex` above it. Sheet pages keep theirs — the breadcrumb and the
+   prev/next pager are the only way back out of a project on a phone. */
+@media (max-width: 779px) {
+  .stickybar--home {
+    display: none;
+  }
+}
+
+.eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--ink-3);
+}
+
+.eyebrow--dim {
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-4);
+}
+
+.rule-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.rule-head h2 {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--ink-3);
+}
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--bd);
+}
+
+/* ---------------------------------------------------------------------------
+   Home
+   --------------------------------------------------------------------------- */
+
+.section {
+  padding-top: clamp(30px, 3.6vw, 38px);
+}
+.section--lead {
+  padding-top: clamp(30px, 4.6vw, 56px);
+}
+.section--close {
+  padding-top: clamp(44px, 6vw, 76px);
+  padding-bottom: 90px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: var(--title-cols);
+  gap: clamp(28px, 3.4vw, 44px);
+  align-items: end;
+}
+
+.available {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 11px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--brand);
+}
+
+/* The label needs to be a shrinkable item of its own — left as a bare text node
+   it sizes to max-content, refuses to sit beside the dot on a phone, and drops
+   the whole line down leaving the dot stranded on a row by itself. */
+.available__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.available__dot {
+  position: relative;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.available__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--brand);
+  animation: pulseRing 2.6s ease-out infinite;
+}
+
+.hero-title {
+  margin: 24px 0 0;
+  font-size: clamp(34px, 6.2vw, 92px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.hero-lead {
+  margin: 28px 0 0;
+  max-width: 700px;
+  font-size: clamp(18px, 1.9vw, 24px);
+  line-height: 1.45;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.hero-lead strong {
+  font-weight: inherit;
+  color: var(--ink);
+}
+
+.hero-sub {
+  margin: 16px 0 0;
+  max-width: 620px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-3);
+}
+
+.actions {
+  margin: 32px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px;
+  align-items: center;
+}
+
+.btn-solid {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--ink);
+  color: var(--panel);
+  border: none;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.btn-solid:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--bd-2);
+  background: none;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn-outline:hover {
+  background: var(--hover);
+  border-color: var(--bd-2);
+}
+
+.btn-accent {
+  background: var(--brand);
+  color: #04121a;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+.btn-accent:hover {
+  transform: translateY(-2px);
+  background: var(--brand-hi);
+}
+
+.link-mono {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--bd-2);
+  padding-bottom: 2px;
+  transition: color 0.2s;
+}
+.link-mono:hover {
+  color: var(--ink);
+}
+
+.titleblock {
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.titleblock__head {
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--bd);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--ink-4);
+}
+.titleblock__row {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  border-bottom: 1px solid var(--bd);
+}
+.titleblock__row:last-child {
+  border-bottom: none;
+}
+.titleblock__k {
+  padding: 10px 13px;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  color: var(--ink-4);
+  border-right: 1px solid var(--bd);
+}
+.titleblock__v {
+  padding: 10px 13px;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.stats {
+  margin: 34px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 12px;
+}
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 14px;
+  padding: 17px 19px;
+  transition: background 0.3s, border-color 0.3s;
+}
+.stat__v {
+  font-size: 29px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.stat__l {
+  margin-top: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  color: var(--ink-4);
+}
+
+/* --- System sheets -------------------------------------------------------- */
+
+.sheets {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sheet-card {
+  display: block;
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.26s var(--ease), box-shadow 0.26s, border-color 0.26s, background 0.3s;
+}
+.sheet-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: var(--bd-2);
+}
+
+.sheet-card__strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--bd);
+  background: var(--panel-2);
+  transition: background 0.3s;
+}
+.sheet-card__kind {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.17em;
+  color: var(--accent);
+}
+.sheet-card__kind span {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--accent);
+  flex: none;
+}
+
+.sheet-card__body {
+  display: grid;
+  grid-template-columns: var(--card-cols);
+  gap: clamp(18px, 2.4vw, 26px);
+  padding: clamp(16px, 2.4vw, 22px) clamp(15px, 2.2vw, 20px) clamp(16px, 2.2vw, 20px);
+}
+
+/* App marks. Two are the real shipped icons and three are drawn to match, so
+   they all get the same rounded-square treatment and sit as one set. */
+.applogo {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex: none;
+  object-fit: cover;
+  border: 1px solid var(--bd);
+}
+.applogo--lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 17px;
+  margin: 26px 0 0;
+}
+
+.sheet-card__id {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sheet-card__title {
+  margin: 0;
+  font-size: clamp(21px, 2.3vw, 29px);
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.pill {
+  border-radius: 100px;
+  padding: 4px 11px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  white-space: nowrap;
+}
+
+.sheet-card__tagline {
+  margin: 9px 0 0;
+  max-width: 560px;
+  font-size: 14.8px;
+  line-height: 1.58;
+  color: var(--ink-2);
+}
+
+.minirule {
+  margin: 18px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.minirule span:first-child {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.19em;
+  color: var(--ink-4);
+}
+
+.chips {
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--bd);
+  background: var(--panel-2);
+  border-radius: 9px;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.chip span {
+  width: 5px;
+  height: 5px;
+  border-radius: 1.5px;
+  background: var(--accent);
+  flex: none;
+}
+
+.open-sheet {
+  margin: 18px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.sheet-card:hover .open-sheet,
+.sheet-card:focus-visible .open-sheet {
+  opacity: 1;
+}
+
+/* On a touch screen there is no hover, so the fade-in never fires and the cue
+   sits there as a permanent blank line. Show it outright instead. */
+@media (hover: none), (max-width: 779px) {
+  .open-sheet {
+    opacity: 1;
+  }
+}
+
+.thumb {
+  overflow: hidden;
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  aspect-ratio: 16 / 10;
+  background: var(--panel-2);
+}
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s var(--ease);
+}
+.sheet-card:hover .thumb img {
+  transform: scale(1.05);
+}
+
+.thumb--empty {
+  border: 1px dashed var(--bd-2);
+  border-radius: 12px;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  text-align: center;
+  background: var(--panel-2);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  line-height: 1.8;
+  color: var(--ink-4);
+}
+
+.minimetrics {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.minimetric__v {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.minimetric__l {
+  margin-top: 2px;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+
+/* --- Academic cards ------------------------------------------------------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: 19px 20px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.24s var(--ease), box-shadow 0.24s, border-color 0.24s, background 0.3s;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: var(--bd-2);
+}
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.17em;
+  color: var(--ink-4);
+}
+.card__term {
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.card__title {
+  margin: 12px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.card__course {
+  margin: 7px 0 0;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--ink-4);
+}
+.card__brief {
+  margin: 12px 0 0;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.card__stack {
+  margin: 16px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.tag {
+  border: 1px solid var(--bd);
+  border-radius: 7px;
+  padding: 3px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+/* --- Education ------------------------------------------------------------ */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.edu__head {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--bd);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 24px;
+}
+.edu__degree {
+  margin: 0;
+  font-size: clamp(19px, 2vw, 24px);
+  font-weight: 600;
+  letter-spacing: -0.026em;
+  color: var(--ink);
+}
+.edu__meta {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.edu__when {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+.edu__row {
+  display: grid;
+  grid-template-columns: var(--spec-cols);
+  border-bottom: 1px solid var(--bd);
+}
+.edu__row:last-child {
+  border-bottom: none;
+}
+.edu__year {
+  padding: 14px 16px;
+  border-right: 1px solid var(--bd);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  color: var(--ink-4);
+}
+.edu__courses {
+  padding: 14px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@media (max-width: 779px) {
+  .edu__year {
+    border-right: none;
+    border-bottom: 1px solid var(--bd);
+  }
+}
+
+/* --- Specification table -------------------------------------------------- */
+
+.spec__row {
+  display: grid;
+  grid-template-columns: var(--spec-cols);
+  border-bottom: 1px solid var(--bd);
+}
+.spec__row:last-child {
+  border-bottom: none;
+}
+.spec__k {
+  padding: 14px 16px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  color: var(--ink-4);
+  border-right: 1px solid var(--bd);
+}
+.spec__v {
+  padding: 14px 16px;
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: var(--ink-2);
+}
+
+@media (max-width: 779px) {
+  .spec__k {
+    border-right: none;
+    border-bottom: 1px solid var(--bd);
+  }
+}
+
+/* --- Closing -------------------------------------------------------------- */
+
+.closing h2 {
+  margin: 0;
+  max-width: 20ch;
+  font-size: clamp(30px, 4vw, 54px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.042em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.closing p {
+  margin: 20px 0 0;
+  max-width: 600px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.copyright {
+  margin-top: 52px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--ink-4);
+}
+
+/* ---------------------------------------------------------------------------
+   Project / academic sheet
+   --------------------------------------------------------------------------- */
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.crumb > :first-child {
+  flex: none;
+}
+.crumb a:hover {
+  color: var(--ink);
+}
+.crumb__sep {
+  opacity: 0.4;
+  flex: none;
+}
+.crumb__here {
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.pager__btn {
+  background: var(--panel);
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  width: 31px;
+  height: 31px;
+  font-size: 13px;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: all 0.18s;
+  display: grid;
+  place-items: center;
+}
+.pager__btn:hover {
+  border-color: var(--bd-2);
+  color: var(--ink);
+}
+
+.sheet-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--bd);
+}
+.sheet-hero__wash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 130% at 88% 0%,
+    color-mix(in srgb, var(--accent) 12%, transparent),
+    transparent 64%
+  );
+}
+.sheet-hero__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--hero-cols);
+  align-items: center;
+  padding: clamp(38px, 5vw, 64px) var(--pad) clamp(38px, 5vw, 64px) var(--pad);
+  max-width: 1400px;
+  gap: clamp(26px, 3.4vw, 44px);
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.19em;
+  color: var(--accent);
+}
+.kicker::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.sheet-title {
+  margin: 22px 0 0;
+  font-size: clamp(29px, 5.4vw, 62px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.sheet-tagline {
+  margin: 20px 0 0;
+  max-width: 560px;
+  font-size: clamp(17px, 1.7vw, 21px);
+  line-height: 1.48;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.frame {
+  position: relative;
+  min-width: 0;
+}
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 14px -30px -14px 14px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  filter: blur(2px);
+}
+.frame__inner {
+  position: relative;
+  border: 1px solid var(--bd-2);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--panel-2);
+}
+.frame__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--bd);
+  background: var(--panel);
+}
+.frame__bar span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bd-2);
+}
+.frame__inner img {
+  width: 100%;
+  display: block;
+}
+
+.dashed {
+  border: 1px dashed var(--bd-2);
+  border-radius: 18px;
+  padding: 36px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-width: 0;
+}
+.dashed__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.19em;
+  color: var(--accent);
+}
+.dashed p {
+  margin: 12px 0 0;
+  max-width: 280px;
+  font-size: 14px;
+  line-height: 1.62;
+  color: var(--ink-3);
+}
+
+.band {
+  border-bottom: 1px solid var(--bd);
+  background: var(--panel);
+  transition: background 0.3s;
+}
+.band__inner {
+  max-width: 1240px;
+  display: flex;
+  flex-wrap: wrap;
+}
+.band__cell {
+  flex: 1 1 190px;
+  padding: clamp(18px, 2.4vw, 26px) clamp(18px, 2.6vw, 30px);
+  border-right: 1px solid var(--bd);
+}
+.band__v {
+  font-size: clamp(32px, 3.6vw, 48px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: var(--accent);
+}
+.band__l {
+  margin-top: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+
+.why {
+  padding-top: clamp(44px, 6vw, 76px);
+  max-width: 900px;
+}
+.why__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--ink-4);
+}
+.why p {
+  margin: 22px 0 0;
+  font-size: clamp(20px, 2.2vw, 27px);
+  font-weight: 400;
+  line-height: 1.52;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.sheet-section {
+  padding-top: clamp(48px, 6.4vw, 80px);
+}
+
+.h2row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.h2row h2 {
+  margin: 0;
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.032em;
+  color: var(--ink);
+}
+.h2row--tight h2 {
+  font-size: clamp(22px, 2.3vw, 29px);
+  letter-spacing: -0.03em;
+}
+.h2row--tight {
+  margin-bottom: 24px;
+}
+.h2row__count {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.note-row {
+  display: grid;
+  grid-template-columns: var(--hl-cols);
+  gap: clamp(14px, 2vw, 26px);
+  align-items: start;
+  padding: 26px 6px;
+  border-top: 1px solid var(--bd);
+  transition: background 0.2s, padding-left 0.2s;
+}
+.note-row:hover {
+  background: var(--hover);
+  padding-left: 16px;
+}
+.note-row__n {
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  color: var(--accent);
+  opacity: 0.42;
+}
+.note-row p {
+  margin: 0;
+  max-width: 760px;
+  font-size: 16.5px;
+  line-height: 1.72;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: var(--two-cols);
+  gap: clamp(34px, 4.2vw, 56px);
+  align-items: start;
+}
+
+.spine {
+  position: relative;
+  padding-left: 26px;
+}
+.spine::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--accent), var(--bd));
+}
+.spine__item {
+  position: relative;
+  padding: 11px 0;
+}
+.spine__item::before {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 16px;
+  width: 11px;
+  height: 11px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+}
+.spine__n {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+}
+.spine__t {
+  margin-top: 5px;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.pill-chip {
+  border: 1px solid var(--bd);
+  background: var(--panel);
+  border-radius: 100px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  transition: border-color 0.2s, color 0.2s;
+}
+.pill-chip:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.facts {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 11px 18px;
+  font-size: 14px;
+}
+.facts dt {
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--ink-4);
+  padding-top: 3px;
+}
+.facts dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+.facts a {
+  color: var(--accent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+/* A feature and its steps, collapsed until asked for. The group heading is
+   heavier than a step caption so the hierarchy reads at a glance: this is the
+   feature, these are its stages. */
+.flow {
+  margin-bottom: 14px;
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  background: var(--panel);
+  transition: border-color 0.2s, background 0.3s;
+}
+.flow:last-of-type {
+  margin-bottom: 0;
+}
+.flow:hover {
+  border-color: var(--bd-2);
+}
+.flow[open] {
+  padding-bottom: 26px;
+}
+
+.flow__summary {
+  padding: 22px 24px;
+  cursor: pointer;
+  list-style: none;
+  transition: background 0.18s;
+  border-radius: 15px;
+}
+/* The default disclosure triangle is replaced by the chevron in .flow__toggle. */
+.flow__summary::-webkit-details-marker {
+  display: none;
+}
+.flow__summary:hover {
+  background: var(--hover);
+}
+.flow[open] .flow__summary {
+  border-radius: 15px 15px 0 0;
+}
+
+.flow__head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.flow__title {
+  margin: 0;
+  font-size: clamp(19px, 2vw, 25px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.flow__count {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+/* The affordance. Deliberately a pill rather than a bare chevron — collapsed
+   sections get missed entirely when the only hint is a 10px arrow. */
+.flow__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-radius: 100px;
+  padding: 6px 13px;
+  transition: background 0.18s, border-color 0.18s;
+}
+.flow__summary:hover .flow__toggle {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.flow__chev {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 0.22s var(--ease);
+}
+.flow[open] .flow__chev {
+  transform: rotate(-90deg);
+}
+.flow__when-open {
+  display: none;
+}
+.flow[open] .flow__when-open {
+  display: inline;
+}
+.flow[open] .flow__when-closed {
+  display: none;
+}
+
+.flow__lead {
+  display: block;
+  margin: 0;
+  max-width: 780px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.flow[open] .gallery {
+  padding: 4px 24px 0;
+}
+
+@media (max-width: 779px) {
+  .flow__title {
+    white-space: normal;
+  }
+  .flow__head {
+    flex-wrap: wrap;
+  }
+  .flow__summary {
+    padding: 18px 16px;
+  }
+  .flow[open] .gallery {
+    padding: 4px 16px 0;
+  }
+}
+
+/* Two screenshots per row on desktop, one on a phone. At full width nine
+   dashboards is nine screenfuls of scrolling; halved, they still read well
+   enough to follow and the lightbox is one click away for the detail.
+   The row gap stays much larger than the caption-to-image gap so which text
+   belongs to which picture is settled by spacing alone. */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr));
+  gap: 44px 26px;
+}
+
+.figure {
+  margin: 0;
+  display: block;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: zoom-in;
+  /* Without this the button stretches to the tallest cell in its row and
+     Chrome vertically centres a button's content, so the shorter of two
+     screenshots floats down the page away from its own caption. */
+  align-self: start;
+}
+.figure__box {
+  /* A <span>, because the figure is a <button> and a <figure> can't live inside
+     one — so it needs the block display a <div> would have given it for free. */
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--bd);
+  border-radius: 18px;
+  background: var(--panel-2);
+  transition: border-color 0.24s, box-shadow 0.24s;
+}
+.figure:hover .figure__box {
+  border-color: var(--bd-2);
+  box-shadow: var(--shadow);
+}
+.figure__box img {
+  width: 100%;
+  display: block;
+  transition: transform 0.7s var(--ease);
+}
+.figure:hover .figure__box img {
+  transform: scale(1.012);
+}
+/* Sits on the image so it is obvious the screenshot opens, without costing a
+   line of layout. Hidden on touch, where there is no hover to reveal it and
+   the section heading already says "click to enlarge". */
+.figure__zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #f2f6fa;
+  background: rgba(8, 11, 17, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 100px;
+  padding: 6px 12px;
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.figure:hover .figure__zoom,
+.figure:focus-visible .figure__zoom {
+  opacity: 1;
+  transform: none;
+}
+@media (hover: none) {
+  .figure__zoom {
+    display: none;
+  }
+}
+
+.figure__cap {
+  display: block;
+  margin: 0 0 14px;
+}
+
+.figure__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 7px;
+}
+
+.figure__title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+}
+
+.figure__desc {
+  display: block;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--ink-3);
+  text-wrap: pretty;
+}
+.figure__fig {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  flex: none;
+}
+
+.footnote {
+  margin: 26px 0 0;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 14px;
+  max-width: 820px;
+}
+.footnote span {
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--accent);
+}
+.footnote p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+
+.video-figure {
+  margin: 0 0 52px;
+}
+.video-figure:last-of-type {
+  margin-bottom: 0;
+}
+.video-figure video {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--bd);
+  border-radius: 18px;
+  background: #05070a;
+  aspect-ratio: 16 / 9;
+}
+
+.nextband {
+  display: block;
+  margin-top: 88px;
+  border-top: 1px solid var(--bd);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.24s;
+}
+.nextband:hover {
+  background: var(--hover);
+}
+.nextband__wash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    90% 130% at 84% 50%,
+    color-mix(in srgb, var(--next-accent) 12%, transparent),
+    transparent 68%
+  );
+}
+.nextband__inner {
+  position: relative;
+  max-width: 1240px;
+  padding: clamp(34px, 4.4vw, 52px) var(--pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+.nextband__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.19em;
+  color: var(--ink-4);
+}
+.nextband__name {
+  margin-top: 14px;
+  max-width: 22ch;
+  font-size: clamp(26px, 3.2vw, 44px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.nextband__arrow {
+  font-size: 30px;
+  color: var(--next-accent);
+  flex: none;
+  transition: transform 0.24s;
+}
+.nextband:hover .nextband__arrow {
+  transform: translateX(6px);
+}
+
+/* ---------------------------------------------------------------------------
+   Overlays — command palette, lightbox, toast
+   --------------------------------------------------------------------------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(4, 5, 8, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  padding: clamp(56px, 12vh, 140px) 16px 24px;
+  animation: softIn 0.18s both;
+  border: 0;
+}
+
+.palette {
+  width: 100%;
+  max-width: 560px;
+  height: max-content;
+  background: var(--panel);
+  border: 1px solid var(--bd-2);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+  animation: popIn 0.24s var(--ease) both;
+}
+.palette input {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 17px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--bd);
+}
+.palette__list {
+  max-height: 340px;
+  overflow: auto;
+  padding: 7px;
+  margin: 0;
+  list-style: none;
+}
+.palette__item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.14s;
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+.palette__item:hover,
+.palette__item[data-active="1"] {
+  background: var(--hover);
+}
+.palette__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
+.palette__label {
+  flex: 1;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.palette__kind {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--ink-4);
+}
+.palette__empty {
+  padding: 20px 13px;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(4, 5, 8, 0.93);
+  backdrop-filter: blur(10px);
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 5vw, 56px);
+  cursor: zoom-out;
+  animation: softIn 0.22s both;
+  border: 0;
+}
+.lightbox figure {
+  margin: 0;
+  max-width: 1180px;
+  width: 100%;
+}
+.lightbox img {
+  width: 100%;
+  max-height: 76vh;
+  object-fit: contain;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  animation: popIn 0.3s var(--ease) both;
+}
+.lightbox figcaption {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: #8794a6;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  z-index: 99;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 100px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  animation: popIn 0.22s both;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
