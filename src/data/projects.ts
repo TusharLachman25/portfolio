@@ -575,21 +575,117 @@ export const PROJECTS: Project[] = [
     trailer: '/media/lockedin-trailer.mp4',
     trailerPoster: '/media/lockedin-trailer-poster.jpg',
     trailerNote:
-      'The app running on a phone — squad stories along the top, posted sessions in the feed, and the weekly leaderboard underneath.',
+      'Twenty-five seconds of the thing that makes it work: the weekly leaderboard re-ranking the squad, a session posted and commented on, a watch screenshot turned into stats, and the roast waiting for whoever trained nothing.',
     video: '/media/lockedin-demo.mp4',
     poster: '/media/lockedin-demo-poster.jpg',
     videoNote:
-      'The same take, uncut. Scrolling is the only navigation here: the tab bar ignores synthetic taps, and the feed carries the stories and the leaderboard anyway.',
-    shots: [
+      'The app driven end to end on a phone, uncut and at real speed: sort the week by points, duration and calories, open a row into its session log, read a story and its comments, see who watched yours, log a session from a watch screenshot and then build one by hand, find someone outside the squad, and finish in the group chat and the notifications.',
+    shots: [],
+    flows: [
       {
-        src: '/media/lockedin-feed.png',
-        title: 'The feed, at phone size',
+        title: 'The week, and who won it',
         caption:
-          'Stories from the squad across the top, logged sessions in the feed below, and the weekly leaderboard at the bottom. The leaderboard totals are placeholders; the names, the ranking logic and the app are real.',
+          'The whole point of the app is the table at the bottom of the feed. Training alone is easy to skip; being seventh is not.',
+        steps: [
+          {
+            src: '/media/lockedin-feed.png',
+            title: 'Open it',
+            caption:
+              'Squad stories along the top — a gradient ring for one you have not watched, grey for one you have — and the week ranked underneath. The same week by points on the left and by duration on the right: Marcus trains the longest hours of anyone and is still fourth, because points reward the effort a minute actually costs.',
+          },
+          {
+            src: '/media/lockedin-rankings.png',
+            title: 'Where a number came from',
+            caption:
+              'A row opens into that person’s week, session by session, with what each one was worth. The rules behind those numbers are on the right, including the thing that has to be said out loud in a squad spread across four time zones: the leaderboard resets at 00:00 UTC, which is Monday 10am in Melbourne and Sunday 8pm in Toronto.',
+          },
+        ],
+      },
+      {
+        title: 'Stories, and who watched them',
+        caption:
+          'A session posts as a story that expires. It is the part people actually open, so it carries the likes, the comments and — if it is yours — the list of who has seen it.',
+        steps: [
+          {
+            src: '/media/lockedin-stories.png',
+            title: 'Someone else’s session',
+            caption:
+              'Tap a ring and the session plays with a progress bar per story, the activity and its numbers on the card. The comment thread opens underneath without leaving the story.',
+          },
+          {
+            src: '/media/lockedin-story-mine.png',
+            title: 'And your own',
+            caption:
+              'Your own story gets a viewer count instead of a comment box. Tap it and you get the list, most recent first — the read receipt that makes skipping a week uncomfortable.',
+          },
+        ],
+      },
+      {
+        title: 'Two ways to log a session',
+        caption:
+          'Manual entry is where a fitness app dies. The first path is a screenshot and nothing else; the second is for the sessions no watch recorded.',
+        steps: [
+          {
+            src: '/media/lockedin-upload.png',
+            title: 'Screenshot your watch',
+            caption:
+              'Upload the summary screen from Strava, Apple Fitness or Samsung Health. Gemini reads the image and returns activity, distance, duration, pace and calories as structured fields — the image posts as it is, and the stats land in the database behind it.',
+          },
+          {
+            src: '/media/lockedin-custom.png',
+            title: 'Or build it by hand',
+            caption:
+              'Twelve activities, each with its own form: a run asks for distance and pace, a gym session asks for duration and a focus. Picking the activity changes which fields are required, because a swim measured in minutes is not a swim.',
+          },
+          {
+            src: '/media/lockedin-custom-post.png',
+            title: 'Then see it before it posts',
+            caption:
+              'The card is composed live — background, activity, the SQUAD badge and your note burnt in — and the date and time can be overridden, for the session you are logging the morning after.',
+          },
+        ],
+      },
+      {
+        title: 'The squad',
+        caption:
+          'A closed group rather than a network: you see the people you follow, and nobody else sees you.',
+        steps: [
+          {
+            src: '/media/lockedin-search.png',
+            title: 'Find someone',
+            caption:
+              'Search by name or username across everyone, with the follow state resolved per row. Following someone puts them in your feed and on your leaderboard from that week onward.',
+          },
+          {
+            src: '/media/lockedin-profile.png',
+            title: 'Your own page, and what it may nag you about',
+            caption:
+              'Every session you have posted as a grid. Settings is the honest part: dark mode, and a switch for each notification the database is allowed to send you — including the 9am roast.',
+          },
+        ],
+      },
+      {
+        title: 'Talking about it, and being told off',
+        caption:
+          'The two things that bring people back: the group chat, and the app noticing when you have done nothing.',
+        steps: [
+          {
+            src: '/media/lockedin-chat.png',
+            title: 'The group chat',
+            caption:
+              'Direct messages and a squad room in the same inbox, with unread state per participant. Sessions can be shared straight into a thread, so a post and the argument about it stay in one place.',
+          },
+          {
+            src: '/media/lockedin-nudges.png',
+            title: 'The nudge, and the roast',
+            caption:
+              'Notifications are aggregated — “and 3 others liked your workout” is one row, not four — and sent by a Postgres trigger rather than the app, so they arrive whether or not anyone has it open. On the right: what the squad sees when you post nothing all week.',
+          },
+        ],
       },
     ],
     note:
-      'The squad stopped using the app, so the leaderboard totals are placeholders written into the page at capture time. The names, the ranking logic and the app itself are real.',
+      'Every person in these captures is invented. Locked In is a social app, so its database is mostly other people — my friends’ names, their photographs and their actual sessions — and none of them agreed to appear on a public portfolio. So the squad here is made up, and so is everything attached to them: the workouts, durations, calories, points, leaderboard positions, comments, chat messages and notifications. The avatars are generated from each invented name’s initials rather than sourced from anywhere, and the images on the sessions are drawn from that session’s own numbers rather than being photographs of anyone. The uploaded watch screenshot is generated too, and says so on its face. Nothing came out of the real project: the web build under capture is compiled with synthetic Supabase credentials, the harness replaces fetch before any application code runs so the app issues exactly the queries it always does and gets invented rows back, and every request to a real Supabase host is intercepted and counted — a run that let one through would say so. Gemini is not called either; the extraction you see running is the app’s real code path against a stubbed reply. My own name is the one real thing left, and only because it is already the title of this site. The repository is not modified at all, and beyond the invented data nothing is retouched — every screen, control and state is the app exactly as it runs.',
     repo: 'https://github.com/TusharLachman25/workout-tracker',
   },
   {
