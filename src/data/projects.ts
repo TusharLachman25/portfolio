@@ -726,32 +726,191 @@ export const PROJECTS: Project[] = [
       'Cooking a recipe writes a log you can rate and review afterwards, and those ratings build a taste profile the assistant can use.',
       'Shopping list that flows back into the pantry when items are marked as bought, closing the loop instead of leaving two lists to reconcile by hand.',
     ],
-    // Seeded with a demo pantry through the app's own functions rather
-    // than written straight into the tables, so ingredient lookup, image
-    // fetching and the pantry write all ran exactly as they do in use.
+    // The trailer is built motion, not screen capture — the one sheet on this
+    // site whose trailer is. The walkthrough underneath is the real app driven
+    // through CDP against an in-process stand-in for Supabase, Gemini and the
+    // food database, so its state changes are real writes to invented rows
+    // rather than staged screens. Neither has been near the live project.
     trailer: '/media/kitchenos-trailer.mp4',
     trailerPoster: '/media/kitchenos-trailer-poster.jpg',
     trailerNote:
-      'The pantry, the recipe collection, the AI chef and the nutrition tracker, cut from one recording of the app running.',
+      'Twenty-four seconds on the one idea the schema exists for: a quantity that went down because something was cooked, not because anyone typed. Built as motion rather than screen-captured — every number in it is one the walkthrough underneath shows the app actually producing. Has sound.',
     video: '/media/kitchenos-demo.mp4',
     poster: '/media/kitchenos-demo-poster.jpg',
-    videoNote: 'The same session uncut, minus the login screen — that part of the take caught a real account.',
-    shots: [
+    videoNote:
+      'The app driven end to end, uncut and at real speed: read the day, walk the shelf, search the global food database, tick something off the shopping list and watch it land in the pantry, open a recipe, ask the chef what tonight could be out of what is in stock, say you cooked it, correct the amounts it assumed — and then watch the pantry and the day’s total both settle up.',
+    shots: [],
+    flows: [
       {
-        src: '/media/kitchenos-pantry.png',
-        title: 'Pantry stock',
+        title: 'The kitchen, at a glance',
         caption:
-          'Everything currently in the kitchen, with quantities you can edit in place. Cooking a recipe subtracts from this list automatically, converting units where it has to.',
+          'What the app is for, in three screens: what has been eaten today, what is on the shelf, and what this kitchen knows how to cook.',
+        steps: [
+          {
+            src: '/media/kitchenos-home.png',
+            title: 'Open it',
+            caption:
+              'Calories left against a target worked out from body metrics rather than typed in, protein still to find, and how many things are in the pantry — then the quick actions and the last three meals.',
+          },
+          {
+            src: '/media/kitchenos-pantry.png',
+            title: 'The shelf',
+            caption:
+              'Everything in the kitchen with its quantity and unit, editable in place. Cooking a recipe subtracts from this list on its own, converting between grams, millilitres and pieces where it has to.',
+          },
+          {
+            src: '/media/kitchenos-cookbook.png',
+            title: 'What it knows how to cook',
+            caption:
+              'Recipes written by hand and recipes the assistant saved, marked apart. The collection is the assistant’s source material as much as the cook’s — it is told to suggest from here before inventing anything.',
+          },
+        ],
       },
       {
-        src: '/media/kitchenos-shopping.png',
-        title: 'The shopping list',
+        title: 'The list and the shelf are the same data',
         caption:
-          'Mark something as bought and it moves straight into the pantry above, so there is never a second list to reconcile by hand.',
+          'A shopping list that ends in the pantry, rather than a second list to reconcile against it by hand.',
+        steps: [
+          {
+            src: '/media/kitchenos-shopping.png',
+            title: 'What needs buying',
+            caption:
+              'Quantity and unit per line, editable, with an optional thumbnail per row. Nothing here is a free-text note — every line is a real ingredient the rest of the app can do arithmetic with.',
+          },
+          {
+            src: '/media/kitchenos-picker.png',
+            title: 'Add something',
+            caption:
+              'The ingredient library, three to a row, each with its quantity and unit chosen before it is added. The tiles are drawn stand-ins; the app normally pulls ingredient photographs from an open food database.',
+          },
+          {
+            src: '/media/kitchenos-search.png',
+            title: 'Or search the world’s',
+            caption:
+              'Three letters and it queries a global food database for anything the local library has never heard of, and offers the result with the same quantity and unit controls as everything else.',
+          },
+          {
+            src: '/media/kitchenos-restock.png',
+            title: 'Tick it off, and it is on the shelf',
+            caption:
+              'Marking six eggs bought took them off the list and added them to the ten already in the pantry — 16 in the same row, not a second entry. Buying something the kitchen has never had inserts a new one instead.',
+          },
+        ],
+      },
+      {
+        title: 'A chef that has read the pantry',
+        caption:
+          'Chat sessions that persist, and answers assembled from the quantities actually in stock rather than from a generic recipe index.',
+        steps: [
+          {
+            src: '/media/kitchenos-chat-history.png',
+            title: 'Chats that survive the session',
+            caption:
+              'Created, renamed, reopened and deleted, each keeping its own history — rather than one flat log that grows until it is useless.',
+          },
+          {
+            src: '/media/kitchenos-chat.png',
+            title: 'Ask it what to cook',
+            caption:
+              'The reply is built from real state: 1,375 of 2,669 kcal eaten, 128 g of protein still to find, and the exact amounts on the shelf. It names the halloumi because 225 g of it is the thing with the shortest life in the fridge.',
+          },
+          {
+            src: '/media/kitchenos-chat-recipe.png',
+            title: 'Pick one and it commits',
+            caption:
+              'Ingredients with what is in stock beside what the recipe needs, the method, and a rough macro total for the pot. It deliberately will not offer to log anything until you say you have cooked it.',
+          },
+          {
+            src: '/media/kitchenos-chat-rename.png',
+            title: 'Housekeeping',
+            caption:
+              'Rename or delete a session from its own row, without leaving the conversation you are in.',
+          },
+        ],
+      },
+      {
+        title: 'Cook it, and the shelf pays for it',
+        caption:
+          'The feature the schema exists for: cooking a recipe works out what it used and takes it back out of the pantry.',
+        steps: [
+          {
+            src: '/media/kitchenos-recipe.png',
+            title: 'The recipe as saved',
+            caption:
+              'Ingredients and method side by side. Start Cooking hands it to the assistant rather than to a timer.',
+          },
+          {
+            src: '/media/kitchenos-cooking.png',
+            title: 'Say you cooked it',
+            caption:
+              'The assistant returns the ingredient list as an editable table, because what actually went in the pan is never quite what the recipe said. Rows can be corrected, added or dropped before anything is committed.',
+          },
+          {
+            src: '/media/kitchenos-macros.png',
+            title: 'What that came to',
+            caption:
+              'Calories and macros calculated from the amounts as edited, not from the recipe as written.',
+          },
+          {
+            src: '/media/kitchenos-review.png',
+            title: 'Logged, and the pantry updated',
+            caption:
+              'One button writes the meal into today’s total and deducts every ingredient from the shelf — the toast top right is that write landing. The rating that follows builds a taste profile the assistant reads back on later suggestions.',
+          },
+          {
+            src: '/media/kitchenos-pantry-after.png',
+            title: 'The shelf afterwards',
+            caption:
+              'Coconut milk 800 → 400 ml, red lentils 500 → 300 g, spinach 200 → 100 g. Nothing was typed on this screen; the deduction is what the cooking flow wrote, unit conversion included.',
+          },
+        ],
+      },
+      {
+        title: 'Logging it, and the targets it is measured against',
+        caption:
+          'Four ways into the food diary, and the body metrics the day’s numbers are actually calculated from.',
+        steps: [
+          {
+            src: '/media/kitchenos-tracker.png',
+            title: 'The day',
+            caption:
+              'Calories against target, the macro split, a seven-day trend and every meal in order. The 1,085 kcal dinner arrived from the cooking flow rather than being typed in here.',
+          },
+          {
+            src: '/media/kitchenos-quickadd.png',
+            title: 'Log a one-off',
+            caption:
+              'Four routes behind one button. Quick Add is for the thing eaten once and never again — logged without being saved as a food. Micronutrients sit behind an expander so the common case stays four fields.',
+          },
+          {
+            src: '/media/kitchenos-scan.png',
+            title: 'Or photograph it',
+            caption:
+              'Gemini vision returns a dish name, a portion estimate and the whole macro and micronutrient set, every field editable before it is logged. The photograph is drawn for this capture and says so on its face.',
+          },
+          {
+            src: '/media/kitchenos-myfood.png',
+            title: 'The things eaten every week',
+            caption:
+              'Saved foods are one tap instead of four fields, and meal bundles log several at once — the breakfast that is always the same three items.',
+          },
+          {
+            src: '/media/kitchenos-history.png',
+            title: 'The whole diary',
+            caption:
+              'Grouped by day with the day’s total on the header, every entry editable and deletable, and the lot exportable as CSV.',
+          },
+          {
+            src: '/media/kitchenos-settings.png',
+            title: 'Where the targets come from',
+            caption:
+              'Height, weight, age and activity level go through Mifflin-St Jeor to a daily calorie figure and a 30/35/35 macro split — 2,669 kcal here — which can then be overridden by hand. Dietary requirements and a free-text note are handed to the assistant on every message.',
+          },
+        ],
       },
     ],
     note:
-      'A demo pantry seeded through the app’s own functions rather than written straight into the tables, so ingredient lookup and the pantry write ran exactly as they do in use. The groceries are invented; the app is not.',
+      'The trailer at the top is a built motion piece rather than app footage — designed scenes, not screen capture — though every figure in it is one the walkthrough and the screenshots below show the app itself producing. Everything from the walkthrough down is the real app, and everything in it is invented: the cook, their body metrics, the groceries, the recipes, every meal and macro, and both halves of every conversation. Kitchen OS is Streamlit, so unlike the browser-rendered projects on this site there is no fetch to replace — Python runs the whole app server-side and only rendered deltas ever reach the browser. The harness stands in for the external services inside the Python process instead, before app.py, backend.py and ai_chef.py build their clients at import time. Supabase is replaced by an in-process implementation of the queries the app actually makes, and its rows persist across reruns, so ticking an item off the list or cooking a recipe is a real state change photographed before and after rather than two staged screens. Gemini is not called: its replies are scripted, though the chef quotes quantities read back out of the pantry context the app itself assembled. The food-database lookup returns invented results in the real response shape, and ingredient images are drawn rather than fetched. The app runs on synthetic credentials, and any connection to a host that is not the local server is refused and counted — a run that let one through would say so, and this one blocked none. Nothing was read from the real database and nothing was written to it, and the repository is not modified at all. Beyond the invented data nothing is retouched: the only thing hidden is Streamlit’s own local dev toolbar, and the decimal commas in the profile fields are the capture machine’s regional format rather than anything the app chose.',
     repo: 'https://github.com/TusharLachman25/AI-Meal-Suggestion',
   },
   {
