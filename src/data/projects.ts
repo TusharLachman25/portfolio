@@ -927,24 +927,107 @@ export const PROJECTS: Project[] = [
     layers: [
       'React Native on Expo SDK 54',
       'Supabase Postgres as the shared ledger',
-      'Sessions persisted through AsyncStorage',
-      'One codebase, Android and web',
+      'One table, five queries, no auth',
+      'EAS Build → Android APK',
+      'react-native-web build from the same source',
     ],
     stack: ['React Native', 'Expo', 'Supabase', 'PostgreSQL', 'react-native-web', 'EAS Build'],
     metrics: [
       { value: '2', label: 'bet types' },
       { value: '1', label: 'shared ledger' },
+      { value: '0', label: 'accounts to create' },
     ],
     blurb:
       'My friends and I bet on things constantly and then argue about who owes what. The Vault is the ledger: a wager is written down with its terms, both sides and the stake at the moment it is made, and it stays open until somebody settles it. The record exists before the argument does.',
     highlights: [
       'Two kinds of wager, and they behave differently. A One-Off resolves exactly once — you tap whoever won and it locks with the winner recorded against the bet. An Ongoing wager never resolves; it keeps a running tally per player that either side can add to, which is what a season-long argument actually looks like.',
-      'A bet is only valid if it is complete: description, both players and the stake are all required before it can be locked in, so the vague ones never make it into the ledger.',
+      'A bet is only valid if it is complete: description, both players and the stake are all required before it can be locked in, so the vague ones never make it into the ledger. It fails silently, though — the button simply does nothing — which is a real gap, and one the captures show rather than hide.',
       'The ledger is shared rather than per-device — every wager lives in Supabase, so both sides see the same open bets and the same settled ones.',
-      'Sessions persist through AsyncStorage, so the app opens where you left it instead of asking who you are every time.',
-      'One React Native codebase produces both the Android build and a web build through react-native-web, which is how the people who would not install anything still ended up using it.',
+      'There are no accounts at all. No sign-in, no user table, and the players are just names typed into a field rather than users who exist somewhere. It was built for one group of friends and handed to them directly, so the app never had to answer “who are you” — everyone holding it sees the same single ledger. The Supabase client is configured with AsyncStorage for session persistence, which is dead configuration: nothing in the app ever signs anyone in.',
+      'One React Native codebase produces both the Android APK, built through EAS and sent round the group, and a web build through react-native-web.',
+      'Building the same source for the web is where the abstraction leaks, and it leaks in one identifiable place. react-native-web renders a TextInput as an <input>, which carries a min-content width Yoga does not, so the paired name fields refused to shrink and overflowed the card below about 700px — every phone. Native was never affected. One minWidth fixes it, but only after knowing which of the two layout engines you are actually arguing with.',
     ],
+    // The trailer is built motion, not screen capture — the second sheet on
+    // this site whose trailer is, for the same reason as Kitchen OS: the app is
+    // a static, light-themed single screen and a recording of it reads as dead.
+    // The walkthrough underneath is where the real footage lives.
+    trailer: '/media/bets-trailer.mp4',
+    trailerPoster: '/media/bets-trailer-poster.jpg',
+    trailerNote:
+      'Twenty-three seconds on the reason the thing exists: a bet made out loud is an argument scheduled for later, and this is the record that gets there first. Built as motion rather than screen-captured, but not invented — the cards are redrawn from the app’s own colours, radii and type, and both wagers in it are the same invented ones the screenshots below use. Has sound.',
+    video: '/media/bets-demo.mp4',
+    poster: '/media/bets-demo-poster.jpg',
+    videoNote:
+      'The app driven end to end on a phone, uncut and at real speed: read the ledger as it stands, try to lock a bet in with the stake still missing and watch nothing happen, add the stake and watch it land at the top, settle a one-off onto a winner, open the other kind of wager and start its tally at nothing, add a point to a season that never resolves, and clear out a bet that was already settled. Every change on screen is a real write — the same five queries the app always issues, answered with invented rows.',
     shots: [],
+    flows: [
+      {
+        title: 'Writing one down',
+        caption:
+          'The whole app is one screen: a form pinned above the ledger it writes to. A bet gets recorded at the moment both sides agree, which is the only moment anyone is honest about the terms.',
+        steps: [
+          {
+            src: '/media/bets-write.png',
+            title: 'The form, and what it refuses',
+            caption:
+              'Empty on the left. On the right, three of the four required fields filled and “Lock It In” already pressed — description, both players, no stake — and nothing has happened: no error, no hint, the ledger behind it unchanged. The guard is a single line at the top of addBet, and the bet with a missing term is precisely the one that gets argued about later.',
+          },
+          {
+            src: '/media/bets-locked-in.png',
+            title: 'The fourth field, and the write',
+            caption:
+              'The stake typed in, and the same button now doing something. The row goes to Postgres and comes back carrying the id it was given, which the app puts at the head of the list rather than refetching — the ledger is ordered by created_at descending, so the newest wager is always the top of the page.',
+          },
+        ],
+      },
+      {
+        title: 'Settling a one-off',
+        caption:
+          'A One-Off resolves exactly once. Both names are buttons, and whichever gets pressed is the winner written against the row.',
+        steps: [
+          {
+            src: '/media/bets-settle.png',
+            title: 'Two buttons, one of them true',
+            caption:
+              'Active on the left with a button per side; Completed on the right, the winner written into the row and the badge turned green. The buttons are gone because the card renders them only while the status is Active — resolving has no undo in the UI, which is rather the point of having written the bet down.',
+          },
+        ],
+      },
+      {
+        title: 'The wager that never ends',
+        caption:
+          'The other kind. An Ongoing bet never resolves; it keeps a running tally per player that either side can add to, which is what a season-long argument actually looks like.',
+        steps: [
+          {
+            src: '/media/bets-ongoing.png',
+            title: 'Made as Ongoing',
+            caption:
+              'The type switcher decides what the card will be rather than how it looks: picking Ongoing stores type as Ongoing, and the card then renders a tally block instead of a pair of win buttons. It opens at 0–0 from a column default, not from anything the form sends.',
+          },
+          {
+            src: '/media/bets-tally.png',
+            title: 'Adding to it',
+            caption:
+              'Mira’s +1 pressed — 6 becomes 7, Theo stays on 4. Each side has its own column, its own button and its own counter, and no combination of presses ever moves the bet to Completed.',
+          },
+        ],
+      },
+      {
+        title: 'The ledger',
+        caption:
+          'One shared table, newest first, holding both kinds at once. There is no filter and no archive, so settling and deleting are the only two ways a wager leaves the page.',
+        steps: [
+          {
+            src: '/media/bets-ledger.png',
+            title: 'A settled bet, and then gone',
+            caption:
+              'The completed wager sitting at the bottom of the ledger, and the list immediately after it was deleted. Delete is per-card and takes effect on the first press — there is no confirmation, on a control that sits directly beneath the one that resolves the bet.',
+          },
+        ],
+      },
+    ],
+    note:
+      'The trailer at the top is built motion rather than app footage, and says so; everything below it is the real thing running. Every bet in either is invented, and it has to be: the real table is a ledger of wagers between me and my friends, so every name, stake and tally in it is theirs, and none of them agreed to appear on a public portfolio. So the wagers here are made up and so are the people — the same invented cast the Locked In captures use, on the same reasoning. My own name is the one real thing left, and only because it is already the title of this site. Nothing came out of the real project and nothing went into it: the build under capture is a copy of the app made outside its repository and compiled with synthetic Supabase credentials, the harness replaces fetch before any application code runs so the app issues exactly the five queries it always does and gets invented rows back, and every request to a Supabase host is intercepted and counted at two layers — the page and the network — with the run reporting the count and failing if it is not zero. The state changes are real writes rather than staged screens: the tally really goes from 6 to 7, the one-off really resolves, and the deleted bet is really gone from the rows behind it. One thing did change in the app itself, and it is worth naming: capturing it at phone width surfaced a react-native-web layout bug that put the second name field over the edge of the card, so the fix — a single minWidth — went into the real source before these were shot, rather than the screenshots being framed to hide it. Beyond that nothing is retouched; every screen, control and state is the app exactly as it runs.',
     repoNote: 'Private for now — it is wired to a shared Supabase project.',
   },
 ];
