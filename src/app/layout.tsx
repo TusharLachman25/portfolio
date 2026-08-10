@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
+import { SITE_URL } from "@/data/site";
 
 const display = Space_Grotesk({
   variable: "--font-display",
@@ -17,18 +18,31 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+const TITLE = "Tushar Lachman — Software, Data & AI/ML";
+
 const DESCRIPTION =
-  "Computer Science student at RMIT University, minoring in AI & Machine Learning. I build full-stack software end to end — including a medical practice platform sold on a paid monthly subscription and in daily clinical use in Jakarta.";
+  "Computer Science student at RMIT University, minoring in AI & Machine Learning, open to any tech role. Five products built end to end — including a medical practice platform sold on a paid monthly subscription and in daily clinical use in Jakarta.";
+
+/** One 1200×630 card for every page that doesn't set its own. Without it a
+ * pasted link renders as a bare grey box in LinkedIn, Slack and mail clients —
+ * which is most of the places this link actually gets shared. */
+const OG_IMAGE = {
+  url: "/og.png",
+  width: 1200,
+  height: 630,
+  alt: "Tushar Lachman — software, data and AI/ML. Five products built end to end.",
+};
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://tusharlachman.com"),
-  title: {
-    default: "Tushar Lachman — Software Engineer",
-    template: "%s — Tushar Lachman",
-  },
+  metadataBase: new URL(SITE_URL),
+  title: { default: TITLE, template: "%s — Tushar Lachman" },
   description: DESCRIPTION,
+  alternates: { canonical: "/" },
   keywords: [
+    "tech internship",
     "software engineering internship",
+    "data internship",
+    "machine learning internship",
     "graduate software engineer",
     "RMIT",
     "full-stack developer",
@@ -40,15 +54,19 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Tushar Lachman" }],
   openGraph: {
-    title: "Tushar Lachman — Software Engineer",
+    title: TITLE,
     description: DESCRIPTION,
     type: "website",
     locale: "en_AU",
+    siteName: "Tushar Lachman",
+    url: "/",
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tushar Lachman — Software Engineer",
+    title: TITLE,
     description: DESCRIPTION,
+    images: [OG_IMAGE],
   },
 };
 

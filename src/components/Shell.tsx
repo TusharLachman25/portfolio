@@ -259,7 +259,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <a className="nav" href={LINKEDIN} target="_blank" rel="noreferrer">
                 LinkedIn ↗
               </a>
-              <a className="nav" href={RESUME}>
+              <a className="nav" href={RESUME} target="_blank" rel="noreferrer">
                 Résumé ↓
               </a>
             </div>

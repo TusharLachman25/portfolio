@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { ACADEMIC, PROJECTS } from '@/data/projects';
-
-const BASE = 'https://tusharlachman.com';
+import { SITE_URL as BASE } from '@/data/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

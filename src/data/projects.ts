@@ -75,8 +75,22 @@ export interface Project {
   /** What is and isn't real in the captures. Kept deliberately — a recruiter
    * who spots invented data in a screenshot stops believing the rest of it. */
   note?: string;
+  /** Portrait phone captures need the full column width to stay legible; two of
+   * them side by side in a half-width cell are a pair of unreadable slivers. */
+  portraitShots?: boolean;
+  /** A word from whoever actually uses the thing. Only ever their real words —
+   * an unfilled testimonial renders nothing rather than something invented. */
+  testimonial?: { quote: string; attribution: string };
   repo?: string;
   repoNote?: string;
+}
+
+/** The first real screenshot of a project: a walked-through step where there is
+ * one, then a loose shot, then — only as a last resort — the trailer's poster.
+ * The poster is a designed title card with a play triangle on it, so using it
+ * as a thumbnail makes a project card read as a video rather than as software. */
+export function heroShot(p: Project): string | undefined {
+  return p.flows?.[0]?.steps[0]?.src ?? p.shots[0]?.src ?? p.trailerPoster;
 }
 
 export const PROJECTS: Project[] = [
@@ -324,6 +338,14 @@ export const PROJECTS: Project[] = [
     ],
     note:
       'All captured from the real app running in its demo mode, which starts with no database credentials at all: it skips the login and physically cannot reach the practice’s data. Every patient, message, invoice, claim and document here is invented — the eight demo patients the app ships with, plus stand-in rows written for the screens that normally read from the live backend, so they could be photographed without touching anything real. The insurance form is likewise a mock-up, drawn for the demo from an insurer that does not exist. The doctor’s own details are blurred wherever they appear: her name, the hospital she practises at, her registration and licence numbers, phone, bank accounts, email and signature seal. Beyond that nothing has been retouched — every layout, control and state is the software as it ships.',
+    // A word from the doctor who runs on this every day. Deliberately left unset
+    // until she has supplied and approved her own words — the sheet renders
+    // nothing at all rather than a placeholder that reads as a real quote.
+    // To turn it on, fill both fields:
+    //   testimonial: {
+    //     quote: '…her sentence, verbatim…',
+    //     attribution: 'Dr Varkha · family practice, Jakarta',
+    //   },
     repoNote: 'Private repository — it holds real clinical data. Walkthrough available on request.',
   },
   {
@@ -333,7 +355,7 @@ export const PROJECTS: Project[] = [
     tagline: 'One screen for tasks, calendar, health and money as an international student.',
     period: 'June 2026',
     kind: 'PERSONAL DASHBOARD',
-    status: '38 API endpoints',
+    status: 'In daily use — mine',
     role: 'Solo — design, build, ship',
     accent: '#22d3ee',
     logo: '/logos/jarvis.svg',
@@ -686,7 +708,8 @@ export const PROJECTS: Project[] = [
     ],
     note:
       'Every person in these captures is invented. Locked In is a social app, so its database is mostly other people — my friends’ names, their photographs and their actual sessions — and none of them agreed to appear on a public portfolio. So the squad here is made up, and so is everything attached to them: the workouts, durations, calories, points, leaderboard positions, comments, chat messages and notifications. The avatars are generated from each invented name’s initials rather than sourced from anywhere, and the images on the sessions are drawn from that session’s own numbers rather than being photographs of anyone. The uploaded watch screenshot is generated too, and says so on its face. Nothing came out of the real project: the web build under capture is compiled with synthetic Supabase credentials, the harness replaces fetch before any application code runs so the app issues exactly the queries it always does and gets invented rows back, and every request to a real Supabase host is intercepted and counted — a run that let one through would say so. Gemini is not called either; the extraction you see running is the app’s real code path against a stubbed reply. My own name is the one real thing left, and only because it is already the title of this site. The repository is not modified at all, and beyond the invented data nothing is retouched — every screen, control and state is the app exactly as it runs.',
-    repo: 'https://github.com/TusharLachman25/workout-tracker',
+    portraitShots: true,
+    repo: 'https://github.com/TusharLachman25/Locked-In',
   },
   {
     slug: 'ai-meal',
@@ -695,7 +718,7 @@ export const PROJECTS: Project[] = [
     tagline: 'Know what is in your pantry, what you can cook, and what it does to your macros.',
     period: 'February — March 2026',
     kind: 'DATA + AI TOOL',
-    status: '~3,500 lines of Python',
+    status: 'Runs locally, used weekly',
     role: 'Solo — schema, build, ship',
     accent: '#fbbf24',
     logo: '/logos/kitchen-os.svg',
@@ -734,7 +757,7 @@ export const PROJECTS: Project[] = [
     trailer: '/media/kitchenos-trailer.mp4',
     trailerPoster: '/media/kitchenos-trailer-poster.jpg',
     trailerNote:
-      'Twenty-four seconds on the one idea the schema exists for: a quantity that went down because something was cooked, not because anyone typed. Built as motion rather than screen-captured — every number in it is one the walkthrough underneath shows the app actually producing. Has sound.',
+      'Twenty-four seconds on the one idea the schema exists for: a quantity that went down because something was cooked, not because anyone typed. Built as motion rather than screen-captured — every number in it is one the walkthrough underneath shows the app actually producing.',
     video: '/media/kitchenos-demo.mp4',
     poster: '/media/kitchenos-demo-poster.jpg',
     videoNote:
@@ -918,9 +941,9 @@ export const PROJECTS: Project[] = [
     name: 'Bets — The Vault',
     short: 'Bets',
     tagline: 'The ledger for the handshake bets a friend group never writes down.',
-    period: '2026',
-    kind: 'SOCIAL MOBILE APP',
-    status: 'Two kinds of wager',
+    period: 'February 2026',
+    kind: 'SHARED LEDGER APP',
+    status: 'Shipped to the group',
     role: 'Solo — design and build',
     accent: '#a78bfa',
     logo: '/logos/bets.svg',
@@ -941,7 +964,7 @@ export const PROJECTS: Project[] = [
       'My friends and I bet on things constantly and then argue about who owes what. The Vault is the ledger: a wager is written down with its terms, both sides and the stake at the moment it is made, and it stays open until somebody settles it. The record exists before the argument does.',
     highlights: [
       'Two kinds of wager, and they behave differently. A One-Off resolves exactly once — you tap whoever won and it locks with the winner recorded against the bet. An Ongoing wager never resolves; it keeps a running tally per player that either side can add to, which is what a season-long argument actually looks like.',
-      'A bet is only valid if it is complete: description, both players and the stake are all required before it can be locked in, so the vague ones never make it into the ledger. It fails silently, though — the button simply does nothing — which is a real gap, and one the captures show rather than hide.',
+      'A bet is only valid if it is complete: description, both players and the stake are all required before it can be locked in, so the vague ones never make it into the ledger. It fails silently, though — the button simply does nothing — which is a real gap, and one the captures show rather than hide. The guard is one early return in addBet; the fix is to return which field is missing and mark it on the form, rather than treating "invalid" as a single unnamed state.',
       'The ledger is shared rather than per-device — every wager lives in Supabase, so both sides see the same open bets and the same settled ones.',
       'There are no accounts at all. No sign-in, no user table, and the players are just names typed into a field rather than users who exist somewhere. It was built for one group of friends and handed to them directly, so the app never had to answer “who are you” — everyone holding it sees the same single ledger. The Supabase client is configured with AsyncStorage for session persistence, which is dead configuration: nothing in the app ever signs anyone in.',
       'One React Native codebase produces both the Android APK, built through EAS and sent round the group, and a web build through react-native-web.',
@@ -954,7 +977,7 @@ export const PROJECTS: Project[] = [
     trailer: '/media/bets-trailer.mp4',
     trailerPoster: '/media/bets-trailer-poster.jpg',
     trailerNote:
-      'Twenty-three seconds on the reason the thing exists: a bet made out loud is an argument scheduled for later, and this is the record that gets there first. Built as motion rather than screen-captured, but not invented — the cards are redrawn from the app’s own colours, radii and type, and both wagers in it are the same invented ones the screenshots below use. Has sound.',
+      'Twenty-three seconds on the reason the thing exists: a bet made out loud is an argument scheduled for later, and this is the record that gets there first. Built as motion rather than screen-captured, but not invented — the cards are redrawn from the app’s own colours, radii and type, and both wagers in it are the same invented ones the screenshots below use.',
     video: '/media/bets-demo.mp4',
     poster: '/media/bets-demo-poster.jpg',
     videoNote:
@@ -1021,7 +1044,7 @@ export const PROJECTS: Project[] = [
             src: '/media/bets-ledger.png',
             title: 'A settled bet, and then gone',
             caption:
-              'The completed wager sitting at the bottom of the ledger, and the list immediately after it was deleted. Delete is per-card and takes effect on the first press — there is no confirmation, on a control that sits directly beneath the one that resolves the bet.',
+              'The completed wager sitting at the bottom of the ledger, and the list immediately after it was deleted. Delete is per-card and takes effect on the first press — there is no confirmation, on a control that sits directly beneath the one that resolves the bet. An undo toast would be the right fix rather than a confirm dialog: the mistake is rare, and a modal on every delete taxes the common case to guard the uncommon one.',
           },
         ],
       },

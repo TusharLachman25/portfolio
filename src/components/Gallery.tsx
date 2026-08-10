@@ -5,8 +5,11 @@ import type { Flow, Shot } from '@/data/projects';
 import { pad } from '@/lib/accent';
 
 /** Steps grouped under the feature they belong to. A project that hasn't been
- * walked through feature by feature passes a single unnamed group instead. */
-export function Gallery({ flows }: { flows: Flow[] }) {
+ * walked through feature by feature passes a single unnamed group instead.
+ *
+ * `portrait` widens the grid to one column: phone captures are tall and narrow,
+ * and two of them in a half-width cell are a pair of unreadable slivers. */
+export function Gallery({ flows, portrait }: { flows: Flow[]; portrait?: boolean }) {
   const [open, setOpen] = useState<number | null>(null);
 
   // The lightbox runs across every step on the page, so the arrow keys walk the
@@ -45,12 +48,12 @@ export function Gallery({ flows }: { flows: Flow[] }) {
 
   return (
     <>
-      {groups.map(({ flow, offset }) => {
+      {groups.map(({ flow, offset }, groupIndex) => {
         {/* Caption first, image second — you should know what you are about to
             look at before you look at it. Two up, so a nine-step feature is
             five rows rather than nine screenfuls. */}
         const grid = (
-          <div className="gallery">
+          <div className={portrait ? 'gallery gallery--portrait' : 'gallery'}>
             {flow.steps.map((step, i) => (
               <button key={step.src} className="figure" onClick={() => setOpen(offset + i)}>
                 <span className="figure__cap">
@@ -85,8 +88,13 @@ export function Gallery({ flows }: { flows: Flow[] }) {
         // <details> rather than React state: it collapses before hydration,
         // survives with JavaScript off, is keyboard-operable for free, and
         // keeps the images inside it from loading until someone asks for them.
+        //
+        // The first feature opens by default. Every group closed meant a page
+        // of grey bars where the screenshots should be — the strongest evidence
+        // on the sheet, behind a click nobody was told to make. One open group
+        // shows what the rest contain and still keeps the page short.
         return (
-          <details className="flow" key={flow.title}>
+          <details className="flow" key={flow.title} open={groupIndex === 0}>
             <summary className="flow__summary">
               <span className="flow__head">
                 <h3 className="flow__title">{flow.title}</h3>
@@ -109,6 +117,12 @@ export function Gallery({ flows }: { flows: Flow[] }) {
 
       {current && (
         <div className="lightbox" role="dialog" aria-modal="true" aria-label={current.title} onClick={close}>
+          {/* A phone has no Escape key, and the figure swallows taps so they
+              don't dismiss the image being read — without this button there is
+              no obvious way out on the device most people open this on. */}
+          <button className="lightbox__close" onClick={close} aria-label="Close image">
+            ✕
+          </button>
           <figure onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={current.src} alt={`${current.title} — ${current.caption}`} />
@@ -116,7 +130,11 @@ export function Gallery({ flows }: { flows: Flow[] }) {
               <span>{current.title}</span>
               <span style={{ opacity: 0.6 }}>
                 {(open ?? 0) + 1} / {all.length}
-                {all.length > 1 ? ' · ESC TO CLOSE · ← →' : ' · ESC TO CLOSE'}
+                {/* Hidden on touch by CSS: a phone has neither key, and the ✕
+                    above is the affordance there. */}
+                <span className="lightbox__keys">
+                  {all.length > 1 ? ' · ESC TO CLOSE · ← →' : ' · ESC TO CLOSE'}
+                </span>
               </span>
             </figcaption>
           </figure>

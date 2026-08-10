@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Sheet } from '@/components/Sheet';
-import { PROJECTS } from '@/data/projects';
+import { heroShot, PROJECTS } from '@/data/projects';
+import { imageSize } from '@/lib/imageSize';
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ slug: p.slug }));
@@ -16,15 +17,33 @@ export async function generateMetadata({
   const project = PROJECTS.find((p) => p.slug === slug);
   if (!project) return {};
 
+  // Search engines cut a description around 155 characters, so this takes whole
+  // sentences up to that length rather than slicing mid-word.
+  const description = clamp(`${project.tagline} ${project.blurb}`, 155);
+  const card = heroShot(project);
+
   return {
     title: project.name,
-    description: `${project.tagline} ${project.blurb.slice(0, 160)}`,
+    description,
+    alternates: { canonical: `/work/${project.slug}` },
     openGraph: {
+      type: 'article',
+      url: `/work/${project.slug}`,
       title: `${project.name} — Tushar Lachman`,
       description: project.tagline,
-      images: project.shots[0]?.src ?? project.trailerPoster,
+      images: card,
     },
+    twitter: { card: 'summary_large_image', images: card },
   };
+}
+
+/** Trim to whole sentences within `max`, falling back to a word boundary. */
+function clamp(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const head = text.slice(0, max);
+  const lastStop = head.lastIndexOf('. ');
+  if (lastStop > max * 0.5) return head.slice(0, lastStop + 1);
+  return `${head.slice(0, head.lastIndexOf(' '))}…`;
 }
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -35,6 +54,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   const project = PROJECTS[index];
   const next = PROJECTS[(index + 1) % PROJECTS.length];
   const prev = PROJECTS[(index - 1 + PROJECTS.length) % PROJECTS.length];
+  const panel = heroShot(project);
 
   return (
     <Sheet
@@ -53,10 +73,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       stack={project.stack}
       metrics={project.metrics}
       notes={project.highlights}
-      panel={project.flows?.[0]?.steps[0]?.src ?? project.shots[0]?.src ?? project.trailerPoster}
+      panel={panel}
+      panelSize={panel ? imageSize(panel) : undefined}
       shots={project.shots}
       flows={project.flows}
+      portraitShots={project.portraitShots}
       mediaNote={project.note}
+      testimonial={project.testimonial}
       trailer={project.trailer}
       trailerPoster={project.trailerPoster}
       trailerNote={project.trailerNote}
@@ -71,11 +94,6 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       nextHref={`/work/${next.slug}`}
       nextName={next.name}
       nextAccent={next.accent}
-      moreToAdd={
-        project.shots.length === 0
-          ? 'No screenshots on file for this one yet — it is the smallest thing here and the only one without captures. The write-up above is from the source.'
-          : undefined
-      }
     />
   );
 }

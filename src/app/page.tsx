@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { CopyEmailButton } from '@/components/CopyEmailButton';
-import { ACADEMIC, PROJECTS, type AcademicItem, type Project } from '@/data/projects';
+import { ACADEMIC, heroShot, PROJECTS, type AcademicItem, type Project } from '@/data/projects';
 import {
+  DISCIPLINE,
   EDUCATION,
   EMAIL,
+  GITHUB,
   GRAD_FROM,
   HERO_STATS,
   LINKEDIN,
@@ -11,6 +13,8 @@ import {
   SKILLS,
   SUMMER_INTERNSHIP,
   TITLE_BLOCK,
+  type Unit,
+  WORK_RIGHTS,
 } from '@/data/site';
 import { accentVars, pad } from '@/lib/accent';
 
@@ -19,9 +23,12 @@ export default function Home() {
     <main>
       {/* Hidden on phones, where the app bar above it already says who this is
           and two stacked sticky headers eat a third of the screen. */}
+      {/* The right-hand slot deliberately doesn't repeat the availability pill
+          sitting 60px below it in the hero — two near-identical lines that close
+          together read as a template, not as emphasis. */}
       <div className="stickybar stickybar--home">
-        <span className="eyebrow mono">TUSHAR LACHMAN — SOFTWARE ENGINEER</span>
-        <span className="eyebrow eyebrow--dim mono">OPEN TO INTERNSHIPS &amp; GRAD ROLES</span>
+        <span className="eyebrow mono">TUSHAR LACHMAN — {DISCIPLINE.toUpperCase()}</span>
+        <span className="eyebrow eyebrow--dim mono">MELBOURNE · RMIT, GRADUATING JULY 2027</span>
       </div>
 
       <Hero />
@@ -68,24 +75,24 @@ function Hero() {
         <div>
           <p className="available mono" style={{ margin: 0 }}>
             <span className="available__dot" aria-hidden />
-            <span className="available__text">AVAILABLE FOR INTERNSHIPS &amp; GRADUATE ROLES</span>
+            <span className="available__text">OPEN TO SOFTWARE, DATA &amp; AI/ML ROLES</span>
           </p>
           <h1 className="hero-title">Tushar Lachman</h1>
           <p className="hero-lead">
-            I build full-stack software end to end — and then get it into people&rsquo;s hands.{' '}
-            <strong>One of these runs a Jakarta medical practice every day, on a paid monthly subscription.</strong>
+            I build software end to end — and then get it into people&rsquo;s hands.{' '}
+            <strong>One of them runs a family practice in Jakarta every day, on a paid monthly subscription.</strong>
           </p>
           <p className="hero-sub">
             Computer Science at RMIT, minoring in AI &amp; Machine Learning. Most of what I build starts as a problem I
-            actually have. Free for a summer internship from {SUMMER_INTERNSHIP}, and for a graduate role from{' '}
-            {GRAD_FROM}.
+            actually have. Open to any tech role — software, data, ML, platform, QA or product — as a summer intern
+            over {SUMMER_INTERNSHIP}, or a graduate from {GRAD_FROM}.
           </p>
           <div className="actions">
             <a href="#work" className="btn-solid">
               See the work&nbsp;↓
             </a>
             <CopyEmailButton />
-            <a href={RESUME} className="link-mono mono">
+            <a href={RESUME} className="link-mono mono" target="_blank" rel="noreferrer">
               RÉSUMÉ ↓
             </a>
           </div>
@@ -115,7 +122,7 @@ function Hero() {
 }
 
 function SheetCard({ project, index }: { project: Project; index: number }) {
-  const thumb = project.shots[0]?.src ?? project.trailerPoster;
+  const thumb = heroShot(project);
 
   return (
     <Link href={`/work/${project.slug}`} className="sheet-card" style={accentVars(project.accent)} data-reveal>
@@ -206,12 +213,21 @@ function AcademicCard({ item }: { item: AcademicItem }) {
 }
 
 function Education() {
+  const total = EDUCATION.completed.length + EDUCATION.current.length;
+  const highDistinctions = EDUCATION.completed.filter((u) => u.hd).length;
+
+  // One list, not three. Which year a unit was taken in tells a recruiter
+  // nothing; what the degree has actually covered tells them everything. The
+  // only split kept is done versus still running, because claiming a unit is
+  // finished mid-semester would not be true.
   return (
     <section id="education" className="wrap section" data-reveal>
       <div className="rule-head">
         <h2 className="mono">EDUCATION</h2>
         <span className="rule" />
-        <span className="eyebrow eyebrow--dim mono">COURSEWORK COVERED</span>
+        <span className="eyebrow eyebrow--dim mono">
+          {total} UNITS · {highDistinctions} HIGH DISTINCTIONS
+        </span>
       </div>
       <div className="panel">
         <div className="edu__head">
@@ -223,22 +239,30 @@ function Education() {
           </div>
           <span className="edu__when mono">{EDUCATION.period}</span>
         </div>
-        {EDUCATION.years.map((year) => (
-          <div className="edu__row" key={year.label}>
-            <span className="edu__year mono">
-              {year.label} · {year.year}
-            </span>
-            <div className="edu__courses">
-              {year.courses.map((course) => (
-                <span className="tag mono" key={course}>
-                  {course}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
+        <UnitRow label="COMPLETED" units={EDUCATION.completed} />
+        <UnitRow label="IN PROGRESS" units={EDUCATION.current} />
       </div>
     </section>
+  );
+}
+
+function UnitRow({ label, units }: { label: string; units: Unit[] }) {
+  return (
+    <div className="edu__row">
+      <span className="edu__year mono">
+        {label}
+        <span className="edu__count">{pad(units.length)}</span>
+      </span>
+      <div className="edu__courses">
+        {units.map((unit) => (
+          <span className={`tag tag--unit mono${unit.hd ? ' tag--hd' : ''}`} key={unit.code}>
+            <span className="tag__code">{unit.code}</span>
+            {unit.name}
+            {unit.hd && <span className="tag__hd">HD</span>}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -266,16 +290,21 @@ function Closing() {
     <section id="contact" className="wrap section--close closing" data-reveal>
       <h2>Let&rsquo;s build something that ships.</h2>
       <p>
-        I&rsquo;m looking for a software engineering internship over the {SUMMER_INTERNSHIP} summer, or a graduate role
-        from {GRAD_FROM}. Happy to walk through any of the private projects in detail — architecture, trade-offs, the
-        parts that went wrong.
+        I&rsquo;m after a summer internship over {SUMMER_INTERNSHIP} and a graduate role from {GRAD_FROM}, and
+        I&rsquo;m not precious about which corner of the stack it&rsquo;s in — software, data, ML, platform, QA or
+        product. Happy to walk through any of the private projects in detail: architecture, trade-offs, the parts that
+        went wrong.
       </p>
+      <p className="closing__rights">{WORK_RIGHTS}</p>
       <div className="actions">
         <CopyEmailButton className="btn-accent" />
         <a className="btn-outline" href={LINKEDIN} target="_blank" rel="noreferrer">
           LinkedIn
         </a>
-        <a className="btn-outline" href={RESUME}>
+        <a className="btn-outline" href={GITHUB} target="_blank" rel="noreferrer">
+          GitHub
+        </a>
+        <a className="btn-outline" href={RESUME} target="_blank" rel="noreferrer">
           Résumé ↓
         </a>
       </div>

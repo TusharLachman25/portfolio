@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Flow, Metric, Shot } from '@/data/projects';
 import { accentVars, pad } from '@/lib/accent';
+import { CopyEmailButton } from './CopyEmailButton';
 import { Gallery } from './Gallery';
 
 export interface SheetView {
@@ -25,10 +26,16 @@ export interface SheetView {
   notes: string[];
   /** Hero screenshot, framed in browser chrome. */
   panel?: string;
+  /** Its intrinsic size, so the hero reserves the right box before it loads. */
+  panelSize?: { width: number; height: number };
   shots: Shot[];
   /** Feature-by-feature sequences; where present they replace `shots`. */
   flows?: Flow[];
+  /** Portrait phone captures, which need the full width to stay readable. */
+  portraitShots?: boolean;
   mediaNote?: string;
+  /** A word from whoever uses the thing. Rendered only when it exists. */
+  testimonial?: { quote: string; attribution: string };
   trailer?: string;
   trailerPoster?: string;
   trailerNote?: string;
@@ -68,6 +75,9 @@ export function Sheet(view: SheetView) {
             <span className="figure__head">
               <span className="figure__fig mono">TRAILER</span>
               <span className="figure__title">The short, edited version</span>
+              {/* Every trailer is scored; the walkthroughs are silent. Saying so
+                  once here beats repeating it in five hand-written notes. */}
+              <span className="figure__sound mono">♪ SOUND ON</span>
             </span>
             <span className="figure__desc">
               {view.trailerNote ?? 'A short, edited tour of the product, cut from footage of the real thing running.'}
@@ -113,7 +123,7 @@ export function Sheet(view: SheetView) {
             : 'CLICK TO ENLARGE'}
         </span>
       </div>
-      <Gallery flows={flows} />
+      <Gallery flows={flows} portrait={view.portraitShots} />
       {view.mediaNote && (
         <div className="footnote">
           <span aria-hidden>*</span>
@@ -134,8 +144,11 @@ export function Sheet(view: SheetView) {
           <span className="crumb__here">{view.name}</span>
         </div>
         <div className="pager">
+          {/* One-based: "00 / 04" on the first of five reads as though one is
+              missing. The sheets number themselves from 00 elsewhere, but a
+              position counter is not a label. */}
           <span className="eyebrow eyebrow--dim mono">
-            {pad(view.index)} / {pad(view.total - 1)}
+            {pad(view.index + 1)} / {pad(view.total)}
           </span>
           <Link className="pager__btn" href={view.prevHref} aria-label="Previous">
             ←
@@ -183,8 +196,16 @@ export function Sheet(view: SheetView) {
                   <span />
                   <span />
                 </div>
+                {/* The one eagerly-loaded image on the page, so it carries its
+                    real intrinsic size — without it the hero reflows the moment
+                    the screenshot lands. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={view.panel} alt={`${view.name} — screenshot`} />
+                <img
+                  src={view.panel}
+                  alt={`${view.name} — screenshot`}
+                  width={view.panelSize?.width}
+                  height={view.panelSize?.height}
+                />
               </div>
             </div>
           ) : (
@@ -218,6 +239,17 @@ export function Sheet(view: SheetView) {
         <div className="why__label mono">WHY IT EXISTS</div>
         <p>{view.blurb}</p>
       </section>
+
+      {/* Only ever rendered from real supplied words — an absent testimonial is
+          an absent section, never a placeholder that reads like a quote. */}
+      {view.testimonial && (
+        <section className="wrap sheet-section" data-reveal>
+          <figure className="quote">
+            <blockquote>{view.testimonial.quote}</blockquote>
+            <figcaption className="mono">{view.testimonial.attribution}</figcaption>
+          </figure>
+        </section>
+      )}
 
       {/* Architecture before the hard parts: the notes below refer to layers by
           name, so the shape of the system has to be on screen first. */}
@@ -301,6 +333,18 @@ export function Sheet(view: SheetView) {
             </p>
           </div>
         )}
+      </section>
+
+      {/* The next-project band loops forever, so without this a visitor who
+          reads every sheet is never once asked to get in touch. */}
+      <section className="wrap sheet-section" data-reveal>
+        <div className="askrow">
+          <p className="askrow__text">
+            Want the parts that aren&rsquo;t on this page — the architecture arguments, the things that broke, a live
+            walkthrough?
+          </p>
+          <CopyEmailButton className="btn-accent" />
+        </div>
       </section>
 
       <Link href={view.nextHref} className="nextband">
