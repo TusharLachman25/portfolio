@@ -145,7 +145,7 @@ export const PROJECTS: Project[] = [
       'Nothing is signed until she has read it — the signature and stamp go on only at the moment of approval, so a signed claim she has not seen cannot exist.',
       'Documents carry a server-assigned sequential number issued from an atomic counter, so paperwork cannot be forged or duplicated.',
       'The document templates live in one shared package because they used to be a copy each. The dashboard learned to take the signature and stamp from Settings and the phone app did not, so the same prescription carried a different seal depending on which one produced it. Sharing the code was the fix; the bug is the reason the package exists.',
-      'A second Android app, “Varkha Documents”, that writes one document and shares it and can do nothing else — installed alongside the dashboard, with its own icon and session, for the times she needs a prescription on a phone and nothing more.',
+      'A second Android app, the practice’s own “Documents”, that writes one document and shares it and can do nothing else — installed alongside the dashboard, with its own icon and session, for the times she needs a prescription on a phone and nothing more.',
       'WhatsApp Business through Twilio for bilingual invoices, prescriptions, reminders, appointment booking and claim intake, in English and Bahasa Indonesia.',
       'Notifications land where they can actually be seen: an in-app bell on the laptop, because the dashboard is already open and a popup would interrupt a consult, and Android push through Firebase for the phone, which is usually closed. Every kind can be switched off per channel.',
       'Claude runs as an eight-tool assistant that books appointments, produces documents and drafts consultation reports and medical certificates — always proposing, never committing, until she approves.',
@@ -344,7 +344,7 @@ export const PROJECTS: Project[] = [
     // To turn it on, fill both fields:
     //   testimonial: {
     //     quote: '…her sentence, verbatim…',
-    //     attribution: 'Dr Varkha · family practice, Jakarta',
+    //     attribution: 'The doctor · family practice, Jakarta',
     //   },
     repoNote: 'Private repository — it holds real clinical data. Walkthrough available on request.',
   },

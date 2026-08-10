@@ -24,7 +24,7 @@ appears — there is no code to change.**
 Three of these screens contain **real private data**. Do not publish them as-is:
 
 - **Jarvis** shows your actual bank balances, tuition, remittances, Gmail and health data. Seed it with fake numbers before capturing anything.
-- **The medical platform** contains patient information (PHI) and Dr Varkha's registration numbers, signature seal, phone and bank details. Ask her permission first, use invented demo patients, and blur or replace her credentials and account numbers.
+- **The medical platform** contains patient information (PHI) and the doctor's registration numbers, signature seal, phone and bank details. Ask her permission first, use invented demo patients, and blur or replace her credentials and account numbers.
 - **Locked In** shows your friends' names, photos and profiles. Ask them, or capture with test accounts.
 
 Never publish a real patient record, even redacted.
