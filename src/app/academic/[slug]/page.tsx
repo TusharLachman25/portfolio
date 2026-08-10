@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Sheet } from '@/components/Sheet';
 import { ACADEMIC } from '@/data/projects';
+import { imageSize } from '@/lib/imageSize';
 
 /** Every academic unit shares one accent — they belong to the degree rather
- * than to five separate products, and giving each its own colour would make
+ * than to seven separate products, and giving each its own colour would make
  * coursework read as loud as the shipped work. */
 const ACADEMIC_ACCENT = '#818cf8';
 
@@ -40,6 +41,12 @@ export default async function AcademicPage({ params }: { params: Promise<{ slug:
   const next = ACADEMIC[(index + 1) % ACADEMIC.length];
   const prev = ACADEMIC[(index - 1 + ACADEMIC.length) % ACADEMIC.length];
 
+  // Two units produced real figures; the other five produced a report and a
+  // grade. Where figures exist the first one leads the sheet, and where they
+  // don't the hero says so rather than reaching for a stock image.
+  const shots = item.shots ?? [];
+  const panel = shots[0]?.src;
+
   return (
     <Sheet
       crumb="Academic projects"
@@ -56,15 +63,20 @@ export default async function AcademicPage({ params }: { params: Promise<{ slug:
       stack={item.stack}
       metrics={[]}
       notes={item.points}
-      shots={[]}
-      repoNote="Coursework — repository and report available on request."
+      panel={panel}
+      panelSize={panel ? imageSize(panel) : undefined}
+      shots={shots}
+      mediaNote={
+        shots.length > 0
+          ? 'Every figure here was written by the project’s own code — matplotlib and seaborn output from the notebook and the experiment scripts, exported unedited. Nothing on this page is a mock-up or a redrawing.'
+          : undefined
+      }
       index={index}
       total={ACADEMIC.length}
       prevHref={`/academic/${prev.slug}`}
       nextHref={`/academic/${next.slug}`}
       nextName={next.name}
       nextAccent={ACADEMIC_ACCENT}
-      moreToAdd="Coursework, so the code and the marked report stay with RMIT rather than on GitHub. Happy to walk through either."
     />
   );
 }

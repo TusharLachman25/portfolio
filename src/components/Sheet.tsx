@@ -161,7 +161,10 @@ export function Sheet(view: SheetView) {
 
       <header className="sheet-hero">
         <div className="sheet-hero__wash" aria-hidden />
-        <div className="sheet-hero__grid">
+        {/* Without a hero image the second column is dropped rather than
+            filled: a placeholder announcing an absence is louder than the
+            absence, and the title reads better across the full width. */}
+        <div className={view.panel ? 'sheet-hero__grid' : 'sheet-hero__grid sheet-hero__grid--solo'}>
           <div style={{ minWidth: 0, maxWidth: 640 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 11, flexWrap: 'wrap' }}>
               <span className="kicker mono">{view.kind}</span>
@@ -188,7 +191,7 @@ export function Sheet(view: SheetView) {
             </div>
           </div>
 
-          {view.panel ? (
+          {view.panel && (
             <div className="frame">
               <div className="frame__inner">
                 <div className="frame__bar" aria-hidden>
@@ -206,13 +209,6 @@ export function Sheet(view: SheetView) {
                   width={view.panelSize?.width}
                   height={view.panelSize?.height}
                 />
-              </div>
-            </div>
-          ) : (
-            <div className="dashed">
-              <div>
-                <div className="dashed__label mono">NO CAPTURES YET</div>
-                <p>This one has no screenshots on file. Happy to demo it live.</p>
               </div>
             </div>
           )}
@@ -287,16 +283,23 @@ export function Sheet(view: SheetView) {
               <dd>{view.period}</dd>
               <dt className="mono">ROLE</dt>
               <dd>{view.role}</dd>
-              <dt className="mono">SOURCE</dt>
-              <dd>
-                {view.repo ? (
-                  <a href={view.repo} target="_blank" rel="noreferrer">
-                    View on GitHub ↗
-                  </a>
-                ) : (
-                  view.repoNote
-                )}
-              </dd>
+              {/* A sheet with neither a repository nor a word about why omits
+                  the row entirely — an empty SOURCE line reads as a broken
+                  link rather than as an absence of one. */}
+              {(view.repo || view.repoNote) && (
+                <>
+                  <dt className="mono">SOURCE</dt>
+                  <dd>
+                    {view.repo ? (
+                      <a href={view.repo} target="_blank" rel="noreferrer">
+                        View on GitHub ↗
+                      </a>
+                    ) : (
+                      view.repoNote
+                    )}
+                  </dd>
+                </>
+              )}
             </dl>
           </div>
         </div>

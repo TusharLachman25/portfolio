@@ -1597,6 +1597,11 @@ button {
   max-width: 1400px;
   gap: clamp(26px, 3.4vw, 44px);
 }
+/* No hero image: one column, so the title block isn't pinned to the left half
+   of the page with nothing beside it. */
+.sheet-hero__grid--solo {
+  grid-template-columns: minmax(0, 1fr);
+}
 
 .kicker {
   display: inline-flex;
@@ -1672,27 +1677,13 @@ button {
   display: block;
 }
 
-.dashed {
-  border: 1px dashed var(--bd-2);
-  border-radius: 18px;
-  padding: 36px;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  min-width: 0;
-}
+/* Sole survivor of the old empty-hero placeholder: still the label style for
+   the "more to add" slot on a sheet. */
 .dashed__label {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.19em;
   color: var(--accent);
-}
-.dashed p {
-  margin: 12px 0 0;
-  max-width: 280px;
-  font-size: 14px;
-  line-height: 1.62;
-  color: var(--ink-3);
 }
 
 .band {
