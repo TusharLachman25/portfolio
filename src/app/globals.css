@@ -827,6 +827,29 @@ button {
   align-items: end;
 }
 
+/* The one photograph on the site. Sized so it introduces a person without
+   competing with the name underneath it — a portrait big enough to be a
+   headshot would make the hero about the face rather than the work. */
+.portrait {
+  display: block;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 0 22px;
+  border: 2px solid color-mix(in srgb, var(--brand-hi) 55%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--brand) 10%, transparent),
+    0 10px 26px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 779px) {
+  .portrait {
+    width: 84px;
+    height: 84px;
+    margin-bottom: 18px;
+  }
+}
+
 .available {
   display: flex;
   align-items: center;

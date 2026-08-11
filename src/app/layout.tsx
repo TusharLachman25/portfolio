@@ -43,7 +43,7 @@ const DESCRIPTION =
  * keeps showing the old card to anyone who has already been sent the link.
  * Bump it whenever the card changes. */
 const OG_IMAGE = {
-  url: "/og.png?v=2",
+  url: "/og.png?v=3",
   width: 1200,
   height: 630,
   alt: "Tushar Lachman — software, data and AI/ML. Five products built end to end.",

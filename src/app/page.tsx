@@ -73,6 +73,17 @@ function Hero() {
     <section className="wrap section--lead">
       <div className="hero-grid">
         <div>
+          {/* Above the fold and never lazy-loaded, so it carries its intrinsic
+              size — a portrait that pops in after the text has settled shoves
+              the whole hero down. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="portrait"
+            src="/tushar-lachman.jpg"
+            alt="Tushar Lachman"
+            width={512}
+            height={512}
+          />
           <p className="available mono" style={{ margin: 0 }}>
             <span className="available__dot" aria-hidden />
             <span className="available__text">OPEN TO SOFTWARE, DATA &amp; AI/ML ROLES</span>
