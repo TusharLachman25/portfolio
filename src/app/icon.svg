@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="TL">
+  <!-- The same monogram as the sidebar mark and the OG card, so the tab, the
+       site and a pasted link all carry one identity. Geometry mirrors .mark in
+       globals.css: a 32%-radius tile under a 140deg #0ea5e9 → #22d3ee gradient
+       with the letters knocked out in the near-black ink.
+
+       The letters are rectangles rather than <text> on purpose. A favicon is
+       rendered without the page's webfonts, so Space Grotesk would silently
+       fall back to whatever the OS has and the mark would shift shape between
+       machines. Drawn strokes look identical everywhere and cost fewer bytes. -->
+  <defs>
+    <linearGradient id="tl" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="20" fill="url(#tl)"/>
+
+  <!-- Cap height 16→48, stroke 8, the pair centred as a unit across x 10→54.
+       Deliberately tighter margins than the sidebar mark: that one sits in 34
+       comfortable pixels, whereas a favicon is judged at 16, where padding is
+       the first thing to spend and stroke weight the last. -->
+  <g fill="#04121a">
+    <rect x="10"   y="16" width="23" height="8"  rx="1.8"/>
+    <rect x="17.5" y="16" width="8"  height="32" rx="1.8"/>
+    <rect x="36"   y="16" width="8"  height="32" rx="1.8"/>
+    <rect x="36"   y="40" width="18" height="8"  rx="1.8"/>
+  </g>
+</svg>

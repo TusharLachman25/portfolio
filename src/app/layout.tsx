@@ -18,6 +18,13 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+/** What the browser tab says. Kept short because a tab strip truncates hard —
+ *  a title carrying the discipline line loses it to an ellipsis anyway. */
+const TAB_TITLE = "Tushar Lachman Portfolio";
+
+/** What a pasted link says, which is a different job: the tab is read by
+ *  someone already here, the card by someone deciding whether to come. That one
+ *  gets the discipline line, since it is the first filter a recruiter applies. */
 const TITLE = "Tushar Lachman — Software, Data & AI/ML";
 
 const DESCRIPTION =
@@ -35,7 +42,7 @@ const OG_IMAGE = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: TITLE, template: "%s — Tushar Lachman" },
+  title: { default: TAB_TITLE, template: "%s — Tushar Lachman" },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   keywords: [
