@@ -1318,7 +1318,7 @@ export const ACADEMIC: AcademicItem[] = [
     blurb:
       'A C++ program that builds mazes inside a running Minecraft world through the mcpp API and then helps a player find the way out again. The two halves are chosen to fit each other: Recursive Division carves the maze, and Wall Follower solves it. The same unit carried a separate LC-3 assembly component underneath.',
     points: [
-      'Recursive Division generates a *perfect* maze — no loops, and exactly one path between any two cells — by repeatedly splitting the region with a wall and knocking a single gap in it.',
+      'Recursive Division generates a perfect maze — the term of art for one with no loops, and exactly one path between any two cells — by repeatedly splitting the region with a wall and knocking a single gap in it.',
       'Wall Follower solves it, and the pairing is the point rather than a coincidence: keeping one hand on the wall is guaranteed to reach the exit only when the maze is simply connected, which is exactly what Recursive Division produces. Add one loop to the maze and the same solver can circle inside it forever.',
       'The maze is built in a real world rather than an empty grid, so the terrain is flattened first — the ground Minecraft supplies is not level, and a wall placed on a slope stops being a wall.',
       'Construction is dynamic and three-dimensional through the mcpp API: the maze is placed into the live world as blocks, and a player walks the same structure the algorithm just generated.',
