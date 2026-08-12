@@ -1,6 +1,6 @@
 export const EMAIL = 'tusharbudhrani@gmail.com';
 export const GITHUB = 'https://github.com/TusharLachman25';
-export const LINKEDIN = 'https://www.linkedin.com/in/tusharlachman-505264345';
+export const LINKEDIN = 'https://www.linkedin.com/in/tusharlachman';
 export const RESUME = '/Tushar-Lachman-Resume.pdf';
 
 /** Canonical origin. Everything that needs an absolute URL — metadata, the
