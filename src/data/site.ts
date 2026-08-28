@@ -1,7 +1,12 @@
 export const EMAIL = 'tusharbudhrani@gmail.com';
 export const GITHUB = 'https://github.com/TusharLachman25';
 export const LINKEDIN = 'https://www.linkedin.com/in/tusharlachman';
-export const RESUME = '/Tushar-Lachman-Resume.pdf';
+/** The one-page cut, not the two-page one. Everything this link is reached
+ * from — the hero, the sidebar, the ⌘K palette — is someone deciding in a few
+ * seconds whether to keep reading, and plenty of graduate and internship
+ * postings ask for one page outright. The long version is still built and
+ * still deployed at /Tushar-Lachman-Resume.pdf for anyone sent it directly. */
+export const RESUME = '/Tushar-Lachman-Resume-1-page.pdf';
 
 /** Canonical origin. Everything that needs an absolute URL — metadata, the
  * sitemap, robots.txt — reads it from here so the three can never disagree. */
