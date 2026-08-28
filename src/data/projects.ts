@@ -83,6 +83,10 @@ export interface Project {
   testimonial?: { quote: string; attribution: string };
   repo?: string;
   repoNote?: string;
+  /** Copy for the dashed "more to add" slot at the foot of the sheet. Only for
+   * a gap worth naming outright — a project whose captures do not exist yet
+   * reads better saying so than leaving a reader to wonder where they went. */
+  moreToAdd?: string;
 }
 
 /** The first real screenshot of a project: a walked-through step where there is
@@ -108,13 +112,14 @@ export const PROJECTS: Project[] = [
     layers: [
       'React + Vite dashboard (TypeScript)',
       'Two Android apps wrapped with Capacitor',
-      '66 Deno edge functions — the only privileged write path',
-      'PostgreSQL on Supabase · 31 migrations',
-      'Claude assistant with eight tools, behind approval',
+      '73 Deno edge functions — the only privileged write path',
+      'PostgreSQL on Supabase · 39 migrations · RLS on every table',
+      'Claude assistant with 38 tools, behind approval',
       'WhatsApp Business via Twilio',
       'Google Drive + Calendar (service account and OAuth)',
       'Firebase Cloud Messaging push · in-app bell',
-      '269 unit tests across 17 files',
+      'Nightly database backup to Drive · 30 copies kept',
+      '637 unit tests across 39 files',
     ],
     stack: [
       'React',
@@ -131,16 +136,17 @@ export const PROJECTS: Project[] = [
       'Vitest',
     ],
     metrics: [
-      { value: '66', label: 'edge functions' },
-      { value: '31', label: 'migrations' },
-      { value: '269', label: 'unit tests' },
-      { value: '2', label: 'android apps' },
+      { value: '73', label: 'edge functions' },
+      { value: '39', label: 'migrations' },
+      { value: '637', label: 'unit tests' },
+      { value: '38', label: 'assistant tools' },
     ],
     blurb:
       'I spent three years as a medical assistant digitising patient records by hand. This is the software that replaced that job. It started as something I built for myself to use, and the practice now licenses it on a paid monthly subscription — patients, appointments, billing, insurance claims, clinical documents and messaging in one place, on the web and on Android.',
     highlights: [
-      'A TypeScript monorepo on npm workspaces: a React dashboard, a second Android app, a shared package holding the document templates, and a standalone ingestion tool — 66 serverless Deno edge functions and 31 PostgreSQL migrations behind them, covered by 269 unit tests.',
-      'The browser only ever holds the read-only anon key. Every write goes through an edge function, so the privileged path is a list of 66 named operations rather than a database the client can reach — a stolen key from a laptop in a consulting room reads nothing it should not and writes nothing at all.',
+      'A TypeScript monorepo on npm workspaces: a React dashboard, a second Android app, a shared package holding the document templates, and a standalone ingestion tool — around 51,000 lines across 356 files, with 73 serverless Deno edge functions and 39 PostgreSQL migrations behind them, covered by 637 unit tests.',
+      'The browser only ever holds the read-only anon key. Every write goes through an edge function, so the privileged path is a list of 73 named operations rather than a database the client can reach — a stolen key from a laptop in a consulting room reads nothing it should not and writes nothing at all.',
+      'That was the design, and for a while it was not what was actually running. A migration had converted every “allow read for all” policy to an authenticated-only one, but on the live database row-level security was switched off — and a policy on a table with RLS off is inert. Measured with nothing but the public anon key, no login and no session, eleven tables still answered: patients, medical records, history events, billing, files, generated documents, WhatsApp messages and four more. One of those rows was a real patient’s name, and that key ships inside the client bundle. The fix re-asserts the same expression the working tables already use, every step idempotent so it converges from any starting point, and turns RLS back on first — which was the step doing the real work.',
       'An insurance claims module that fills insurers’ own reimbursement forms rather than producing a lookalike: PDFs with real form fields are filled by name, and scanned or photographed ones by a percentage-based coordinate map that survives a re-scan at any size.',
       'Nothing is signed until she has read it — the signature and stamp go on only at the moment of approval, so a signed claim she has not seen cannot exist.',
       'Documents carry a server-assigned sequential number issued from an atomic counter, so paperwork cannot be forged or duplicated.',
@@ -148,9 +154,25 @@ export const PROJECTS: Project[] = [
       'A second Android app, the practice’s own “Documents”, that writes one document and shares it and can do nothing else — installed alongside the dashboard, with its own icon and session, for the times she needs a prescription on a phone and nothing more.',
       'WhatsApp Business through Twilio for bilingual invoices, prescriptions, reminders, appointment booking and claim intake, in English and Bahasa Indonesia.',
       'Notifications land where they can actually be seen: an in-app bell on the laptop, because the dashboard is already open and a popup would interrupt a consult, and Android push through Firebase for the phone, which is usually closed. Every kind can be switched off per channel.',
-      'Claude runs as an eight-tool assistant that books appointments, produces documents and drafts consultation reports and medical certificates — always proposing, never committing, until she approves.',
-      'Patient files are never committed and never cached locally. Google Drive is the authoritative store through a service account; Supabase holds only the structured data extracted alongside it.',
-      'The tests are pure logic by design — scheduling, date maths across the Jakarta timezone, document rendering — and linting is deliberately kept out of the build, because a lint error should never be the reason a document cannot be issued.',
+      'She sees patients in person at a partner hospital from four to six, and online by video from four to nine — twenty minutes for an in-person visit, thirty for an online one. None of that could be said: there was one `weekly_hours` column and every booking path wrote a hardcoded thirty minutes. So every online patient who asked for anything after six was told the practice was closed, which it is not — a booking simply lost, and lost by the WhatsApp assistant unattended, at a time of day she would never see it happen. In the other direction each in-person visit reserved half an hour of a two-hour afternoon, holding ten minutes nobody could be booked into, six times over.',
+      'What splits is the open hours and the appointment length, and nothing else. She is still one person, so the diary stays shared: everything on the calendar is busy time for both, and a 4:20 in-person visit blocks the 4:00 online slot that would have run over it. Refusals name the kind, because “that’s outside her working hours” was true of one schedule and false of the other — “outside her in-person hours, she may still be free online then” is a sentence the assistant can act on. And setting a weekly schedule now requires naming which one: picking silently would write the change to a week she never mentioned and leave the other, quite possibly the one she meant, wrong.',
+      'Claude now runs the practice with her rather than beside it: 38 tools instead of the original eight, organised by area — the diary (book, move, cancel, block time, change one day’s hours or the standing week, set leave), a patient’s record and her own consultation notes, WhatsApp in both directions including taking a conversation off the bot and handing it back, invoices and insurance claims, and the practice’s own details. It got there because two answers on one afternoon were both true and both useless: asked to invoice a patient she had just seen, it said it could not read the consultation notes; asked to check whether he wanted an appointment, it said its only outbound channel was sending a document. That is a search box with manners, not an assistant.',
+      'What it deliberately cannot do is the more interesting half. No shell, no SQL, no HTTP — every tool is a named operation with a schema, so it cannot reach outside this practice’s data. It cannot message a number off the WhatsApp allowlist, and that applies to her too. It cannot delete a patient, a record or a history event; those stay on the pages that ask twice. It cannot skip a scheduling guard. Booking, moving and cancelling tell the patient by default, and every tool reports what actually went out, so “no number on file” can never read as “sent”.',
+      'A turn no longer runs on the request that started it. Twenty rounds of Opus at maximum effort against a Supabase function timeout meant a turn that ran long left her message with no answer while the tools had already fired — real WhatsApp messages to real patients, a real invoice, a signed claim, and a chat showing none of it. The likeliest next thing she does is say it again, which does all of it twice.',
+      'The assistant page was one endless thread: every instruction she had ever given in one list, with the last thirty turns replayed to the model regardless of subject, so this morning’s diary question was answered with last week’s invoicing sitting in front of it. It is a titled, searchable list of chats now, opening on a new one each time, named from her opening words by the smallest model there is.',
+      'Every write blocks the whole app while it runs, and that rule had to be inverted to be worth anything. Saving a consultation is a render, a Drive upload and three database writes; a tap landing halfway through can file a visit with no document or a document with no visit. The overlay existed and covered six call sites out of about sixty, which is the wrong shape for a safety rule — it depends on whoever adds the next write remembering to opt in. Now every mutation blocks unless it says so, with 350ms of grace so nothing flashes, and the Android back button — the reflex when a screen seems stuck, and a short step from the system reclaiming the process mid-write — refuses to respond for exactly as long.',
+      'Failures used to be green. The toast hardcoded a tick and timed out after 2.6 seconds, so “Could not send via WhatsApp” looked exactly like “Sent”, and the patient never got their prescription. Fifty-five error call sites converted, plus seven more that were reporting failure through the success path; failures are red and stay until dismissed. She also saw raw machinery — FunctionsHttpError, Postgres constraint names, Failed to fetch — so one module lets a sentence written for her through and replaces everything else, keeping the original for the log. Offline was unhandled entirely; every write goes through one wrapper, so no connection means no attempt and a standing bar across the top, because an empty patient list looks identical to a lost one.',
+      'The field that exists to say what went wrong said nothing. `String(err)` on a plain object produces “[object Object]”, and twenty-five places called it on whatever they had just caught before writing it to the error log — but Supabase errors are plain objects carrying a message, a code, details and a hint, not Errors. That is how the appointment-reminder sweep failed every fifteen minutes for three weeks, 4,402 times, while System health showed her 4,402 rows each reading “Sweep failed” and “[object Object]”. A single describer now spells out Errors, Supabase errors and fetch-shaped failures, and a test holds it to never returning that string again.',
+      'Deleting a patient was final. Drive’s trash covered the files, but the extracted record — every visit, allergy and billing line — was gone the instant the confirm was dismissed, and on a phone OK sits under her thumb. The delete now snapshots those rows first and a restore replays them, with Settings → Recently deleted as the way back for 30 days, matching Drive’s own window. It still asks her to type the patient’s name.',
+      'Deleting a patient left their unpaid invoice behind, and the invoice went on chasing them. The delete archived seven tables and cascaded an eighth; `payments` was in neither list, has no foreign key to the patient, and is the only table the payment-reminder sweep reads — so a deleted patient stayed billable and kept being chased for money on the agreed schedule, by the name and number stored on the payment row, while the dialog she had to type a name into to confirm told her billing had been removed. The two table lists were duplicated, each carrying a comment warning that a new table “belongs in this list”; `payments` was added to the schema and put in neither, which is exactly the failure those comments were written to prevent. They are one list now.',
+      'The nightly backup runs on the server, not on my laptop. It started as a Windows scheduled task, which only works if that specific machine is on at 3am, in the timezone it was registered in, with its credentials still in place — and fails silently the week anyone travels. It now writes the whole database to Drive as one gzipped file at 03:00 Jakarta, thirty copies kept, older ones moved to Drive’s trash rather than destroyed so even the pruning is reversible. Pruning happens only after the upload succeeds, because the other order throws away a good backup to make room for one that never arrived. Uploaded with her OAuth token rather than the service account, which has no Drive storage of its own.',
+      'It is built for a doctor in her sixties who does not much like computers and uses it mostly on her phone between patients, and that is a set of rules rather than a preference. Nothing smaller than 13px, on a six-step scale — it used to run from 9.5px, with 429 of 657 sized elements under the floor. The phone’s own font-size setting is passed through to the WebView and honoured up to 160%. Targets are 44px on a phone and 48px where a mistake costs something. No icon without a word, because on a phone there is no hover to reveal a tooltip. Below 760px every table becomes a list of cards, so nothing is ever reached by dragging a table sideways. And the app asks its own questions rather than using the system dialog, which in an installed app is a grey box with an internal address on it that she has been trained to dismiss unread.',
+      'Both apps pulled their typeface and their icon font from Google with a stylesheet link, and neither APK bundled anything. A link is fetched once at page load and never retried, so on a Pixel 6 cold-launched in airplane mode there were zero font faces and every icon rendered the ligature name it was written as: the tab bar read “space_dashboardHome groupsPatients calendar_monthCalendar”, came to 644px inside a 412px screen, and put the AI tab 238px past the edge with no way to reach it. It recovers on the next launch once the WebView has cached the files — so this was a first-run failure only, which is the one launch that has to work. Both are vendored now, 147KB for the lot, the icon font subset to the 116 icons the apps actually use. An icon outside that subset renders as its own name in the middle of the interface, so a test scans both apps and fails if any name is missing from the list.',
+      'Three greys were below WCAG AA and one badly: #94a3b8 measured 2.39:1 against the app background and carried 188 pieces of real text — hints, timestamps, day names, and the four unselected labels in the bottom tab bar, which is most of how she knows where she is. Contrast sensitivity falls with age; that is not a shade of grey, it is an absence. The ramp sits at 5.84, 5.10 and 4.62 now, the three closer together than before because that is what AA on a near-white background leaves room for.',
+      'The bugs that mattered most were the ones only a real phone and real data could produce, found by driving the installed APK on a Pixel 6 against the live backend rather than demo rows. A patient name needs to be long enough to overflow: “Aisha Khan” painted straight through the badge beside it, and on a 360px screen the row’s fixed parts came to 411px and left the name a column exactly 0px wide. A document library needs real documents: its title column got 39px, so every row read “Inv…” or “Co…”. The patient header came to 436px of a 412px screen with the More button — holding a third of what you can do to a patient — entirely off the right edge, behind a sideways scroll the layout’s own rules say does not exist. And the leave switch was a button inside a label that also wrapped its explanation, so reading the explanation with a finger put the practice on leave.',
+      'Every free-text field on the consultation form has a microphone beside it — seven of them, and by far the most typing the app asks for, on the device where typing is worst. The transcript appends to whatever the field already holds rather than replacing it, so stopping and starting again adds a second sentence instead of wiping the first. Where speech recognition is unavailable, including Capacitor’s Android WebView, the button is absent rather than broken and the form says to use the keyboard’s own microphone instead.',
+      'Patient files are never committed and never cached locally. Google Drive is the authoritative store through a service account; Supabase holds only the structured data extracted alongside it. Both Android apps set FLAG_SECURE, so there are no screenshots and no patient record showing in the recent-apps thumbnail, and an optional PIN locks the screen after two minutes away.',
+      'The tests are pure logic by design — scheduling, date maths across the Jakarta timezone, claim assembly, document rendering — plus a patient simulator that drives the real WhatsApp flow one message at a time and then looks at what happened to the calendar and the database. Linting is deliberately kept out of the build, because a lint error should never be the reason a document cannot be issued.',
     ],
     // Captured from the real app running in demo mode, where it falls back
     // to invented patients — so these are genuine screenshots of the
@@ -337,7 +359,7 @@ export const PROJECTS: Project[] = [
       },
     ],
     note:
-      'All captured from the real app running in its demo mode, which starts with no database credentials at all: it skips the login and physically cannot reach the practice’s data. Every patient, message, invoice, claim and document here is invented — the eight demo patients the app ships with, plus stand-in rows written for the screens that normally read from the live backend, so they could be photographed without touching anything real. The insurance form is likewise a mock-up, drawn for the demo from an insurer that does not exist. The doctor’s own details are blurred wherever they appear: her name, the hospital she practises at, her registration and licence numbers, phone, bank accounts, email and signature seal. Beyond that nothing has been retouched — every layout, control and state is the software as it ships.',
+      'All captured from the real app running in its demo mode, which starts with no database credentials at all: it skips the login and physically cannot reach the practice’s data. Every patient, message, invoice, claim and document here is invented — the eight demo patients the app ships with, plus stand-in rows written for the screens that normally read from the live backend, so they could be photographed without touching anything real. The insurance form is likewise a mock-up, drawn for the demo from an insurer that does not exist. The doctor’s own details are blurred wherever they appear: her name, the hospital she practises at, her registration and licence numbers, phone, bank accounts, email and signature seal. Beyond that nothing has been retouched — every layout, control and state is the software as it ran. One thing has moved since: these are the dashboard at laptop width, taken before the pass that rebuilt the app around the phone she actually holds it on. The features are the same and the desktop layouts are largely unchanged, but the phone is now a different shape — tables are cards, the consultation form has the whole screen, and the assistant’s modes are sentences rather than three lowercase words. Those screens are not photographed here yet.',
     // A word from the doctor who runs on this every day. Deliberately left unset
     // until she has supplied and approved her own words — the sheet renders
     // nothing at all rather than a placeholder that reads as a real quote.
@@ -347,6 +369,70 @@ export const PROJECTS: Project[] = [
     //     attribution: 'The doctor · family practice, Jakarta',
     //   },
     repoNote: 'Private repository — it holds real clinical data. Walkthrough available on request.',
+  },
+  {
+    slug: 'fitscroll',
+    name: 'FitScroll',
+    short: 'FitScroll',
+    tagline: 'One push-up buys one minute of Instagram. Run out and it locks.',
+    period: 'August 2026',
+    kind: 'NATIVE ANDROID APP',
+    status: 'Shipped — sideloaded APK',
+    role: 'Solo — design, build, ship',
+    accent: '#fb7185',
+    logo: '/logos/fitscroll.svg',
+    layers: [
+      'Kotlin · Jetpack Compose (Material 3)',
+      'CameraX preview → ML Kit pose detection, on-device',
+      'Push-up counter behind a 1–5 form strictness dial',
+      'Minute bank · rolling 24h expiry, oldest spent first',
+      'Accessibility service reading the foreground package only',
+      'Drain meter charging measured time, not tick counts',
+      'Lock screen drawn as an accessibility overlay',
+      'Release gate — a published version floor that fails open',
+      '125 unit tests · JUnit + Robolectric, no device required',
+    ],
+    stack: [
+      'Kotlin',
+      'Jetpack Compose',
+      'CameraX',
+      'ML Kit Pose Detection',
+      'Accessibility Services',
+      'Coroutines',
+      'JUnit',
+      'Robolectric',
+      'Gradle',
+    ],
+    metrics: [
+      { value: '125', label: 'unit tests' },
+      { value: '1:1', label: 'push-up to minute' },
+      { value: '24h', label: 'before a minute expires' },
+      { value: '0', label: 'frames leaving the phone' },
+    ],
+    blurb:
+      'I did not want another app telling me how long I had been on Instagram. I wanted one that made me pay for it. FitScroll counts your push-ups through the phone’s camera, banks each clean rep as one minute of screen time, and enforces that budget on whichever apps you pick — and every minute expires 24 hours after you earn it, so you cannot grind once on Sunday and coast all week. Everything that counts a rep or spends a minute runs on-device: no account, no sync, no analytics, and no camera frame ever leaves the phone.',
+    highlights: [
+      'The rules are pure functions taking an explicit `now` — the bank, the rep counter, the blocking decision, the drain reconciler, the per-second meter. That is what makes 125 tests possible with no device and no 24-hour wait: expiry boundaries, oldest-first spending, cap overflow and every anti-cheat gate are pinned down as arithmetic. The parts that genuinely need Android get Robolectric — the stored ledger, its reload, the day rollover, and the corrupt-ledger path that has to fail into an empty bank rather than a crash loop, because a crash loop leaves the accessibility service holding the block with no way to reach the camera.',
+      'The gate that makes a rep a push-up is not an angle. Stand up, hold the phone in front of you and curl your arms, and every angle check passes — elbow locked out at the top, bent at the bottom, a dead-straight body line throughout. Only the fact that your body never moved gives it away. So a rep also requires your shoulders to drop by a fraction of your own shoulder-to-hip length, measured as a ratio so it holds at any distance from the lens, and set low enough that anyone actually on the floor clears it without thinking about it.',
+      'Strictness tightens five things at once, and deliberately not a sixth. It used to raise the required landmark confidence as well — which meant level 5 was quietly asking for a better view of you rather than a better push-up. Looking down at the floor is enough to drop the pose model’s confidence across every landmark, so reps stopped counting entirely at level 5 while the identical rep counted at level 1. There is one visibility floor for all five levels now; strictness governs form only.',
+      'The body-line thresholds look lenient on paper and are not. This is a 2D estimate from a single camera: unless the lens sits exactly perpendicular to you, perspective foreshortens your torso and a genuinely straight back measures well under 180°. Thresholds that are correct in geometry reject real push-ups at real phone placements.',
+      'A rep is not judged frame by frame, because the pose model jitters by a few degrees on a motionless subject and a single noisy sample was throwing away clean reps. Each level instead carries a sag allowance — how long within one rep you may be outside tolerance before it is voided. Real sag lasts; noise does not. And if your legs are out of frame the model *guesses* your knee position, so the app declines to judge your back at all rather than failing you on a guess, and says “back not checked” on screen so a refusal reads as feedback rather than as a broken app.',
+      'The lock lands on top of the blocked app, mid-scroll, rather than only at the moment you open it. It is drawn as an accessibility overlay, which the service is granted directly — so “Display over other apps” stays genuinely optional, and where it is missing the one button that needs it says so instead of appearing to do nothing.',
+      'Knowing which app is in front takes two kinds of event, not one. A window-state change says a window just took the screen, which is the only signal that an app switch happened at all — but it describes transitions only. Pull the notification shade down over Instagram and the app underneath never goes away, so nothing announces its return when the shade closes. A scroll event says a package is on screen right now, which closes that gap. The service is declared `canRetrieveWindowContent="false"` and reads nothing off either event but the package name and the window class.',
+      'The meter charges measured time rather than counting ticks, because a timer that is throttled, coalesced or briefly starved silently under-bills — and the failure looks exactly like the app working. Below an hour the balance counts in seconds for the same reason: a number that only moves once a minute looks identical whether the drain is running or stuck, which made every real bug in it hard to tell from an imagined one.',
+      'Android reports app switches, not a live answer to “what is on screen”, so sometimes the meter has to guess — a service killed mid-scroll, or a phone unlocked back into whatever it was showing. It resumes on the remembered package, because the alternative is free scrolling every time the process is recycled, but a guessed *drain* expires after 30 seconds unless something confirms it, so the most a wrong one can cost you is half a minute. A guessed *lock* is not put on the same clock, because the failures are not comparable: a drain that guessed wrong spends a bank silently, while a lock that guessed wrong is a screen in front of you with a button on it.',
+      'Copies handed out by hand have no update channel, so every sideloaded build checks one published file and withdraws itself if told to. It is a version floor rather than a switch — one number retires everything older at once, and a notice can never retire a build that did not exist when it was written. It fails open on purpose: no answer, for any reason, leaves the last one standing, and the first answer is “supported”, because bricking someone’s app because their plane has no wifi would be a worse bug than a build living too long. When a build does retire it stops blocking first, and the banked minutes stay on disk for whatever installs over the top. The Play build compiles the URL to an empty string and never touches the network.',
+      'Android identifies an app by package name *and* signing certificate, so the key you hand builds out with is a commitment: a build signed with a different key cannot update one already installed — it has to be uninstalled first, which deletes the user’s banked minutes. Release builds fall back to the debug key when there is no keystore, so a fresh clone still produces something installable, and the README says plainly that anything given to another person must be built with the real one.',
+      'ML Kit ships native inference for four ABIs and two of them only ever run on emulators, which made the universal APK 82MB — more than half of it code no phone can execute. Filtering at the source rather than only in the split brings the safe-for-anything build to 44MB and the arm64 one to 29MB. The APKs are also named after the app and its version rather than after the build system, because handed over in a chat the filename is the only label they have.',
+      'It is a commitment device, not a jail, and the README says so first rather than last: on Android you can disable the accessibility service or uninstall the app in under a minute. It works by adding friction at the moment of the impulse. Expiry rides the wall clock and you own the wall clock — winding it back cannot mint minutes, since a credit stamped in the future is pulled back to now, so the worst it buys is one ordinary day — but nothing here pretends to be tamper-proof.',
+    ],
+    shots: [],
+    // No captures yet, and the reason is structural rather than an oversight:
+    // every other sheet on this site was photographed by driving a web build in
+    // headless Chrome, which is not a thing a native Android app has.
+    moreToAdd:
+      'Screenshots and a walkthrough. Every other project here was captured by driving its web build in headless Chrome against invented data — FitScroll is a native Android app with a camera in the middle of it, so the same trick does not apply and the captures need a real phone, a real set and screen recording off the device. Until that exists this sheet is deliberately words only rather than mock-ups of screens that were never photographed.',
+    repo: 'https://github.com/TusharLachman25/FitScroll',
   },
   {
     slug: 'jarvis',

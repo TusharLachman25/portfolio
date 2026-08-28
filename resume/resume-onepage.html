@@ -1,0 +1,208 @@
+<!doctype html>
+<!--
+  The one-page cut, for the many graduate and internship postings that ask for
+  one page and mean it.
+
+  It is a different document, not resume.html with things switched off. Four
+  projects and an "also built" line instead of six entries, one to three bullets
+  each, no academic section, and experience carrying its description on the line
+  under the title rather than as a bullet — at one role per line a bullet glyph
+  is just an indent. What it keeps is what survives a six-second read: that a
+  product was built, sold, and is in daily clinical use; that there is a native
+  Android app behind it; the grades; and the work rights an Australian employer
+  screens on first.
+
+  NO MONOGRAM HERE. The two-page version keeps it — it has the room and the mark
+  earns its place on a document someone reads twice. On one page the square cost
+  72px of the header's width and forced the name onto two lines to balance it,
+  which is around four lines of content spent on decoration. The name now sits on
+  one line with the positioning under it, and the contact block folds from six
+  lines to three.
+
+  Typography is shared with the two-page version through resume.css and is not
+  touched here. The overrides below are space between blocks only — a one-page
+  résumé set in smaller type than the two-page one would be a worse document,
+  not a shorter one.
+
+      node tools/make-resume.mjs
+
+  renders both, and refuses to write this one at anything but a single page.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tushar Ajit Lachman — Résumé (one page)</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resume.css">
+<style>
+  /* One page means less air between blocks, and only that. */
+  .head { padding-top: 30px; align-items: flex-start; }
+  h2 { margin-top: 10px; }
+  h2 + * { margin-top: 12px; }
+  .entry { margin-top: 11px; }
+  h2 + .entry { margin-top: 11px; }
+  ul, .entry__sub + ul { margin-top: 7px; }
+  li + li { margin-top: 0; }
+  .rows { margin-top: 13px; }
+
+  /* No monogram, so the name needs no vertical offset to sit beside one, and
+     no second line to balance a six-line contact block. */
+  .name { margin-top: 0; }
+  /* The discipline line the monogram used to fill this corner with. It says
+     more than the mark did: year, degree, institution, in one line. */
+  .role { font-size: 12.4px; line-height: 17px; color: var(--body); margin-top: 4px; }
+  .contact { padding-top: 2px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="head">
+    <div>
+      <div class="name">Tushar Lachman</div>
+      <div class="role">Final-year Computer Science &middot; RMIT Melbourne</div>
+    </div>
+    <div class="contact">
+      Melbourne, VIC 3000, Australia &middot; +61 413 643 703 / +62 857 1125 1110<br>
+      <b>Email</b> <a href="mailto:tusharbudhrani@gmail.com">tusharbudhrani@gmail.com</a> &middot;
+      <b>Portfolio</b> <a href="https://tusharlachman.dev">tusharlachman.dev</a><br>
+      <b>LinkedIn</b> <a href="https://www.linkedin.com/in/tusharlachman">tusharlachman</a> &middot;
+      <b>GitHub</b> <a href="https://github.com/TusharLachman25">TusharLachman25</a>
+    </div>
+  </div>
+
+  <h2>Professional Summary</h2>
+  <p>Builds and ships production software end to end: a medical practice platform I built, sold and support, now in
+  daily clinical use at a Jakarta family practice, plus five more across web, mobile and native Android. Seeking a
+  summer internship (Nov 2026 &ndash; Feb 2027) or a graduate role from July 2027, in any tech role.</p>
+  <p><b style="font-weight:600;color:#1a1a1a">Work rights:</b> Student visa, unrestricted hours over the summer
+  break; graduate visa from August 2027. Fluent in English and Bahasa Indonesia.</p>
+
+  <h2>Projects</h2>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Medical Practice Management Platform</div>
+      <div class="entry__when">June 2026 &ndash; Present</div>
+    </div>
+    <div class="entry__sub">React &middot; TypeScript &middot; Supabase &middot; Deno &middot; Capacitor &middot;
+    Twilio &middot; Claude API &mdash;
+    <a href="https://tusharlachman.dev/work/medical">tusharlachman.dev/work/medical</a></div>
+    <ul>
+      <li>A TypeScript monorepo behind 73 Deno edge functions and 39 migrations, covered by 637 unit tests.</li>
+      <li>Audited the live database with nothing but the public anon key: eleven tables still answered, because
+      row-level security sat switched off beneath correct-looking policies. Closed with idempotent migrations.</li>
+      <li>Insurers&rsquo; claim PDFs signed and numbered only on approval; a 38-tool Claude assistant that proposes
+      and never commits; separate in-person and online schedules, which had been losing every evening booking.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">FitScroll &mdash; Earn-Your-Screen-Time Android App</div>
+      <div class="entry__when">August 2026</div>
+    </div>
+    <div class="entry__sub">Kotlin &middot; Jetpack Compose &middot; CameraX &middot; ML Kit &middot; Accessibility
+    Services &mdash;
+    <a href="https://github.com/TusharLachman25/FitScroll">github.com/TusharLachman25/FitScroll</a></div>
+    <ul>
+      <li>~5,400 lines of Kotlin: the camera counts push-ups on-device, banks each rep as a minute of screen time,
+      and locks the apps you pick at zero. Minutes expire 24 hours after they are earned.</li>
+      <li>A rep needs the shoulders to travel a fraction of the user&rsquo;s own shoulder-to-hip length, not just the
+      right elbow angles &mdash; otherwise standing up and curling your arms passes every gate. 125 unit tests.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Jarvis &mdash; Personal Life OS</div>
+      <div class="entry__when">June 2026</div>
+    </div>
+    <div class="entry__sub">Next.js 16 &middot; React 19 &middot; TypeScript &middot; Supabase &middot; Claude API
+    &mdash; <a href="https://github.com/TusharLachman25/jarvis-life-os">github.com/TusharLachman25/jarvis-life-os</a></div>
+    <ul>
+      <li>Tasks, calendar, health and money in one dashboard: 38 REST endpoints, 10 migrations, Google OAuth.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Locked In &mdash; Social Fitness App</div>
+      <div class="entry__when">April &ndash; May 2026</div>
+    </div>
+    <div class="entry__sub">React Native (Expo) &middot; TypeScript &middot; Supabase &middot; Gemini API &middot;
+    EAS Build &mdash;
+    <a href="https://github.com/TusharLachman25/Locked-In">github.com/TusharLachman25/Locked-In</a></div>
+    <ul>
+      <li>A squad workout tracker in daily use by my friends; Gemini vision reads a smartwatch screenshot.</li>
+    </ul>
+  </div>
+
+  <ul style="margin-top: 13px">
+    <li><b style="font-weight:600;color:#1a1a1a">Also built</b> &middot; Kitchen OS (~3,500 lines of Python); a CNN
+    over 20,280 colon-tissue patches at 0.852 macro-F1.</li>
+  </ul>
+
+  <h2>Experience</h2>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Independent Software Developer &middot; Dr Varkha&rsquo;s Practice, Jakarta</div>
+      <div class="entry__when">June 2026 &ndash; Present</div>
+    </div>
+    <div class="entry__sub">Sole developer of the platform above, on a paid monthly subscription: design, build,
+    deploy and support.</div>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Information Systems Intern &middot; Makmur Jaya Abadi, Jakarta</div>
+      <div class="entry__when">August 2023 &ndash; January 2024</div>
+    </div>
+    <div class="entry__sub">Digitized accounting records into Excel and Google Sheets, automating repetitive entry
+    with formulas.</div>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Part Time Medical Assistant &middot; Dr Varkha&rsquo;s Teleconsultations, Jakarta</div>
+      <div class="entry__when">June 2020 &ndash; April 2023</div>
+    </div>
+    <div class="entry__sub">Digitized patient records and compiled laboratory and x-ray reports &mdash; the job the
+    platform above was built to replace.</div>
+  </div>
+
+  <h2>Education</h2>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Bachelor of Computer Science &mdash; Minor in AI &amp; Machine Learning, RMIT
+      University</div>
+      <div class="entry__when">Expected July 2027</div>
+    </div>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">National High Jakarta School &mdash; Cambridge IGCSE, AS Level and A Level</div>
+      <div class="entry__when">Completed April 2023</div>
+    </div>
+  </div>
+
+  <h2>Skills</h2>
+  <div class="rows">
+    <div><b>Languages</b><span>Python, TypeScript, JavaScript, Kotlin, Java, C, C++, SQL</span></div>
+    <div><b>Frameworks</b><span>React, React Native (Expo), Next.js, Node.js, Flask, Streamlit, Tailwind CSS,
+    Capacitor</span></div>
+    <div><b>Mobile</b><span>Android (Kotlin, Jetpack Compose), CameraX, ML Kit pose detection, accessibility
+    services</span></div>
+    <div><b>Cloud &amp; Data</b><span>AWS (EC2, ECS, Lambda, S3, DynamoDB), Docker, PostgreSQL, Supabase, REST APIs,
+    OAuth 2.0</span></div>
+    <div><b>AI &amp; Practice</b><span>Claude API (tool use), Google Gemini, PyTorch, scikit-learn; Vitest, pytest,
+    JUnit, CI</span></div>
+  </div>
+
+</div>
+</body>
+</html>

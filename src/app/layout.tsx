@@ -28,7 +28,7 @@ const TAB_TITLE = "Tushar Lachman Portfolio";
 const TITLE = "Tushar Lachman — Software, Data & AI/ML";
 
 const DESCRIPTION =
-  "Computer Science student at RMIT University, minoring in AI & Machine Learning, open to any tech role. Five products built end to end — including a medical practice platform sold on a paid monthly subscription and in daily clinical use in Jakarta.";
+  "Computer Science student at RMIT University, minoring in AI & Machine Learning, open to any tech role. Six products built end to end — including a medical practice platform sold on a paid monthly subscription and in daily clinical use in Jakarta.";
 
 /** One 1200×630 card for every page that doesn't set its own. Without it a
  * pasted link renders as a bare grey box in LinkedIn, Slack and mail clients —
@@ -43,10 +43,10 @@ const DESCRIPTION =
  * keeps showing the old card to anyone who has already been sent the link.
  * Bump it whenever the card changes. */
 const OG_IMAGE = {
-  url: "/og.png?v=3",
+  url: "/og.png?v=5",
   width: 1200,
   height: 630,
-  alt: "Tushar Lachman — software, data and AI/ML. Five products built end to end.",
+  alt: "Tushar Lachman — software, data and AI/ML. Six products built end to end.",
 };
 
 export const metadata: Metadata = {

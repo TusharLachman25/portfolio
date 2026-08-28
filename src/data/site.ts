@@ -50,24 +50,30 @@ export const TITLE_BLOCK: { key: string; value: string }[] = [
   },
 ];
 
-/** Four numbers that survive being checked. 104 is 66 edge functions plus 38
- * REST endpoints; 269 is what `vitest run` prints on the medical repo. */
+/** Four numbers that survive being checked. 111 is 73 edge functions plus 38
+ * REST endpoints; 762 is what `vitest run` prints on the medical repo (637)
+ * plus what `gradlew testDebugUnitTest` prints on FitScroll (125). */
 export const HERO_STATS: { value: string; label: string }[] = [
-  { value: '5', label: 'PRODUCTS BUILT' },
+  { value: '6', label: 'PRODUCTS BUILT' },
   { value: '1', label: 'PAYING CUSTOMER' },
-  { value: '104', label: 'API + EDGE FUNCTIONS' },
-  { value: '269', label: 'UNIT TESTS' },
+  { value: '111', label: 'API + EDGE FUNCTIONS' },
+  { value: '762', label: 'UNIT TESTS' },
 ];
 
 export const SKILLS: { label: string; items: string }[] = [
-  { label: 'LANGUAGES', items: 'Python · TypeScript · JavaScript · Java · C · C++ · SQL · Prolog' },
+  { label: 'LANGUAGES', items: 'Python · TypeScript · JavaScript · Kotlin · Java · C · C++ · SQL · Prolog' },
   {
     label: 'FRAMEWORKS',
     items: 'React · React Native (Expo) · Next.js · Node.js · Flask · Streamlit · Tailwind CSS',
   },
   {
+    label: 'MOBILE',
+    items:
+      'Native Android (Kotlin, Jetpack Compose) · CameraX · ML Kit on-device pose detection · accessibility services · Capacitor · Expo / EAS Build',
+  },
+  {
     label: 'CLOUD & DEVOPS',
-    items: 'AWS (EC2, ECS, S3, DynamoDB) · Docker · Vercel · EAS Build · Firebase Cloud Messaging · Git',
+    items: 'AWS (EC2, ECS, S3, DynamoDB) · Docker · Vercel · EAS Build · Gradle · Firebase Cloud Messaging · Git',
   },
   {
     label: 'BACKEND & DATA',
@@ -76,11 +82,12 @@ export const SKILLS: { label: string; items: string }[] = [
   },
   {
     label: 'AI & DATA SCIENCE',
-    items: 'Claude API · Google Gemini (text & vision) · scikit-learn · pandas · NLTK · transformers · NetworkX',
+    items: 'Claude API (tool use) · Google Gemini (text & vision) · scikit-learn · pandas · NLTK · transformers · NetworkX',
   },
   {
     label: 'PRACTICE',
-    items: 'Unit testing (Vitest, pytest) · monorepos · CI to Vercel and EAS · technical writing & onboarding docs',
+    items:
+      'Unit testing (Vitest, pytest, JUnit, Robolectric) · monorepos · CI to Vercel, EAS and GitHub Actions · technical writing & onboarding docs',
   },
 ];
 

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "resume": "node tools/make-resume.mjs",
+    "og": "node tools/make-og.mjs"
   },
   "dependencies": {
     "next": "16.2.12",

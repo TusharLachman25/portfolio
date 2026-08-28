@@ -88,6 +88,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       videoNote={project.videoNote}
       repo={project.repo}
       repoNote={project.repoNote}
+      moreToAdd={project.moreToAdd}
       index={index}
       total={PROJECTS.length}
       prevHref={`/work/${prev.slug}`}

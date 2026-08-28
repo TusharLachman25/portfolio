@@ -1,0 +1,144 @@
+/* ---------------------------------------------------------------------------
+   Shared by resume.html (two pages) and resume-onepage.html (one).
+
+   The metrics were measured off the PDF that predates both files, so the
+   document keeps its typography across the rebuild: 12.06px body on 17px
+   leading, Poppins Light/Regular/SemiBold, a 704px column inside 45px margins,
+   and the monogram square at 72px with its diagonal from (54.72,14.4) to
+   (17.28,57.6). Authored in CSS pixels at A4/96dpi — 793.7 x 1122.5 — so
+   Chrome prints at scale 1 and these numbers survive verbatim into the PDF.
+
+   The one-pager overrides only the space between blocks, never the type scale.
+   --------------------------------------------------------------------------- */
+@page { size: A4; margin: 0; }
+
+  :root {
+    --ink:      #1a1a1a;  /* headings, labels, the name */
+    --body:     #3d3d3d;  /* running text */
+    --head:     #2b2b2b;  /* section titles on the band */
+    --meta:     #5a5a5a;  /* dates, right-hand column */
+    --marker:   #7a7a7a;  /* bullet glyphs */
+    --band:     #e9e9e9;  /* section heading background */
+    --col:      704px;    /* content column: 793.7 - 45 - 45 */
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 793.7px;
+    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+    font-weight: 400;
+    color: var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet { padding: 0 45px; }
+
+  /* Links carry the surrounding colour rather than the browser's default blue.
+     One address in the summary used to print as #0000EE, which is the only
+     thing on either page that looks like a web page rather than a document. */
+  a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; }
+
+  /* ---------------------------------------------------------------- header */
+
+  .head { display: flex; justify-content: space-between; padding-top: 40px; }
+
+  .id { display: flex; align-items: flex-start; gap: 15px; }
+
+  /* A square with a diagonal, T above it and L below. Drawn rather than set,
+     because a two-letter monogram in a box is a mark and two capitals in a row
+     are just more type competing with the name beside them. */
+  .mark {
+    position: relative;
+    width: 72px; height: 72px; flex: none;
+    border: 2.88px solid var(--ink);
+    margin-top: 22px;
+  }
+  .mark svg { position: absolute; inset: -2.88px; }
+  .mark span {
+    position: absolute;
+    font-weight: 300; font-size: 24.48px; line-height: 1; color: var(--ink);
+  }
+  .mark .t { left: 11.5px;  top: 13px; }
+  .mark .l { left: 38.9px;  top: 40.4px; }
+
+  .name {
+    font-weight: 300; font-size: 36px; line-height: 37px;
+    letter-spacing: -0.012em; color: var(--ink);
+    margin-top: 15px; text-transform: uppercase;
+  }
+
+  .contact {
+    text-align: right; font-size: 11.46px; line-height: 18.7px; color: var(--meta);
+    padding-top: 3px;
+  }
+  .contact b { font-weight: 600; color: var(--ink); margin-right: 2px; }
+
+  /* ---------------------------------------------------------------- section */
+
+  h2 {
+    background: var(--band); color: var(--head);
+    font-weight: 400; font-size: 13.86px; line-height: 27px;
+    text-transform: uppercase; letter-spacing: 0.004em;
+    /* The band runs the full column; the text is inset 10px into it. */
+    margin: 14px -45px 0; padding: 0 55px;
+    break-after: avoid;
+  }
+  h2 + * { margin-top: 17px; }
+
+  p { font-size: 12.06px; line-height: 17px; }
+  p + p { margin-top: 5px; }
+
+  /* ------------------------------------------------------------ entry block */
+
+  .entry { margin-top: 17px; }
+  /* A title never ends a page, and the first bullet stays with the heading it
+     belongs to. Deliberately not `break-inside: avoid` on the whole entry:
+     one entry that will not fit then strands most of a page above it. Nor
+     `break-after: avoid` on the sub-line, which where it is the last child
+     glues the *next* entry on as well, and chains a whole section together. */
+  .entry__top { break-after: avoid; }
+  /* An entry directly under a band takes the band's own gap instead. */
+  h2 + .entry { margin-top: 17px; }
+
+  .entry__top {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 18px;
+  }
+  .entry__title {
+    font-weight: 600; font-size: 13.06px; line-height: 17px; color: var(--ink);
+  }
+  .entry__when {
+    font-size: 12.06px; line-height: 17px; color: var(--meta); flex: none;
+  }
+  .entry__sub { font-size: 12.06px; line-height: 17px; color: var(--body); }
+  .entry__sub--em { font-size: 12.4px; color: var(--ink); }
+
+  ul { list-style: none; margin-top: 14px; break-before: avoid; }
+  li {
+    position: relative;
+    font-size: 12.06px; line-height: 17px;
+    padding-left: 13px;
+  }
+  li + li { margin-top: 2px; }
+  li { break-inside: avoid; }
+  li::before {
+    content: '\2022';
+    position: absolute; left: 0; top: 0;
+    color: var(--marker);
+  }
+  /* A one-line entry under a heading needs no bullet rhythm above it. */
+  .entry__sub + ul { margin-top: 14px; }
+
+  /* ------------------------------------------------------------------ lists */
+
+  /* Skills and languages: a fixed label column so the values line up down the
+     page rather than each row starting wherever its own label ended. */
+  .rows { margin-top: 17px; }
+  .rows div {
+    display: flex; gap: 6px;
+    font-size: 12.06px; line-height: 17px;
+  }
+  .rows b { font-weight: 600; color: var(--ink); flex: none; width: 132px; }
+
+  .langs { margin-top: 5px; font-size: 12.06px; line-height: 17px; }
+  .langs b { font-weight: 600; color: var(--ink); }

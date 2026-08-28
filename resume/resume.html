@@ -1,0 +1,278 @@
+<!doctype html>
+<!--
+  The source for public/Tushar-Lachman-Resume.pdf.
+
+  It exists because the previous PDF's source did not: the file was rebuilt once
+  already by measuring the old one's content stream, which is a bad way to spend
+  an afternoon and a worse way to keep a résumé current. Render it with
+
+      node tools/make-resume.mjs
+
+  which prints this through headless Chrome and refuses to write a PDF that is
+  not exactly two pages.
+
+  Typography lives in resume.css, shared with the one-page cut next to it.
+  resume-onepage.html is a different document rather than this one with things
+  switched off: half the prose, four projects instead of six, and no academic
+  section. Both are kept, because plenty of graduate and internship postings ask
+  for one page and plenty of others reward the detail.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tushar Ajit Lachman — Résumé</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resume.css">
+</head>
+<body>
+<div class="sheet">
+
+  <div class="head">
+    <div class="id">
+      <div class="mark">
+        <svg viewBox="0 0 72 72" width="72" height="72" aria-hidden="true">
+          <line x1="54.72" y1="14.4" x2="17.28" y2="57.6" stroke="#1a1a1a" stroke-width="2.88"/>
+        </svg>
+        <span class="t">T</span><span class="l">L</span>
+      </div>
+      <div class="name">Tushar<br>Lachman</div>
+    </div>
+    <div class="contact">
+      Melbourne, VIC 3000, Australia<br>
+      +61 413 643 703 / +62 857 1125 1110<br>
+      <b>Email</b> <a href="mailto:tusharbudhrani@gmail.com">tusharbudhrani@gmail.com</a><br>
+      <b>Portfolio</b> <a href="https://tusharlachman.dev">tusharlachman.dev</a><br>
+      <b>LinkedIn</b> <a href="https://www.linkedin.com/in/tusharlachman">linkedin.com/in/tusharlachman</a><br>
+      <b>GitHub</b> <a href="https://github.com/TusharLachman25">github.com/TusharLachman25</a>
+    </div>
+  </div>
+
+  <h2>Professional Summary</h2>
+  <p>Computer Science student at RMIT University, minoring in Artificial Intelligence &amp; Machine Learning, who
+  ships production software end to end. Built and sold a medical practice management platform now in daily clinical
+  use at a Jakarta family practice, plus five further products across web, mobile, native Android and Python &mdash;
+  several with real users, all integrating third-party and AI APIs, all documented at
+  <a href="https://tusharlachman.dev">tusharlachman.dev</a>. Seeking a summer internship (Nov 2026 &ndash; Feb 2027)
+  or a graduate role from July 2027, in any tech role.</p>
+  <p><b style="font-weight:600;color:#1a1a1a">Work rights:</b> Student visa, unrestricted hours over the summer
+  break; graduate visa from August 2027.</p>
+
+  <h2>Projects</h2>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Medical Practice Management Platform</div>
+      <div class="entry__when">June 2026 &ndash; Present</div>
+    </div>
+    <div class="entry__sub">React &middot; TypeScript &middot; Supabase &middot; Deno &middot; Capacitor &middot;
+    Twilio &mdash; private repo,
+    <a href="https://tusharlachman.dev/work/medical">tusharlachman.dev/work/medical</a></div>
+    <ul>
+      <li>A TypeScript monorepo on npm workspaces &mdash; React dashboard, two Android apps (Capacitor), shared
+      document templates &mdash; behind 73 Deno edge functions and 39 migrations, covered by 637 unit tests.</li>
+      <li>Audited the live database with nothing but the read-only anon key that ships in the client bundle: eleven
+      tables still answered, because row-level security sat switched off beneath correct-looking policies.</li>
+      <li>Insurers&rsquo; claim PDFs filled by field name or coordinate map, signed and numbered from an atomic
+      counter only on approval; a 38-tool Claude assistant that always proposes and never commits; bilingual WhatsApp
+      via Twilio.</li>
+      <li>Gave in-person and online consultations separate hours and appointment lengths, where one column and a
+      hardcoded 30 minutes had been turning away every online patient who asked for a time after six.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">FitScroll &mdash; Earn-Your-Screen-Time Android App</div>
+      <div class="entry__when">August 2026</div>
+    </div>
+    <div class="entry__sub">Kotlin &middot; Jetpack Compose &middot; CameraX &middot; ML Kit &middot; Accessibility
+    Services &mdash;
+    <a href="https://github.com/TusharLachman25/FitScroll">github.com/TusharLachman25/FitScroll</a></div>
+    <ul>
+      <li>~5,400 lines of Kotlin: the camera counts push-ups on-device, banks each rep as a minute of screen time,
+      and locks the apps you pick at zero. Minutes expire 24 hours after they are earned.</li>
+      <li>ML Kit pose detection behind a 1&ndash;5 strictness dial. A rep also needs the shoulders to travel a
+      fraction of the user&rsquo;s own shoulder-to-hip length &mdash; without it, standing up and curling your arms
+      passes every angle gate there is.</li>
+      <li>125 unit tests, no device needed: bank, counter, blocking decision and drain meter are pure functions taking
+      an explicit clock. The lock is an accessibility overlay, so it lands on a running app mid-scroll.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Jarvis &mdash; Personal Life OS</div>
+      <div class="entry__when">June 2026</div>
+    </div>
+    <div class="entry__sub">Next.js 16 &middot; React 19 &middot; TypeScript &middot; Supabase &middot; Claude API
+    &middot; Google APIs &mdash;
+    <a href="https://github.com/TusharLachman25/jarvis-life-os">github.com/TusharLachman25/jarvis-life-os</a></div>
+    <ul>
+      <li>A dashboard unifying tasks, calendar, health and finance across two countries: 38 REST endpoints, 10
+      migrations, Google OAuth with token refresh across Calendar, Tasks and Gmail, and Claude turning uploaded bank
+      statements into transactions held for review.</li>
+      <li>Reconciled two wearable ecosystems that do not interoperate &mdash; Fitbit through Google Health&rsquo;s
+      live API, Galaxy Watch through a Samsung Health export Claude parses &mdash; keyed by source id, so a re-import
+      is a no-op.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Locked In &mdash; Social Fitness App</div>
+      <div class="entry__when">April &ndash; May 2026</div>
+    </div>
+    <div class="entry__sub">React Native (Expo) &middot; TypeScript &middot; Supabase &middot; Gemini API &middot;
+    EAS Build &mdash;
+    <a href="https://github.com/TusharLachman25/Locked-In">github.com/TusharLachman25/Locked-In</a></div>
+    <ul>
+      <li>A squad-based workout tracker in daily use by my friend group &mdash; ~5,000 lines of TypeScript, shipped
+      as an Android APK with a Vercel web build. Stories, leaderboards, a feed and messaging on Supabase, with push
+      sent by a Postgres trigger.</li>
+      <li>Gemini vision reads a smartwatch screenshot and auto-fills activity, distance, duration and calories.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Kitchen OS &mdash; Pantry &amp; Nutrition Assistant</div>
+      <div class="entry__when">February &ndash; March 2026</div>
+    </div>
+    <div class="entry__sub">Python &middot; Streamlit &middot; Supabase &middot; Google Gemini &middot; pandas
+    &middot; Altair &mdash;
+    <a href="https://github.com/TusharLachman25/kitchen-os">github.com/TusharLachman25/kitchen-os</a></div>
+    <ul>
+      <li>A pantry, recipe and nutrition tracker in ~3,500 lines of Python over a 66-function data layer.</li>
+      <li>Gemini drives a conversational recipe assistant, and pantry stock is deducted when a recipe is cooked.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Other Projects</div>
+      <div class="entry__when">2026</div>
+    </div>
+    <ul>
+      <li><b style="font-weight:600;color:#1a1a1a">Bets &mdash; The Vault</b> &middot; React Native, Supabase &mdash;
+      a shared ledger for informal bets, from one codebase.</li>
+      <li><b style="font-weight:600;color:#1a1a1a">This portfolio</b> &middot; Next.js 16, React 19 on Vercel &mdash;
+      <a href="https://tusharlachman.dev">tusharlachman.dev</a>, documented screen by screen.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Academic Projects &mdash; RMIT University</div>
+      <div class="entry__when">2024 &ndash; 2026</div>
+    </div>
+    <div class="entry__sub">Python &middot; PyTorch &middot; scikit-learn &middot; Flask &middot; Docker &middot; AWS
+    &middot; C &middot; C++ &middot; Java &middot; NetworkX &middot; transformers &middot; Clingo &middot; Prolog</div>
+    <ul>
+      <li><b style="font-weight:600;color:#1a1a1a">Machine learning:</b> a CNN over 20,280 colon-tissue patches
+      against logistic-regression, random-forest and SVM baselines, split by patient &mdash; 0.852 macro-F1 against a
+      0.90 target, reported as not met.</li>
+      <li><b style="font-weight:600;color:#1a1a1a">Cloud:</b> a Flask REST API on DynamoDB and S3 deployed three ways
+      to compare &mdash; EC2 under gunicorn, ECS Fargate behind a load balancer, Lambda behind API Gateway.</li>
+      <li><b style="font-weight:600;color:#1a1a1a">Systems:</b> a multithreaded file copier in C (bounded queue,
+      three mutexes, two condition variables, valgrind-clean) and an sbrk heap allocator; Clingo exam timetabling
+      checked by an independent Prolog validator.</li>
+      <li><b style="font-weight:600;color:#1a1a1a">NLP, networks &amp; security:</b> a six-stage YouTube pipeline
+      (VADER/RoBERTa sentiment, LDA/BERTopic topics, NetworkX centrality, Louvain communities); a three-party GPG
+      exchange and a default-deny iptables firewall in Kali.</li>
+    </ul>
+  </div>
+
+  <h2>Experience</h2>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Independent Software Developer</div>
+      <div class="entry__when">June 2026 &ndash; Present</div>
+    </div>
+    <div class="entry__sub">Dr Varkha&rsquo;s Practice | Jakarta, Indonesia</div>
+    <ul>
+      <li>Sole developer of the platform above, on a paid monthly subscription: design, build, deploy and
+      support.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Information Systems Intern</div>
+      <div class="entry__when">August 2023 &ndash; January 2024</div>
+    </div>
+    <div class="entry__sub">Makmur Jaya Abadi | Jakarta, Indonesia</div>
+    <ul>
+      <li>Digitized accounting records into Excel and Google Sheets, automating repetitive entry with formulas.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Part Time Medical Assistant</div>
+      <div class="entry__when">June 2020 &ndash; April 2023</div>
+    </div>
+    <div class="entry__sub">Dr Varkha&rsquo;s Teleconsultations | Jakarta, Indonesia</div>
+    <ul>
+      <li>Digitized patient records, compiled laboratory and x-ray reports carefully protecting patient information,
+      and supported staff by answering phones and booking appointments &mdash; the job the platform above replaced.</li>
+    </ul>
+  </div>
+
+  <h2>Education</h2>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Bachelor of Computer Science &mdash; Minor in Artificial Intelligence &amp; Machine
+      Learning</div>
+      <div class="entry__when">Expected July 2027</div>
+    </div>
+    <div class="entry__sub">RMIT University, Melbourne, Australia</div>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Elementary School, Middle School and High School</div>
+      <div class="entry__when">Completed April 2023</div>
+    </div>
+    <div class="entry__sub">National High Jakarta School, Jakarta, Indonesia &mdash; Cambridge IGCSE, AS Level and
+    A Level examinations completed.</div>
+  </div>
+
+  <div class="entry">
+    <div class="entry__top">
+      <div class="entry__title">Balvikas Student</div>
+      <div class="entry__when">August 2011 &ndash; August 2023</div>
+    </div>
+    <div class="entry__sub">Sathya Sai Education, Jakarta, Indonesia</div>
+  </div>
+
+  <h2>Skills</h2>
+  <div class="rows">
+    <div><b>Languages</b><span>Python, TypeScript, JavaScript, Kotlin, Java, C, C++, SQL, Prolog, HTML, CSS</span></div>
+    <div><b>Frameworks</b><span>React, React Native (Expo), Next.js, Node.js, Flask, Streamlit, Tailwind CSS,
+    Capacitor</span></div>
+    <div><b>Mobile</b><span>Android (Kotlin, Jetpack Compose), CameraX, ML Kit pose detection, accessibility
+    services</span></div>
+    <div><b>Cloud &amp; DevOps</b><span>AWS (EC2, ECS, Lambda, S3, DynamoDB), Docker, Vercel, EAS Build, Gradle,
+    Firebase, Git</span></div>
+    <div><b>Backend &amp; Data</b><span>PostgreSQL, Supabase, REST APIs, serverless functions, OAuth 2.0,
+    row-level security</span></div>
+    <div><b>AI &amp; Data Science</b><span>Claude API (tool use), Google Gemini (text and vision), PyTorch,
+    scikit-learn, pandas, NetworkX</span></div>
+    <div><b>Practice</b><span>Testing (Vitest, pytest, JUnit, Robolectric), monorepos, CI, technical
+    writing</span></div>
+  </div>
+
+  <!-- Two one-line sections, each carrying a 27px band and the air around it,
+       spent more of the page on their own headings than on their content. -->
+  <h2>Community Service, Interests &amp; Languages</h2>
+  <p>The Care Club &mdash; volunteer every 2&ndash;4 weeks with a charity providing food, groceries and medical
+  care to families in need, alongside a GP, optician and dentist.</p>
+  <div class="langs"><b>Languages:</b> English (Proficient, C2) &middot; Bahasa Indonesia (Advanced, C1) &middot;
+  Hindi and Mandarin (Beginner, A1)</div>
+
+</div>
+</body>
+</html>
