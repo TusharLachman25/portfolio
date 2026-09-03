@@ -70,14 +70,14 @@
     <a href="https://tusharlachman.dev/work/medical">tusharlachman.dev/work/medical</a></div>
     <ul>
       <li>A TypeScript monorepo on npm workspaces &mdash; React dashboard, two Android apps (Capacitor), shared
-      document templates &mdash; behind 73 Deno edge functions and 39 migrations, covered by 637 unit tests.</li>
+      document templates &mdash; behind 75 Deno edge functions and 42 migrations, covered by 725 unit tests.</li>
       <li>Audited the live database with nothing but the read-only anon key that ships in the client bundle: eleven
       tables still answered, because row-level security sat switched off beneath correct-looking policies.</li>
       <li>Insurers&rsquo; claim PDFs filled by field name or coordinate map, signed and numbered from an atomic
       counter only on approval; a 38-tool Claude assistant that always proposes and never commits; bilingual WhatsApp
       via Twilio.</li>
-      <li>Gave in-person and online consultations separate hours and appointment lengths, where one column and a
-      hardcoded 30 minutes had been turning away every online patient who asked for a time after six.</li>
+      <li>De-identified every Claude API request: name, date of birth, phone and address become a patient number. Also
+      closed a public OAuth callback that could have sent the nightly database backup to a stranger&rsquo;s Drive.</li>
     </ul>
   </div>
 

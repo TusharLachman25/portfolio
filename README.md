@@ -142,15 +142,15 @@ them can be checked in an interview:
 
 | Claim | Source |
 |---|---|
-| 73 edge functions | `supabase/functions/*` in the medical repo |
-| 39 migrations | `supabase/migrations/*` |
-| 637 unit tests | `npx vitest run` — 39 files, 637 passing (10 skipped) |
+| 75 edge functions | `supabase/functions/*` in the medical repo |
+| 42 migrations | `supabase/migrations/*` |
+| 725 unit tests | `npx vitest run` — 46 files, 725 passing (10 skipped) |
 | 38 assistant tools | `supabase/functions/_shared/aiTools/*` |
 | 125 unit tests | `./gradlew testDebugUnitTest` in FitScroll — `@Test` count, 125 |
 | 38 REST endpoints | `src/app/api/**/route.ts` in Jarvis |
 | 10 migrations | `supabase/migrations/*` in Jarvis |
-| 111 API + edge functions | 73 + 38 |
-| 762 unit tests | 637 + 125 |
+| 113 API + edge functions | 75 + 38 |
+| 850 unit tests | 725 + 125 |
 | ~5,000 lines of TypeScript | the twelve modules in the Locked In repo |
 | ~3,500 lines of Python | `wc -l *.py` in Kitchen OS (3,484) |
 | 66 backend functions | `def` count in Kitchen OS's `backend.py` |

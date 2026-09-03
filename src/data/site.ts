@@ -55,14 +55,14 @@ export const TITLE_BLOCK: { key: string; value: string }[] = [
   },
 ];
 
-/** Four numbers that survive being checked. 111 is 73 edge functions plus 38
- * REST endpoints; 762 is what `vitest run` prints on the medical repo (637)
+/** Four numbers that survive being checked. 113 is 75 edge functions plus 38
+ * REST endpoints; 850 is what `vitest run` prints on the medical repo (725)
  * plus what `gradlew testDebugUnitTest` prints on FitScroll (125). */
 export const HERO_STATS: { value: string; label: string }[] = [
   { value: '6', label: 'PRODUCTS BUILT' },
   { value: '1', label: 'PAYING CUSTOMER' },
-  { value: '111', label: 'API + EDGE FUNCTIONS' },
-  { value: '762', label: 'UNIT TESTS' },
+  { value: '113', label: 'API + EDGE FUNCTIONS' },
+  { value: '850', label: 'UNIT TESTS' },
 ];
 
 export const SKILLS: { label: string; items: string }[] = [
