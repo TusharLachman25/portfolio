@@ -3,6 +3,7 @@ import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
 import { SITE_URL } from "@/data/site";
+import { Analytics } from "@vercel/analytics/next";
 
 const display = Space_Grotesk({
   variable: "--font-display",
@@ -119,6 +120,10 @@ export default function RootLayout({
       </head>
       <body>
         <Shell>{children}</Shell>
+        {/* Page views, referrers and countries — no cookies, so no banner, and
+            nothing that identifies a visitor. Only counts on the deployed site;
+            `next dev` sends nothing. */}
+        <Analytics />
       </body>
     </html>
   );
