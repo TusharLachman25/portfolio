@@ -27,13 +27,13 @@ const VARIANTS = [
   {
     source: 'resume/resume.html',
     out: 'public/Tushar-Lachman-Resume.pdf',
-    copyAs: 'Tushar Ajit Lachman Resume.pdf',
+    copyAs: 'Tushar Lachman - Resume (detailed).pdf',
     pages: 2,
   },
   {
     source: 'resume/resume-onepage.html',
     out: 'public/Tushar-Lachman-Resume-1-page.pdf',
-    copyAs: 'Tushar Ajit Lachman Resume (1 page).pdf',
+    copyAs: 'Tushar Lachman - Resume.pdf',
     pages: 1,
   },
 ];
