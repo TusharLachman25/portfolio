@@ -514,6 +514,149 @@ export const PROJECTS: Project[] = [
     repoNote: 'Private repository — it holds real clinical data. Walkthrough available on request.',
   },
   {
+    slug: 'poker-tracker',
+    name: 'Poker Tracker',
+    short: 'Poker Tracker',
+    tagline: 'The home game’s ledger: who’s up, who’s down, and who owes who — to the cent.',
+    period: 'September 2026',
+    kind: 'OFFLINE-FIRST LEDGER APP',
+    status: 'Live — web app and Android APK',
+    role: 'Solo — design, build, ship',
+    accent: '#e3b341',
+    // The app's own shipped icon, copied from its public/icons.
+    logo: '/logos/poker-tracker.svg',
+    layers: [
+      'React 19 · TypeScript · Vite — a hand-written design system, no UI kit',
+      'Zustand store, saved to the phone on every change',
+      'Every amount in integer cents, converted only for display',
+      'Settle-up: the largest zero-sum split — provably fewest payments',
+      'One commit path, one append-only activity log',
+      'Sync: pull → last-write-wins merge with tombstones → push',
+      'Supabase Postgres — RLS on with no policies, three password-checked functions',
+      'Installable PWA for iPhone · Capacitor APK for Android, from one build',
+      '63 unit tests (Vitest) · a Puppeteer smoke test through the real UI',
+    ],
+    stack: ['React', 'TypeScript', 'Vite', 'Zustand', 'Supabase', 'PostgreSQL', 'Capacitor', 'PWA', 'Vitest', 'Puppeteer'],
+    metrics: [
+      { value: '63', label: 'unit tests' },
+      { value: '14', label: 'players settled exactly' },
+      { value: '0', label: 'credentials in the bundle' },
+      { value: '1', label: 'build — web app and APK' },
+    ],
+    blurb:
+      'Built for the home game my friends and I play — a $10 buy-in at five- and ten-cent blinds, where the money is small and the arguments about it are not. Poker Tracker is the ledger: log a night in the time it takes to type the cash-outs, keep everyone’s running total to the cent, and settle up in the fewest payments that clear the table. It works offline on each phone, and with sharing on, the whole group reads and writes one ledger.',
+    highlights: [
+      'Every amount is stored as integer cents and only turned into dollars on the way to the screen. Poker maths is a night of sums and differences, and floating point drifts — 0.1 + 0.2 is not 0.3 — so a float ledger at ten-cent blinds can finish a night a cent out. Display has its own rule: whole amounts show bare and anything with cents shows both digits, never one, which is what letting the formatter drop a trailing zero produces — “$13.5”, which reads as broken.',
+      'A new night opens with everyone at the standard buy-in and a one-tap + buy-in on each row, so a normal session only needs the cash-outs typed. The editor adds the table up as you go and holds its verdict until a cash-out exists — with buy-ins pre-filled, a fresh session would otherwise open showing a loss on every row and a warning that isn’t true yet. When the totals disagree it says by how much, and why that matters: chips can’t appear or vanish, so the difference is a typo, not a result. It still lets you save, and the leaderboard flags any night that doesn’t balance rather than quietly folding it in.',
+      'Settling up is the provably fewest payments, not just a short list. Balances are netted first, so nobody both pays and gets paid. Then everyone is split into as many groups as possible whose balances sum to zero, because a group of k people always needs exactly k−1 payments — so the minimum is n minus the number of groups. Paying the biggest debtor into the biggest creditor, the obvious approach, only guarantees n−1 and misses tables where a subset cancels out: on the night in the captures below it takes four payments where this takes three. Finding the best split is exponential, 3ⁿ, so it runs exactly for up to 14 people with a balance — about five million steps, held under 250ms by a performance test — and falls back to the greedy pass above that, which a home game never reaches. A property test replays 200 random tables and checks every player lands exactly on their net.',
+      'Sessions say who won; they don’t say who has since handed money over. Payments are records of their own — from, to, amount, date — and what anyone still owes is their session nets plus what they’ve paid minus what they’ve been paid. The settle-up plan is built from that rather than from raw winnings, so a debt already paid stops being suggested, part payments work, and overpaying flips who is owed instead of breaking anything. Each suggested transfer has a button that records it with the amount pre-filled.',
+      'Each phone keeps its own copy, saved on every change, and works with no signal at all; sharing is optional. With it on, a sync pulls the group’s ledger, merges it with the phone’s and pushes the result back. Every record carries a timestamp and the newer copy wins, so two people logging different nights on different phones both keep their work — only edits to the same record conflict. Deletes are tombstones with their own timestamp, so an older copy on another phone can’t bring a deleted session back. Edits are ordered by each phone’s own clock — a fair bet for one group of friends, and the limit of last-write-wins.',
+      'Settings were the one record that didn’t merge that way, and that was a bug. The merge took the server’s whole settings record whenever it had a group name — which, once sharing is on, is always — so changing the currency appeared to save, reverted two and a half seconds later exactly when the sync fired, and was pushed back to everyone. Settings now carry their own timestamp and merge like every other record, and untouched defaults are stamped zero so a phone joining a group still adopts the group’s currency, buy-in and stakes. Regression tests cover the reported case, the reverse direction, a first join and a repeated sync; the smoke test changes the currency and checks it is still there four seconds later.',
+      'Capturing this page turned up one more sync bug, in the live app. Every sync changes the ledger — the merge commits a fresh copy of it — and the engine pushed a couple of seconds after any change to the ledger, so each sync scheduled the next: an open phone pulled and pushed the entire ledger every 2.5 seconds for as long as the app stayed open, twelve round trips in thirty idle seconds. The store now counts edits made on the phone and the engine schedules on that count; a merge from the group isn’t an edit, because the sync that brought it in has already pushed it back. Taking the loop out exposed what it had been covering for — a sync asked for while another was running was dropped, so an edit made mid-sync waited for the minute timer — and that now queues one more run. The same idle phone now makes none.',
+      'The Supabase anon key is designed to ship to clients, so the table is locked rather than the key. Row-level security is on with no policies, which leaves the anonymous role unable to touch the table at all, and every read and write goes through one of three SECURITY DEFINER functions that each require the group’s password — without it you can’t read, write or even confirm a group exists. Group names are forgiving on purpose (“friday felt” finds “Friday Felt”, accents and punctuation aside), so the password is what actually protects a group, with an eight-character floor enforced in the client and again in the SQL. It is compared as typed rather than hashed — whoever created the Supabase project can read the group’s numbers anyway — which is why the setup guide says not to reuse a password you care about.',
+      'The first version baked the group’s Supabase project and join code into the build, so friends needed no setup at all. It lasted about ten minutes: the site is public on GitHub Pages, and anything in its JavaScript is readable by anyone who finds the URL. Nothing is baked in now — the project URL, key, group name and password travel together in one invite a phone’s Settings composes — and for this page both the live site’s scripts and the released APK were checked: neither contains a Supabase address or a key.',
+      'Every session, payment and roster change is written through one path that appends to an activity log, so nothing can change the numbers without leaving a trace. An edit records the nets on both sides — “Nadia: +$6.20 → -$6.10” — because a quietly rewritten bad night is the thing worth catching, and the log has an Edits & deletions filter for exactly that. The author is whoever the phone is set to in Settings, saved by name at the time so a later rename can’t rewrite history, and the screen says plainly that it is an honour-system record: it answers “who changed my numbers?”, not much more. Entries are never edited, so on a merge the log is a union rather than a contest, capped at the newest 300.',
+      'iPhones can’t sideload, so they get the installable web app — its own icon, no browser chrome, works offline — and Android gets a real APK from the same build through Capacitor. The service worker is registered by hand so the native build can skip it: inside Capacitor the files are already on the phone, and a worker’s precache there would keep serving the previous version’s screens after an update until someone cleared the app’s data. The Supabase client, about 350 kB, is only loaded once sharing is switched on.',
+      '63 unit tests pin down the money, the stats, the settle-up, the merge and the activity diffs, and a Puppeteer smoke test drives the real interface the way a person would: adds players, logs a night with a rebuy, checks the leaderboard and the settle-up agree with what was typed, records a payment, changes the currency and checks it stays changed, edits a session and reads the edit back out of the log. It compares money by sign and digits only, so it passes whatever the currency and whatever the machine’s locale.',
+    ],
+    trailer: '/media/poker-trailer.mp4',
+    trailerPoster: '/media/poker-trailer-poster.jpg',
+    trailerNote:
+      'Twenty-five seconds on the argument every home game has — everyone at the table is up overall, and the table is zero-sum — and the three things that end it: a night that has to balance, the fewest payments that settle it, and one set of numbers on every phone. Built as motion rather than screen-captured, but drawn from the app itself: its felt and gold, its cards, its own words where it has them (“Cash-outs are $2.70 less than buy-ins.”, “3 payments clears everyone.”), and the same invented night the screenshots below use.',
+    video: '/media/poker-demo.mp4',
+    poster: '/media/poker-demo-poster.jpg',
+    videoNote:
+      'Two phones on one group, side by side, uncut and at real speed: Tushar logs tonight — Marcus sitting out, two rebuys, a cash-out typed as 21.40 that the editor flags as $2.70 short until it is corrected — checks the night’s settle-up and saves; Mira taps sync and her standings change to match; Mira records the $17.05 Theo sent her, and it lands on Tushar’s phone; and the take ends on the group’s activity log, her payment at the top and Jonah’s correction from 3 October under Edits & deletions. Every change is a real write through the app’s own code, and the phones reach each other through its own pull, merge and push.',
+    shots: [],
+    flows: [
+      {
+        title: 'The standings',
+        caption:
+          'The home screen is the argument settled: everyone ranked by profit across every night, to the cent.',
+        steps: [
+          {
+            src: '/media/poker-standings.png',
+            title: 'Who’s up, and by how much',
+            caption:
+              'Left, the leaderboard after six nights: a running-profit line per player, then everyone ranked with their sessions, wins and losses, streak and ROI. Right, Mira’s page — +$49.50 across six sessions, her line on its own, and the form tiles: win rate, average and best and worst night, money staked, ROI, and an hourly rate from the nights that recorded how long they ran. Filters narrow the leaderboard to 30 days, 90, or this year.',
+          },
+        ],
+      },
+      {
+        title: 'Logging a night',
+        caption:
+          'Built for eleven at night: everyone starts at the standard buy-in, a rebuy is one tap, and the table has to add up before its numbers count.',
+        steps: [
+          {
+            src: '/media/poker-night.png',
+            title: 'Rebuys in a tap, and a typo caught',
+            caption:
+              'Left, tonight before anyone has cashed out: Marcus switched off because he sat it out, Theo three buy-ins deep and Leo two, both from the + buy-in button. Right, the cash-outs typed — and Tushar’s 24.10 entered as 21.40. The totals read $90 in and $87.30 out, and the editor says so: chips can’t appear or vanish, so the difference is a typo, not a result. It still lets you save; the totals are just marked as off.',
+          },
+          {
+            src: '/media/poker-balanced.png',
+            title: 'Balanced, then settled',
+            caption:
+              'The cash-out corrected and the table balancing to the cent. Right, Settle this night: three payments clear it. On these nets — +25.15, +14.10, −14.10, −17.05, −8.10 — paying the biggest debtor into the biggest creditor first would take four; Leo’s −14.10 cancels Tushar’s +14.10 exactly, Theo’s and Nadia’s together cancel Mira’s, and the app finds both.',
+          },
+        ],
+      },
+      {
+        title: 'Settling up',
+        caption:
+          'Winnings say who won; payments say who has since paid. What anyone owes is both, and the plan is built from it.',
+        steps: [
+          {
+            src: '/media/poker-owed.png',
+            title: 'Who owes who, and recording it',
+            caption:
+              'Left, the Payments page after tonight: the same three transfers, each with a button to record it, and everyone’s standing with what they have already paid and been paid. Right, Record this payment on Theo → Mira — the sheet pre-filled with both names and $17.05, a note added. Part payments are fine; recording one takes it off the totals.',
+          },
+          {
+            src: '/media/poker-paid.png',
+            title: 'Two left, and the history',
+            caption:
+              'Saved, the plan is down to two payments and Theo is off the list. Right, the payment history: tonight’s at the top and the two earlier settle-ups below it — what the app suggested on 27 September and 11 October, recorded through the same button — with the total settled across eight payments.',
+          },
+        ],
+      },
+      {
+        title: 'Two phones, one ledger',
+        caption:
+          'Each phone keeps its own copy and works offline. Turn sharing on and the group reads and writes one ledger.',
+        steps: [
+          {
+            src: '/media/poker-share.png',
+            title: 'The invite, and joining with it',
+            caption:
+              'Left, Tushar’s phone: everyone in Friday Felt sees the same numbers, and one button copies an invite with everything a friend needs. Right, Marcus’s new phone joining — the group name typed in lower case, because “friday felt” and “Friday Felt” reach the same group, while the password has to be exact. The project URL and key are a stand-in, explained in the note below.',
+          },
+          {
+            src: '/media/poker-joined.png',
+            title: 'Everything, on the first sync',
+            caption:
+              'Marcus’s phone straight after joining: the standings and every night the group has played, pulled down and merged with what was on the phone — here, nothing — and the group’s name with them.',
+          },
+        ],
+      },
+      {
+        title: 'The paper trail',
+        caption: 'Every session, payment and roster change goes into one log, with who made it.',
+        steps: [
+          {
+            src: '/media/poker-activity.png',
+            title: 'Who changed what',
+            caption:
+              'Left, everything, newest first: Tushar recording Theo’s payment and logging tonight, then the earlier settle-ups, nights and players, each under the name of whoever the phone belonged to. Right, Edits & deletions: the one edit in the group’s history — Jonah putting his and Nadia’s cash-outs back in their own rows on 3 October — with both nets before and after. It is an honour-system record, and the screen says so.',
+          },
+        ],
+      },
+    ],
+    note:
+      'The trailer at the top is built motion rather than app footage, and says so; everything below it is the real app running — the same build that is live on GitHub Pages, byte for byte. Every name and number is invented, and has to be: the real ledger is my friends’ winnings and losses, kept on their phones and in their own Supabase project, none of which was opened or touched. The cast is the same invented one the Locked In and Bets captures use, with my own name the one real thing left, since it is already the title of this site. The history was not written into storage. A script typed the five earlier nights, Jonah’s correction, Marcus being added and two settle-ups into the app’s own screens on a clock wound back to each one, switching “Who’s using this phone” to stand in for each friend; tonight, and Marcus’s phone joining the group, are typed live by the captures. So every session, payment and log entry was made by the app’s own code — and the payment amounts are what the app suggested at the time. Sharing runs against a stand-in for Supabase: the three Postgres functions are answered inside the browser with the same rules the real SQL enforces, at a project URL, demo-project.supabase.co, that cannot belong to anyone, because a real project’s address is twenty lowercase letters; any request to another host is refused and fails the run. Two bugs surfaced while capturing, and both were fixed in the app and deployed before these were shot rather than framed around: an open phone with sharing on synced every 2.5 seconds for as long as it stayed open, and the Sessions list drew its cards in the browser’s default link blue. Dates in form fields read in US order because browser-drawn date controls follow the capture machine’s regional settings, not the app.',
+    repo: 'https://github.com/TusharLachman25/poker-tracker',
+  },
+  {
     slug: 'fitscroll',
     name: 'FitScroll',
     short: 'FitScroll',

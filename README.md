@@ -1,7 +1,7 @@
 # Portfolio — Tushar Lachman
 
 The source for my personal site: a scrolling home page plus a dedicated sheet
-for each of six projects and nine academic units, most with a trailer, a full
+for each of seven projects and nine academic units, most with a trailer, a full
 walkthrough recording and screenshots.
 
 Built with Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS 4.
@@ -125,6 +125,14 @@ real, and where it isn't, that's deliberate:
   email and seal are blurred and verified in every frame — the walkthrough keeps
   the blur live while React re-renders. The trailer is motion graphics in the
   app's design, not a recording. Tooling: `../capture-tools/med-*.mjs`.
+- **Poker Tracker** — the build that is live on GitHub Pages, driven at phone
+  size with an invented home game typed into its own screens on a clock wound
+  back to each night. Sharing runs against an in-browser stand-in for the three
+  Supabase functions, so two phones can share a group without the real one
+  being touched; the walkthrough is those two phones side by side. Capturing it
+  found two bugs in the live app — a sync loop and unstyled session cards —
+  which were fixed and deployed before the shots were taken. The trailer is
+  motion graphics. Tooling: `../capture-tools/poker-*.mjs`.
 - **Jarvis** — my own account, with the financial figures masked in the rendered
   page before capture. The masking is display-only and never touched the
   database; balances are scaled by a constant factor so the totals still add up.
@@ -155,10 +163,12 @@ them can be checked in an interview:
 | 15 WhatsApp agent tools | `name:` entries in `supabase/functions/_shared/whatsappAgentTools.ts` |
 | ~91,000 lines across 513 files | tracked `.ts`/`.tsx` in the medical repo (90,633) |
 | 125 unit tests | `./gradlew testDebugUnitTest` in FitScroll — `@Test` count, 125 |
+| 63 unit tests | `npx vitest run` in Poker Tracker — 3 files, 63 passing |
+| 14 players settled exactly | `EXACT_LIMIT` in Poker Tracker's `src/lib/settle.ts`; `perf.test.ts` holds it under 250ms |
 | 38 REST endpoints | `src/app/api/**/route.ts` in Jarvis |
 | 10 migrations | `supabase/migrations/*` in Jarvis |
 | 127 API + edge functions | 89 + 38 |
-| 2,100 unit tests | 1,975 + 125 |
+| 2,163 unit tests | 1,975 + 125 + 63 |
 | ~5,000 lines of TypeScript | the twelve modules in the Locked In repo |
 | ~3,500 lines of Python | `wc -l *.py` in Kitchen OS (3,484) |
 | 66 backend functions | `def` count in Kitchen OS's `backend.py` |

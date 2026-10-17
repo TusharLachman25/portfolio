@@ -58,13 +58,14 @@ export const TITLE_BLOCK: { key: string; value: string }[] = [
 /** Four numbers that survive being checked. 127 is the medical repo's 89 edge
  * functions (directories under supabase/functions with an index.ts — not
  * _shared, which the old count of 75 had included) plus Jarvis's 38 REST
- * endpoints; 2,100 is what `vitest run` prints on the medical repo (1,975)
- * plus what `gradlew testDebugUnitTest` prints on FitScroll (125). */
+ * endpoints; 2,163 is what `vitest run` prints on the medical repo (1,975),
+ * plus what `gradlew testDebugUnitTest` prints on FitScroll (125), plus what
+ * `vitest run` prints on Poker Tracker (63). The other repos have no tests. */
 export const HERO_STATS: { value: string; label: string }[] = [
-  { value: '6', label: 'PRODUCTS BUILT' },
+  { value: '7', label: 'PRODUCTS BUILT' },
   { value: '1', label: 'PAYING CUSTOMER' },
   { value: '127', label: 'API + EDGE FUNCTIONS' },
-  { value: '2,100', label: 'UNIT TESTS' },
+  { value: '2,163', label: 'UNIT TESTS' },
 ];
 
 export const SKILLS: { label: string; items: string }[] = [

@@ -102,7 +102,7 @@ const HTML = `<!doctype html>
     <div class="avail"><b>&#9679;</b>Open to software, data &amp; AI/ML roles</div>
     <h1>Tushar Lachman</h1>
     <div class="disc">Software &middot; Data &middot; AI/ML</div>
-    <div class="desc">Six products built end to end. One runs a family practice in Jakarta every day, on a paid subscription.</div>
+    <div class="desc">Seven products built end to end. One runs a family practice in Jakarta every day, on a paid subscription.</div>
     <div class="stats">
       ${STATS.map((s) => `<div class="stat"><div class="v">${s.value}</div><div class="l">${s.label}</div></div>`).join('\n      ')}
     </div>
