@@ -71,14 +71,16 @@
     <a href="https://tusharlachman.dev/work/medical">tusharlachman.dev/work/medical</a></div>
     <ul>
       <li>A TypeScript monorepo on npm workspaces &mdash; React dashboard, two Android apps (Capacitor), shared
-      document templates &mdash; behind 75 Deno edge functions and 42 migrations, covered by 725 unit tests.</li>
+      document templates &mdash; behind 89 Deno edge functions and 54 migrations, covered by 1,975 unit tests.</li>
+      <li>Rebuilt WhatsApp booking as a 15-tool Claude agent that patients book, move and pay through by tapping, in
+      English or Bahasa &mdash; every change gated in code on the patient&rsquo;s yes, tested in 48 real-model
+      conversations.</li>
       <li>Audited the live database with nothing but the read-only anon key that ships in the client bundle: eleven
-      tables still answered, because row-level security sat switched off beneath correct-looking policies.</li>
-      <li>Insurers&rsquo; claim PDFs filled by field name or coordinate map, signed and numbered from an atomic
-      counter only on approval; a 38-tool Claude assistant that always proposes and never commits; bilingual WhatsApp
-      via Twilio.</li>
-      <li>De-identified every Claude API request: name, date of birth, phone and address become a patient number. Also
-      closed a public OAuth callback that could have sent the nightly database backup to a stranger&rsquo;s Drive.</li>
+      tables still answered, because row-level security sat switched off beneath correct-looking policies. Also
+      closed a public OAuth callback that could have sent the nightly backup to a stranger&rsquo;s Drive.</li>
+      <li>Insurers&rsquo; own claim forms filled in their own boxes, tried on 16 real insurers&rsquo; forms; a 40-tool
+      Claude assistant that always proposes and never commits; every Claude request de-identified to a patient
+      number.</li>
     </ul>
   </div>
 
@@ -110,7 +112,7 @@
     &middot; Google APIs &mdash;
     <a href="https://github.com/TusharLachman25/jarvis-life-os">github.com/TusharLachman25/jarvis-life-os</a></div>
     <ul>
-      <li>Tasks, calendar, health and finance in one dashboard across two countries: 38 REST endpoints, Google OAuth
+      <li>Tasks, calendar, health and finance in one dashboard: 38 REST endpoints, Google OAuth
       with token refresh across Calendar, Tasks and Gmail, and Claude parsing bank statements into reviewable
       transactions.</li>
       <li>Reconciled two wearable ecosystems that do not interoperate &mdash; Fitbit through Google Health&rsquo;s

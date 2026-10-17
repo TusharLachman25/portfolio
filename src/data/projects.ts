@@ -111,15 +111,16 @@ export const PROJECTS: Project[] = [
     logo: '/logos/medical.svg',
     layers: [
       'React + Vite dashboard (TypeScript)',
-      'Two Android apps wrapped with Capacitor',
-      '75 Deno edge functions — the only privileged write path',
-      'PostgreSQL on Supabase · 42 migrations · RLS on every table',
-      'Claude assistant with 38 tools, behind approval, on de-identified records',
-      'WhatsApp Business via Twilio',
-      'Google Drive + Calendar (service account and OAuth)',
+      'Two Android apps wrapped with Capacitor — the main one loads the live site and updates itself',
+      '89 Deno edge functions — the only privileged write path',
+      'PostgreSQL on Supabase · 54 migrations · RLS on every table',
+      'Claude Opus 5 assistant with 40 tools, behind approval, on de-identified records',
+      'Claude Sonnet 5 WhatsApp agent with 15 tools, held to rules enforced in code',
+      'WhatsApp Business via Twilio · Meta-approved templates in English and Bahasa',
+      'Google Drive, Calendar and Meet (service account and OAuth)',
       'Firebase Cloud Messaging push · in-app bell',
       'Nightly AES-256-GCM encrypted backup to Drive · 30 copies kept',
-      '725 unit tests across 46 files',
+      '1,975 unit tests across 99 files · 48 conversations against the real model',
     ],
     stack: [
       'React',
@@ -131,242 +132,317 @@ export const PROJECTS: Project[] = [
       'Capacitor',
       'Claude API',
       'Twilio',
+      'Google APIs',
       'Firebase Cloud Messaging',
+      'pdf.js',
       'Tailwind CSS',
       'Vitest',
     ],
     metrics: [
-      { value: '75', label: 'edge functions' },
-      { value: '42', label: 'migrations' },
-      { value: '725', label: 'unit tests' },
-      { value: '38', label: 'assistant tools' },
+      { value: '89', label: 'edge functions' },
+      { value: '54', label: 'migrations' },
+      { value: '1,975', label: 'unit tests' },
+      { value: '40', label: 'assistant tools' },
     ],
     blurb:
-      'I spent three years as a medical assistant digitising patient records by hand. This is the software that replaced that job. It started as something I built for myself to use, and the practice now licenses it on a paid monthly subscription — patients, appointments, billing, insurance claims, clinical documents and messaging in one place, on the web and on Android.',
+      'I spent three years as a medical assistant digitising patient records by hand. This is the software that replaced that job. It started as something I built for myself to use, and the practice now licenses it on a paid monthly subscription — patients, appointments, billing, insurance claims, clinical documents and messaging in one place, on the web and on Android. Patients now book, move and pay through a WhatsApp assistant that holds the conversation itself, inside rules the code enforces.',
     highlights: [
-      'A TypeScript monorepo on npm workspaces: a React dashboard, a second Android app, a shared package holding the document templates, and a standalone ingestion tool — around 56,000 lines across 378 files, with 75 serverless Deno edge functions and 42 PostgreSQL migrations behind them, covered by 725 unit tests.',
-      'The browser only ever holds the read-only anon key. Every write goes through an edge function, so the privileged path is a list of 73 named operations rather than a database the client can reach — a stolen key from a laptop in a consulting room reads nothing it should not and writes nothing at all.',
+      'A TypeScript monorepo on npm workspaces: a React dashboard, a second Android app, a shared package holding the document templates, and standalone tools for ingestion, backup and restore, and submitting WhatsApp templates to Meta — around 91,000 lines across 513 files, with 89 serverless Deno edge functions and 54 PostgreSQL migrations behind them, covered by 1,975 unit tests.',
+      'The browser only ever holds the read-only anon key. Every write goes through an edge function, so the privileged path is a list of 89 named functions rather than a database the client can reach — a stolen key from a laptop in a consulting room reads nothing it should not and writes nothing at all.',
       'That was the design, and for a while it was not what was actually running. A migration had converted every “allow read for all” policy to an authenticated-only one, but on the live database row-level security was switched off — and a policy on a table with RLS off is inert. Measured with nothing but the public anon key, no login and no session, eleven tables still answered: patients, medical records, history events, billing, files, generated documents, WhatsApp messages and four more. One of those rows was a real patient’s name, and that key ships inside the client bundle. The fix re-asserts the same expression the working tables already use, every step idempotent so it converges from any starting point, and turns RLS back on first — which was the step doing the real work.',
       'The Google connection could have been completed by a stranger. `google-oauth-callback` is public by necessity — Google redirects a browser to it and that carries no session — and what it did with that request was exchange any code it was handed and write the resulting refresh token in as the practice’s own, unconditionally. The client id and redirect URI both ship in the client bundle because OAuth requires them to, so anyone could build the consent URL, approve it with their own Google account, and let Google redirect them here; from that moment the nightly backup — every table, every patient, one gzipped file — and every generated report and signed claim would upload to a stranger’s Drive, with nobody at the practice doing anything or seeing anything. The missing piece was `state`, and it cannot live in the browser: the callback is a top-level redirect rather than a fetch from the app, so it cannot read sessionStorage. It is minted server-side behind a real dashboard session, stored, and consumed exactly once, constant-time, within fifteen minutes. Building the URL server-side had a second effect worth having: the client id and redirect URI no longer ship in the client bundle at all.',
       'Two-step sign-in sits in Settings beside the screen lock, optional and off until she turns it on, for the same reason — a second step nobody chose is one that gets worked around. The password stays shared between her and the nurse, which is a decision about how the practice runs; what changes is that a shared password is no longer the only thing in front of every patient record. The gate asks for the code on every pass rather than only after the password screen, because a session restored from storage arrives at aal1 and would otherwise walk straight past it. The SQL that requires aal2 to read is deliberately not a migration: `db push` runs migrations, and a file that can lock the practice out of its own records should never run because somebody deployed.',
       'Patient names stopped crossing the boundary to Anthropic. There is no BAA and no zero-retention arrangement — both were looked at and ruled out as impractical to obtain from Indonesia — so the lever left is to send less. Every patient carries a number now, and the number is what goes out: names are scrubbed on the way to the API and restored on the way back, including in the arguments the model hands a tool, without which it passes P-0042 as the name to search for or print on a document. Values are walked rather than serialised, because a name containing a quote appears escaped in JSON, so a scrub misses it and a rehydrate leaves a string that no longer parses — both failures silent, both on real names. `patient_number` is NOT NULL with its allocation as the column default, which matters more than it looks: the scrubber is a no-op given an empty number, so a nullable column would turn “we forgot to set it on this path” into “this patient’s real name went to the API”, silently, with every test still green. Chat titles used to come off Claude Fable 5, a Covered Model carrying 30-day retention, which made one sidebar label the practice’s entire retained footprint at Anthropic — and its own prompt asked for a patient name. Titles come from her own words, locally, now.',
-      'That first pass was name-only, and a name is not the only thing that says who somebody is: the record tools still returned date of birth, gender, phone and address beside it, and the assistant was observed reciting all three straight back. They are gone from what the model sees, and nothing needed them there — the tools that genuinely act on a phone number look it up server-side from the patient id and never hand it over. Insurance forms were the hard case, because the model lays the identity fields itself onto a page that must print them: it gets case-mirroring masks of the same shape, and the real values go back by source and reading order, one box taking the whole value and N boxes taking a character each. On a count that fits neither it blanks the field rather than guessing, so it reaches the review screen for her to complete — a blank she fills beats a date of birth that is confidently wrong over her signature. What still goes, and none of it is fixable here: the scans an extraction call exists to read, where the name is pixels; the first mention of somebody not yet on file, where there is no number to swap in; and partner-hospital bookings, which name the patient to the hospital by design.',
-      'An insurance claims module that fills insurers’ own reimbursement forms rather than producing a lookalike: PDFs with real form fields are filled by name, and scanned or photographed ones by a percentage-based coordinate map that survives a re-scan at any size.',
-      'Nothing is signed until she has read it — the signature and stamp go on only at the moment of approval, so a signed claim she has not seen cannot exist.',
+      'That first pass was name-only, and a name is not the only thing that says who somebody is: the record tools still returned date of birth, gender, phone and address beside it, and the assistant was observed reciting all three straight back. They are gone from what the model sees, and nothing needed them there — the tools that genuinely act on a phone number look it up server-side from the patient id and never hand it over, and every WhatsApp number a patient writes from is redacted on the way out. Insurance forms were the hard case, because the model lays the identity fields itself onto a page that must print them. They used to go out as masks of the same shape — “Xxxxx Xxxxxxxxx”, “00 Xxxxx 0000” — to be swapped back afterwards, which held for a box that took the whole value and nowhere else: real forms split a name into first and family names and a date of birth into day, month and year boxes, the model split the mask the same way, and on every real form tried that split either value the placeholder itself would have printed on the signed claim. They go out as named pieces now — first name, day of birth, month — that the model places wherever the form wants them and the code fills in afterwards. The visit’s own dates go the same way although they are not private, because a date the model has to reformat is a date it can get wrong: on one insurer’s form it wrote “3” in the day box for the 30th. A token can only be copied. What still goes, and none of it is fixable here: the scans an extraction call exists to read, where the name is pixels; the first words of somebody not yet on file, before there is a number to swap in; and partner-hospital bookings, which name the patient to the hospital by design.',
+      'The WhatsApp assistant used to feel like a chatbot because it was one: a state machine walking a patient through fields, with the model asked only narrow questions along the way — which intent is this, extract the name from this reply. So when it asked for a full name and the patient asked something else, the something else became their name, and no prompt fixes that shape, because the form had decided what a message was before anything had read it. Claude Sonnet 5 runs the conversation now: it reads the whole chat, answers what was actually asked, and acts through fifteen tools — check the diary, propose a booking, a move, a switch between in person and online or a cancellation, file documents, start a claim, send a receipt, hand over to the team. What must never go wrong is still enforced in code rather than left to the model. Nothing changes the diary on its say-so: it proposes, the proposal is shown to the patient, and only a yes that arrives after that message went out lets the booking through. A slot is re-checked against the calendar at the proposal and again at the yes. It never sees a known patient’s name or anyone else’s appointments. And a number gets one turn at a time, so three quick bubbles are read together as one message, a screenshot waits for the words sent after it, and a turn that dies is taken over rather than wedging the chat.',
+      'Patients tap rather than type. The model can offer up to three buttons or a list of ten — in person or online with each fee, the days and times the diary actually has, which person, yes or no — made per message through Twilio’s Content API, which needs no Meta approval inside the 24-hour window, and deleted when the next one replaces them; if Twilio refuses, the same options go as a numbered list. Buttons can only answer one question, so a message asks one thing, always: measured against the real model, two in five first replies to “Appointment please” asked two things at once and offered nothing to tap, and after the change eight of eight asked one. One phone is often a whole family’s, so who an appointment is for is the first question, with a button per person on file — and the booking tool refuses a person on file unless the patient said who, because the failure it prevents is a parent tapping Yes on their own phone and booking their child’s appointment in their own name.',
+      'A new patient’s details never come from the chat, where a typo goes straight onto the record. They fill in a Google Form in the practice’s own account, linked from the chat with a reference that ties the answers back to it; the form’s Apps Script posts them to the webhook with a secret only it and the app know, and an answer that can’t be matched is never guessed — it waits in the form’s responses and she is told. A patient writing from a number the practice doesn’t know is asked, in her words, whether they are the person on file with the same name and date of birth — without ever naming who that is. When someone says no and was wrong after all, the patient page merges the two records: the Drive folder moves first, because that is the part that can fail halfway and a retry finishes it; then one transaction moves visits, bills, documents, payment proofs, claims, numbers and chat state across; and Settings can separate them again for thirty days.',
+      'WhatsApp only delivers a freely worded message within 24 hours of the patient last writing in, and Twilio doesn’t refuse the send: the API call succeeds, the message is logged, the Messages page shows it in the thread, and error 63016 lands on a webhook seconds later with nobody reading it. The patient never gets the message and nobody finds out. The window is now checked before sending rather than learned from the failure — the usual wording while it is open, a template Meta approved word for word once it has closed, in English or Bahasa, and an honest refusal while a template is still in review. A document for someone outside the window is held rather than refused: they are sent a template asking them to reply, and everything held for them goes the moment they do, oldest first, the prescription still ahead of the bill. Every message the practice sends now shows WhatsApp’s ticks, and “Not delivered” with the reason when one never arrived — which used to look exactly like one that had.',
+      'A payment screenshot used to settle any open invoice for the same amount — and nearly every invoice is the one standard fee, so the same screenshot sent twice settled two. Nobody had to be dishonest: a parent with two children’s bills on one phone, re-sending because the first seemed slow, was enough. Every screenshot counted against an invoice now leaves a fingerprint — the image’s SHA-256, the bank reference read off it, and its amount, date and time — and one that matches an earlier fingerprint can’t count again. The reference is what survives WhatsApp recompressing a photo re-attached from the gallery, and amount plus date is only trusted alongside a legible time, since the same fee on the same day is two children’s consults rather than one transfer. A repeat leaves the bill open and still on reminders, tells the patient the screenshot has already been used — never whose it was — and raises a notification; a transfer that plainly went to someone else’s account goes to review. What a screenshot came to is decided by the code and answered by the code: handed “Thanks, payment received!” to pass on, the model once asked the patient whether it was for their upcoming appointment.',
+      'An insurance claims module that fills insurers’ own reimbursement forms rather than producing a lookalike, tried end to end on sixteen real insurers’ forms — English, Bahasa and bilingual, a phone photo among them — with invented patients and the real model. PDFs with real form fields are filled by name, with each field’s type and size given to the model, because a real form silently refused answers it couldn’t take while the review screen went on showing them. Flat forms are read with pdf.js: answers go one character per cell where the form prints cells, ticks onto their own boxes, nothing across the form’s own lines — and a caption printed on a line belongs to the row above it, which had put every answer on one insurer’s form a line low. Each form is read once, in the background, after the patient replies, rather than twice inside the reply, where a long form could outrun the function and lose the claim. And a form she would rather fill in by hand can be printed, photographed and filed as the signed claim.',
+      'Nothing is signed until she has read it — the mark goes on only at the moment of approval, so a signed claim she has not seen cannot exist. And it is one mark: her stamp carries her signature across it, so every document is stamped alone, and a claim form gets the stamp wherever it has room and her signature only where the stamp won’t fit — never in the patient’s section.',
       'Documents carry a server-assigned sequential number issued from an atomic counter, so paperwork cannot be forged or duplicated.',
       'The document templates live in one shared package because they used to be a copy each. The dashboard learned to take the signature and stamp from Settings and the phone app did not, so the same prescription carried a different seal depending on which one produced it. Sharing the code was the fix; the bug is the reason the package exists.',
       'A second Android app, the practice’s own “Documents”, that writes one document and shares it and can do nothing else — installed alongside the dashboard, with its own icon and session, for the times she needs a prescription on a phone and nothing more.',
-      'WhatsApp Business through Twilio for bilingual invoices, prescriptions, reminders, appointment booking and claim intake, in English and Bahasa Indonesia.',
+      'One write-up sends everything, in order. The consult page writes the visit up, then sends the prescription, a medical certificate and a referral letter — and the bill only after them. WhatsApp fetches each file from Drive before sending it, so a bill sent straight after a prescription could arrive first; each send now waits until WhatsApp has the document before the next starts, and when that can’t be confirmed the bill is held back and she is told what to send. A child’s bill can go to the parent paying it while the prescription still goes to the child’s chat, and an in-person visit isn’t billed by default, because the partner hospital bills those. Every message also says who wrote it: her tag and the nurse’s only on words one of them typed, and [AI] on everything the app worded itself — documents included — even when she pressed the button.',
       'Notifications land where they can actually be seen: an in-app bell on the laptop, because the dashboard is already open and a popup would interrupt a consult, and Android push through Firebase for the phone, which is usually closed. Every kind can be switched off per channel.',
       'She sees patients in person at a partner hospital from four to six, and online by video from four to nine — twenty minutes for an in-person visit, thirty for an online one. None of that could be said: there was one `weekly_hours` column and every booking path wrote a hardcoded thirty minutes. So every online patient who asked for anything after six was told the practice was closed, which it is not — a booking simply lost, and lost by the WhatsApp assistant unattended, at a time of day she would never see it happen. In the other direction each in-person visit reserved half an hour of a two-hour afternoon, holding ten minutes nobody could be booked into, six times over.',
       'What splits is the open hours and the appointment length, and nothing else. She is still one person, so the diary stays shared: everything on the calendar is busy time for both, and a 4:20 in-person visit blocks the 4:00 online slot that would have run over it. Refusals name the kind, because “that’s outside her working hours” was true of one schedule and false of the other — “outside her in-person hours, she may still be free online then” is a sentence the assistant can act on. And setting a weekly schedule now requires naming which one: picking silently would write the change to a week she never mentioned and leave the other, quite possibly the one she meant, wrong.',
-      'Claude now runs the practice with her rather than beside it: 38 tools instead of the original eight, organised by area — the diary (book, move, cancel, block time, change one day’s hours or the standing week, set leave), a patient’s record and her own consultation notes, WhatsApp in both directions including taking a conversation off the bot and handing it back, invoices and insurance claims, and the practice’s own details. It got there because two answers on one afternoon were both true and both useless: asked to invoice a patient she had just seen, it said it could not read the consultation notes; asked to check whether he wanted an appointment, it said its only outbound channel was sending a document. That is a search box with manners, not an assistant.',
-      'What it deliberately cannot do is the more interesting half. No shell, no SQL, no HTTP — every tool is a named operation with a schema, so it cannot reach outside this practice’s data. It cannot message a number off the WhatsApp allowlist, and that applies to her too. It cannot delete a patient, a record or a history event; those stay on the pages that ask twice. It cannot skip a scheduling guard. Booking, moving and cancelling tell the patient by default, and every tool reports what actually went out, so “no number on file” can never read as “sent”.',
+      'She hates gaps in her day, and the times offered used to be an opening-time grid, which got an empty day right and little else: after a 30-minute call at 4:00, the 20-minute in-person grid offered 4:40 and left ten minutes dead. Which free times are offered is now decided by how well each one packs against what is already booked — filling a hole before extending either end of the day, a perfect fit before a partial one, with both sides of every booking as candidates, which is what lets a 20-minute visit follow a 30-minute call. In person fills from the start of clinic; online starts whenever the first call does. Patients are only offered back-to-back times, and a time she types that would leave a gap gets one tap to the time that wouldn’t. A day can hold more than one block — a morning clinic, a break, the afternoon — and each is packed on its own. And two people confirming the same slot within seconds both used to get it, because every path checked the diary at the start of the request and then waited on a model call before writing; each path now looks again straight after writing, and the later booking gives way and is offered what is still open that day.',
+      'Changing her hours used to strand people. Closing a day, changing one day’s hours, taking a special opening away, changing the weekly hours, taking leave and blocking time all stop new bookings and touch nobody already booked — and every one of them saved without a word, so a patient booked on a day she had closed stayed booked, wasn’t told, and would have come. All of them now ask first. The dashboard answers with each stranded patient, soonest first, with Open to cancel or switch them right there, then “… anyway” or “Never mind”; her assistant names them and asks whether to cancel, move or go ahead. With Google unreachable the change is still saved, because her hours are hers to change, and she is told nobody could be looked for.',
+      'Running late used to message one person: whoever was next. It now reaches everyone still waiting — the one in the room, the rest of the afternoon, someone added by name or number — each with their own name and time. A reason she types goes to the model and comes back as one calm sentence in English and Bahasa, written for several people reading at once, so “mrs tan consult ran over” becomes “An earlier appointment has taken longer than expected”, with nobody’s name and no clinical detail. The draft dims while it is being reworded and Send waits for it, so nothing goes out in a wording she hasn’t read. And the delay carries on after the message: the assistant tells anyone who asks the time they are now expected rather than the time they booked, and their reminder waits for it.',
+      'Claude Opus 5 runs the practice with her rather than beside it: 40 tools instead of the original eight, organised by area — the diary (book, move, cancel, switch between in person and online, block time, change one day’s hours or the standing week, set leave), a patient’s record, numbers and her own consultation notes, WhatsApp in both directions including taking a conversation off the assistant and handing it back, invoices and insurance claims, and the practice’s own details. It got there because two answers on one afternoon were both true and both useless: asked to invoice a patient she had just seen, it said it could not read the consultation notes; asked to check whether he wanted an appointment, it said its only outbound channel was sending a document. That is a search box with manners, not an assistant. She can reach it from her own phone, too: a message from her number to the practice’s WhatsApp goes to her assistant, never to the patient agent, and five minutes before every appointment it messages her the patient, the reason for the visit and, when it is online, the Meet link.',
+      'What it deliberately cannot do is the more interesting half. No shell, no SQL, no HTTP — every tool is a named operation with a schema, so it cannot reach outside this practice’s data. It cannot delete a patient, a record or a history event; those stay on the pages that ask twice. It cannot skip a scheduling guard — the check that asks her before stranding a patient asks it too. Booking, moving and cancelling tell the patient by default, and every tool reports what actually went out, so “no number on file” can never read as “sent”. Who WhatsApp may reach at all is one gate with three states rather than thirteen copies of a comma-split: unset means silence, because a misconfigured deployment must fail closed; a list means the list; and only exactly “*” opens it to everyone — a value someone has to type, because opening it is a decision about patient safety rather than the consequence of clearing a secret.',
       'A turn no longer runs on the request that started it. Twenty rounds of Opus at maximum effort against a Supabase function timeout meant a turn that ran long left her message with no answer while the tools had already fired — real WhatsApp messages to real patients, a real invoice, a signed claim, and a chat showing none of it. The likeliest next thing she does is say it again, which does all of it twice.',
       'The assistant page was one endless thread: every instruction she had ever given in one list, with the last thirty turns replayed to the model regardless of subject, so this morning’s diary question was answered with last week’s invoicing sitting in front of it. It is a titled, searchable list of chats now, opening on a new one each time, named from her opening words by the smallest model there is.',
       'Every write blocks the whole app while it runs, and that rule had to be inverted to be worth anything. Saving a consultation is a render, a Drive upload and three database writes; a tap landing halfway through can file a visit with no document or a document with no visit. The overlay existed and covered six call sites out of about sixty, which is the wrong shape for a safety rule — it depends on whoever adds the next write remembering to opt in. Now every mutation blocks unless it says so, with 350ms of grace so nothing flashes, and the Android back button — the reflex when a screen seems stuck, and a short step from the system reclaiming the process mid-write — refuses to respond for exactly as long.',
       'Failures used to be green. The toast hardcoded a tick and timed out after 2.6 seconds, so “Could not send via WhatsApp” looked exactly like “Sent”, and the patient never got their prescription. Fifty-five error call sites converted, plus seven more that were reporting failure through the success path; failures are red and stay until dismissed. She also saw raw machinery — FunctionsHttpError, Postgres constraint names, Failed to fetch — so one module lets a sentence written for her through and replaces everything else, keeping the original for the log. Offline was unhandled entirely; every write goes through one wrapper, so no connection means no attempt and a standing bar across the top, because an empty patient list looks identical to a lost one.',
       'The field that exists to say what went wrong said nothing. `String(err)` on a plain object produces “[object Object]”, and twenty-five places called it on whatever they had just caught before writing it to the error log — but Supabase errors are plain objects carrying a message, a code, details and a hint, not Errors. That is how the appointment-reminder sweep failed every fifteen minutes for three weeks, 4,402 times, while System health showed her 4,402 rows each reading “Sweep failed” and “[object Object]”. A single describer now spells out Errors, Supabase errors and fetch-shaped failures, and a test holds it to never returning that string again. The same 4,402 rows are also why the list can be emptied in one press: the sweeps that write them iterate every contact, so one broken thing writes a row an hour, and the card only ever shows the twenty most recent — dismissing them one small x at a time just uncovered the next twenty. Clearing asks first, and says plainly that it clears everything on file rather than only what she can see, and that anything still broken will write a fresh line the next time it fails.',
+      'On 10 October the Messages page listed 26 of the practice’s 50 WhatsApp chats. Nothing had been deleted — every message was in the database. The list was built from the newest 500 messages, whoever sent them, so anyone who hadn’t written since the 7th had dropped off it, and every new message pushed someone else off. The same flaw sat in three more places: her assistant’s “who needs me?”, which missed the people who had been waiting longest; the stop-the-assistant switch, which read through PostgREST’s 1,000-row cap without an error and would have stopped the assistant in 43 of the 50 chats while it went on answering the seven newest; and threads, which stopped at their oldest 500 messages, so a long chat would have lost its newest. A view now gives one row per chat, read under the same row-level rule as the messages themselves, and everything else reads in pages; the tests rebuild that day’s table and fail on the old code.',
       'The usage card in Settings said “AI assistant usage” and counted exactly one path out of eight: the assistant she talks to on the AI page. Everything else went to the function logs and nowhere else — the WhatsApp assistant making three or four calls for every patient message, reading a new patient’s Drive folder a document at a time on the most capable model, every consultation report, medical certificate, insurance form and payment screenshot. So the one number she had was reliably the small half of the bill, under a heading that reads as the whole of it. All eight call sites record through one module now, best-effort by construction: it never throws and skips silently where there is no service key, because a failure to record what something cost must never be the reason the thing itself failed. The migration that turns it on drops the rows already there rather than adding one corner of August’s spend to the whole of the rest of it in the same figure, and stamps the date so the card can say “since 30 August”. Dollars lead and rupiah sits underneath, because only one of the two is a fact — Anthropic bills USD and that is what is stored, converting on the way in would freeze one day’s guess into the row forever, and the 3% an Indonesian card adds is an assumption the card labels as one.',
+      'Beside it sits what WhatsApp costs — the other bill, and the one with a fixed floor. It is read from Twilio’s own billing ledger rather than priced locally, because Twilio doesn’t know what a message cost until hours after it is billed, and a local price table would drift every time Meta changes its rates. The catch is that usage categories are a hierarchy returned flat — the total contains phone numbers and channels, channels contain messaging, messaging contains inbound and outbound — so adding up the rows gives $14.13 for a $4.11 bill and looks entirely reasonable. The total comes from the total row, the breakdown from named leaves only, and the remainder by subtraction, so a category Twilio adds later makes the remainder bigger rather than the total wrong; the test fixtures are real rows from the account. And the credit runway refuses to answer until there is a week of spend to divide, because two days extrapolated to a year is not information.',
       'Deleting a patient was final. Drive’s trash covered the files, but the extracted record — every visit, allergy and billing line — was gone the instant the confirm was dismissed, and on a phone OK sits under her thumb. The delete now snapshots those rows first and a restore replays them, with Settings → Recently deleted as the way back for 30 days, matching Drive’s own window. It still asks her to type the patient’s name.',
       'Deleting a patient left their unpaid invoice behind, and the invoice went on chasing them. The delete archived seven tables and cascaded an eighth; `payments` was in neither list, has no foreign key to the patient, and is the only table the payment-reminder sweep reads — so a deleted patient stayed billable and kept being chased for money on the agreed schedule, by the name and number stored on the payment row, while the dialog she had to type a name into to confirm told her billing had been removed. The two table lists were duplicated, each carrying a comment warning that a new table “belongs in this list”; `payments` was added to the schema and put in neither, which is exactly the failure those comments were written to prevent. They are one list now.',
       'The nightly backup runs on the server, not on my laptop. It started as a Windows scheduled task, which only works if that specific machine is on at 3am, in the timezone it was registered in, with its credentials still in place — and fails silently the week anyone travels. It now writes the whole database to Drive as one gzipped file at 03:00 Jakarta, thirty copies kept, older ones moved to Drive’s trash rather than destroyed so even the pruning is reversible. Pruning happens only after the upload succeeds, because the other order throws away a good backup to make room for one that never arrived. Uploaded with her OAuth token rather than the service account, which has no Drive storage of its own.',
       'That one file is the entire patient database, and Drive encrypts it already — with Google’s keys, so it decrypts transparently for anyone who can authenticate as her Google account, which the OAuth hole above had just finished demonstrating was not necessarily only her. AES-256-GCM now, a fresh IV every night, gzip first and encrypt second because ciphertext does not compress and the other order multiplies her Drive usage by the compression ratio — which on base64 signature images and stored document HTML is large. Honestly not end-to-end: the key is an Edge Function secret, so a compromise of Supabase yields both it and the database. Accepted on purpose, because it still splits one point of failure into two and the one it removes is the one this practice has actually been exposed through — and a key living only on her phone would be stronger and would also mean a lost phone loses every backup permanently. The key is required rather than optional: with it unset the run fails loudly onto System health, because a backup quietly written in the clear on a night somebody believed it was protected is the worse outcome. The restore tool is Node and the writer is Deno, so they cannot share a module and the container format is spelled out in both — the arrangement that rots quietly, where the consequence of rotting is finding out the only backup cannot be opened on the day it is needed. A round-trip test encrypts with the real writer and decrypts with the real reader on every run, and old plaintext backups still age out on the same 30-day rotation rather than outliving every encrypted copy.',
       'It is built for a doctor in her sixties who does not much like computers and uses it mostly on her phone between patients, and that is a set of rules rather than a preference. Nothing smaller than 13px, on a six-step scale — it used to run from 9.5px, with 429 of 657 sized elements under the floor. The phone’s own font-size setting is passed through to the WebView and honoured up to 160%. Targets are 44px on a phone and 48px where a mistake costs something. No icon without a word, because on a phone there is no hover to reveal a tooltip. Below 760px every table becomes a list of cards, so nothing is ever reached by dragging a table sideways. And the app asks its own questions rather than using the system dialog, which in an installed app is a grey box with an internal address on it that she has been trained to dismiss unread.',
-      'Both apps pulled their typeface and their icon font from Google with a stylesheet link, and neither APK bundled anything. A link is fetched once at page load and never retried, so on a Pixel 6 cold-launched in airplane mode there were zero font faces and every icon rendered the ligature name it was written as: the tab bar read “space_dashboardHome groupsPatients calendar_monthCalendar”, came to 644px inside a 412px screen, and put the AI tab 238px past the edge with no way to reach it. It recovers on the next launch once the WebView has cached the files — so this was a first-run failure only, which is the one launch that has to work. Both are vendored now, 147KB for the lot, the icon font subset to the 116 icons the apps actually use. An icon outside that subset renders as its own name in the middle of the interface, so a test scans both apps and fails if any name is missing from the list.',
+      'Both apps pulled their typeface and their icon font from Google with a stylesheet link, and neither APK bundled anything. A link is fetched once at page load and never retried, so on a Pixel 6 cold-launched in airplane mode there were zero font faces and every icon rendered the ligature name it was written as: the tab bar read “space_dashboardHome groupsPatients calendar_monthCalendar”, came to 644px inside a 412px screen, and put the AI tab 238px past the edge with no way to reach it. It recovers on the next launch once the WebView has cached the files — so this was a first-run failure only, which is the one launch that has to work. Both are vendored now, the icon font subset to the 125 icons the apps actually use. An icon outside that subset renders as its own name in the middle of the interface, so a test scans both apps and fails if any name is missing from the list — and when that test turned out to skip icon names kept in a lookup table, two of a new card’s five icons were about to render as the words “sms” and “inbox” in the middle of Settings.',
       'Three greys were below WCAG AA and one badly: #94a3b8 measured 2.39:1 against the app background and carried 188 pieces of real text — hints, timestamps, day names, and the four unselected labels in the bottom tab bar, which is most of how she knows where she is. Contrast sensitivity falls with age; that is not a shade of grey, it is an absence. The ramp sits at 5.84, 5.10 and 4.62 now, the three closer together than before because that is what AA on a near-white background leaves room for.',
       'The bugs that mattered most were the ones only a real phone and real data could produce, found by driving the installed APK on a Pixel 6 against the live backend rather than demo rows. A patient name needs to be long enough to overflow: “Aisha Khan” painted straight through the badge beside it, and on a 360px screen the row’s fixed parts came to 411px and left the name a column exactly 0px wide. A document library needs real documents: its title column got 39px, so every row read “Inv…” or “Co…”. The patient header came to 436px of a 412px screen with the More button — holding a third of what you can do to a patient — entirely off the right edge, behind a sideways scroll the layout’s own rules say does not exist. And the leave switch was a button inside a label that also wrapped its explanation, so reading the explanation with a finger put the practice on leave.',
       'Turned sideways her phone is 916×412 — wider than the 760px that decides what a phone is, so landscape brought the entire laptop layout back: the sidebar, the desktop top bar, and every control down to its 36px mouse size on a touchscreen, with the bottom of the sidebar, Settings included, sitting below a 412px-tall screen and no way to scroll to it. A viewport under 500px tall counts as a phone now too, in the CSS variant and in the hook alike, with a test holding the two identical. The same pass found nine flex items rendering wider than the space they were given, because a flex item will not shrink below its own content unless told to — one chat titled with a whole sentence made the AI page’s 200px list 684px wide. Four pages between 768 and 1023px had run out of room without saying so: a patient record 102px wide cutting its own filenames in half, a send button outside the screen, a week column 43px too narrow to print a name in. And a button is not exempt from the phone’s font-size setting, which goes to 160%: at that size “Stop the assistant replying” ended 25px past the right edge. Found by driving 11 routes across 9 viewports, 25 modals and sheets across 3, and the installed APK in four configurations — portrait and landscape, at 100% and 160% font.',
       'Every free-text field on the consultation form has a microphone beside it — seven of them, and by far the most typing the app asks for, on the device where typing is worst. The transcript appends to whatever the field already holds rather than replacing it, so stopping and starting again adds a second sentence instead of wiping the first. Where speech recognition is unavailable, including Capacitor’s Android WebView, the button is absent rather than broken and the form says to use the keyboard’s own microphone instead.',
       'Patient files are never committed and never cached locally. Google Drive is the authoritative store through a service account; Supabase holds only the structured data extracted alongside it. Both Android apps set FLAG_SECURE, so there are no screenshots and no patient record showing in the recent-apps thumbnail, and an optional PIN locks the screen after two minutes away. The APK she carries is signed with a real release key rather than the universal Android debug key that any app can also sign with: the build script produced a debug APK, and a debug APK is debuggable — plug the phone into a laptop, open chrome://inspect, and whatever record is on screen is readable, which is precisely what FLAG_SECURE was added to prevent. Where the keystore file is absent, on a fresh clone or for anyone who only builds debug, no signing config is created at all and the release build comes out unsigned, which is the honest outcome rather than silently falling back to the debug key and looking like it worked.',
-      'The tests are pure logic by design — scheduling, date maths across the Jakarta timezone, claim assembly, document rendering — plus a patient simulator that drives the real WhatsApp flow one message at a time and then looks at what happened to the calendar and the database. Linting is deliberately kept out of the build, because a lint error should never be the reason a document cannot be issued.',
+      'The phone app used to carry its own copy of the screens, so every change meant building and sending her a new APK, and her uninstalling and reinstalling it. The release build now opens the same site the laptop does, which Vercel rebuilds on every push, so a change reaches her phone the next time she opens the app; with no connection it shows a bundled page that keeps trying instead of a blank screen. It offers “Update now” only when the screens themselves changed: the build publishes the name of its main script, which Vite derives from the script’s content, rather than the commit, because most pushes change only the edge functions and would have offered her an update that changed nothing she could see. Android’s automatic backup is off, so the WebView’s stored sign-in is never copied into a Google backup.',
+      'The tests are pure logic by design — scheduling, date maths across the Jakarta timezone, claim assembly, document rendering — plus a patient simulator that drives the real WhatsApp webhook and agent one message at a time and then looks at what happened to the calendar and the database. It runs in two tiers: against a scripted model on every run, and against the real model on request — 48 conversations, at about a cent and a half per patient message, several of them reproducing chats that went wrong on the live practice. Linting is deliberately kept out of the build, because a lint error should never be the reason a document cannot be issued.',
     ],
-    // Captured from the real app running in demo mode, where it falls back
-    // to invented patients — so these are genuine screenshots of the
-    // product with no clinical data in them. Deliberately no document
-    // screenshot: the letterhead carries the doctor's registration numbers,
-    // signature seal and bank details.
+    // Captured from the real build against a stand-in for its backend, set on
+    // one invented afternoon (capture-tools/med-capture.mjs) — every patient,
+    // message, bill and claim made up. The doctor's own details are blurred
+    // wherever the app shows them.
     trailer: '/media/medical-trailer.mp4',
     trailerPoster: '/media/medical-trailer-poster.jpg',
     trailerNote:
-      'A tour of the whole product in about a minute — the morning dashboard, a patient record, the two kinds of day she works, WhatsApp answering in Bahasa, the five documents she can issue, an insurance claim filled and then signed only on approval, what the model is allowed to know about a patient, payments chasing themselves, the assistant’s 38 tools, what the AI costs, and what is locked down.',
+      'What the platform does now, in a minute, cut on the beat: the afternoon at a glance, a patient booking on WhatsApp by tapping rather than typing, the assistant asking who an appointment is for and booking only on a yes, running late reaching everyone still waiting, times offered back to back, one write-up sending every document in order, the insurer’s own form filled in its own boxes, what the model is allowed to know about a patient, a screenshot that settles one bill once, hours that ask before stranding anyone, the assistant’s 40 tools, what it all costs, and what is locked down. Drawn as motion graphics in the app’s own design rather than screen-recorded — the walkthrough below is the real thing.',
     video: '/media/medical-demo.mp4',
     poster: '/media/medical-demo-poster.jpg',
     videoNote:
-      'A working morning, uncut and at real speed, driven through the app end to end: check the day, look at the week and then one day of it, open the patient who is due, read her record and history and files, start the consultation write-up, answer two WhatsApp threads, see what the practice can issue, chase what is unpaid, open the insurance claim waiting on a signature, and finish on the assistant. Nothing is sped up and nothing is cut.',
+      'A working afternoon, uncut and at real speed: warn everyone still waiting that she is running fifteen minutes late, look at the week and then the day, open the patient who is due, write the consult up with a prescription and a certificate and send them in order, read four WhatsApp chats the assistant ran — a booking, a family’s phone, a new patient’s identity check, a payment screenshot — see why a reused screenshot can’t settle a bill, open the insurer’s form waiting on her stamp, check her hours, and finish on the assistant moving two patients off a day she closed. Nothing is sped up and nothing is cut.',
     shots: [],
     flows: [
       {
-        title: 'A day at the practice',
+        title: 'An afternoon at the practice',
         caption:
-          'What the doctor sees when she sits down, and how she gets from the day, to the week, to a new booking.',
+          'What she sees when she sits down between patients, and the two things she does most with the diary: book someone in, and tell everyone when she is behind.',
         steps: [
           {
             src: '/media/medical-overview.png',
             title: 'Open the dashboard',
             caption:
-              'Who is booked today, what is waiting for approval, unread WhatsApp, and the day’s schedule with each appointment marked done, running, or still to come.',
+              'Who is booked today and how each one is going — done, now, next — what is waiting for her approval, unread WhatsApp, and what the assistant has flagged. Every appointment says whether it is in person or online.',
           },
           {
             src: '/media/medical-appointments.png',
             title: 'Look at the week',
             caption:
-              'Available hours shaded, the current time drawn across today, video consults flagged. Bookings made here sync to the doctor’s own Google Calendar.',
+              'In-person visits and video calls in one diary, because she is one person and anything booked is busy time for both. Shaded where she is open, the current time drawn across today, and time she has blocked out shown as hers rather than as a patient.',
           },
           {
             src: '/media/medical-day.png',
-            title: 'Zoom into one day',
+            title: 'Then one day of it',
             caption:
-              'The same calendar at a single day’s resolution, for when the week view is too coarse to see the gaps.',
+              'The same day as a list, every appointment marked done, now, next or booked, with the Meet link to hand for each video call.',
           },
           {
             src: '/media/medical-booking.png',
             title: 'Book someone in',
             caption:
-              'Pick or create the patient, choose in person or online, and decide whether they get told. Left ticked, they get a WhatsApp confirmation now, a reminder ten minutes before, and the ability to move or cancel by replying.',
+              'Pick the patient by name and their number fills itself. 5:40 would leave ten minutes dead after the last visit, so the server says so before booking anything and offers the back-to-back time in one tap — or “Book anyway”, because it is her diary.',
+          },
+          {
+            src: '/media/medical-running-late.png',
+            title: 'Tell everyone she is running late',
+            caption:
+              'Everyone still waiting, with the patient in the room and the next one ticked. Her reason comes back as one calm sentence in English and Bahasa with nobody’s name and no clinical detail, and the draft says who gets the pre-approved template because they haven’t written in for a day, and who gets it in Bahasa.',
           },
         ],
       },
       {
         title: 'Seeing a patient',
         caption:
-          'From the patient list to a written-up consultation — the path this software exists to shorten.',
+          'From the patient list to a written-up consultation, with every document it produces sent in order — the path this software exists to shorten.',
         steps: [
           {
             src: '/media/medical-patients-list.png',
             title: 'Find the patient',
             caption:
-              'Everyone on the books, filterable by active or review-due, with the last time each was seen.',
+              'Everyone on the books, searchable, and filterable to who is due a review; on a laptop the first record opens beside the list.',
           },
           {
             src: '/media/medical-patients.png',
             title: 'Read the record',
             caption:
-              'Vitals, allergies, problem list, current medications and the last clinical note — the things you want before you say hello. Every patient shown is invented.',
+              'The allergy in red before anything else, the problem list, files synced from the practice’s Drive, and every WhatsApp number they write from. This patient has started using a second phone and confirmed it was theirs on WhatsApp; anything about an appointment goes to the number it was booked from.',
           },
           {
             src: '/media/medical-history.png',
             title: 'Check the history',
             caption:
-              'Past visits and events in order, so a recurring complaint is visible rather than remembered.',
+              'Visits, labs, documents and bills in date order, so a recurring complaint is visible rather than remembered.',
           },
           {
             src: '/media/medical-files.png',
             title: 'Open their documents',
             caption:
-              'Everything issued for this patient, plus any files synced from the practice’s Drive. Demo patients have none, and the app says so rather than pretending otherwise.',
+              'Everything issued to this patient — each one can be opened, sent again over WhatsApp, edited or renamed.',
           },
           {
             src: '/media/medical-consult.png',
             title: 'Write the consult up',
             caption:
-              'The record stays open on the left while the note is written on the right, and the allergy alert follows you down the page. The note attaches to the appointment it belongs to.',
+              'The record stays open on the left. Below the notes, everything she adds goes to the patient in order once the visit is saved — a prescription (clarithromycin, with the penicillin allergy on screen above it), a certificate, a referral — and the bill last. For an in-person visit the bill starts off, because the partner hospital bills those.',
+          },
+          {
+            src: '/media/medical-consult-cert.png',
+            title: 'A sick note that keeps the diagnosis private',
+            caption:
+              'A certificate goes to an employer or a school, so the diagnosis has its own switch, off by default — and off means off, whatever the field still holds. The wording is drafted from today’s notes and never invents a rest period the notes don’t give.',
+          },
+          {
+            src: '/media/medical-merge.png',
+            title: 'Two records, one person',
+            caption:
+              'A new patient told WhatsApp they weren’t the person on file with the same name and date of birth — and were, with their own name typed a letter out. Merging sets the two side by side, keeps the one with more history unless she picks the other, moves everything across in one transaction, and can be undone from Settings for thirty days.',
           },
         ],
       },
       {
-        title: 'Issuing a document, start to finish',
-        caption:
-          'Five document types, one shared template package, and a preview that is literally the file that gets sent.',
+        title: 'Issuing a document',
+        caption: 'Five kinds of document on one shared set of templates, and a preview that is the file that gets sent.',
         steps: [
           {
             src: '/media/medical-documents.png',
-            title: 'Pick the type',
+            title: 'What is waiting',
             caption:
-              'Invoice, receipt, prescription, medical certificate or referral letter — each with a note on when it is the right one to send. Everything already issued sits in the library underneath, newest first.',
+              'What WhatsApp asked for, what is due, and what is being held: a certificate for a patient who hasn’t written in for a day, which WhatsApp won’t take until they do. They have been asked to reply, and it goes to them the moment they do.',
           },
           {
             src: '/media/medical-doc-editor.png',
-            title: 'Fill in the four things it needs',
+            title: 'Find the patient by typing',
             caption:
-              'Patient, description, amount, date — and the document re-renders beside you as you type, so what is being edited and what will be sent cannot drift apart. The blurred lines are the doctor’s registration numbers and phone.',
+              'A search box rather than a dropdown of every patient, which was fine for twenty and hopeless for a practice. Every word typed has to appear in the name and accents don’t matter. A new document starts with nobody chosen — it used to start on the first name in the list, and file itself in their folder.',
           },
           {
             src: '/media/medical-doc-invoice.png',
-            title: 'The document that comes out',
+            title: 'The invoice that comes out',
             caption:
-              'Bilingual by design — INVOICE and TAGIHAN — on the practice letterhead, itemised, totalled, with payment details and the signature block. On approval it takes a server-assigned sequential number from an atomic counter, so two documents can never share one. Registration numbers, bank accounts and the signature seal are blurred; everything else is exactly what a patient receives.',
-          },
-          {
-            src: '/media/medical-thread.png',
-            title: 'It arrives on their phone',
-            caption:
-              'Sent into the patient’s WhatsApp thread and attached to it, so the message and the invoice it refers to stay together instead of the thread saying “here’s your invoice” with no invoice anywhere near it.',
+              'Bilingual — INVOICE and TAGIHAN — on the practice letterhead, with bank transfer and e-wallets side by side and the e-wallet fee spelled out. Registration numbers, bank accounts and the seal are blurred; everything else is what a patient receives.',
           },
         ],
       },
       {
-        title: 'WhatsApp, and how much the assistant may do',
+        title: 'WhatsApp, run by the assistant',
         caption:
-          'Patients message the practice on WhatsApp. Every contact has its own leash, and the assistant hands over anything it should not be answering.',
+          'Patients book, move, switch, pay and send claim forms on WhatsApp. The model holds the conversation; the code decides what it is allowed to do.',
         steps: [
           {
             src: '/media/medical-messages.png',
-            title: 'The inbox, triaged',
+            title: 'A booking, by tapping',
             caption:
-              'Conversations needing a human are grouped above the ones the assistant is handling alone, so the list reads as a work queue rather than a wall of chats.',
+              'In person or online with each fee, then only back-to-back times, then a yes before anything is booked. The options a patient was offered are logged under each message, with WhatsApp’s ticks beside them.',
           },
           {
-            src: '/media/medical-manual.png',
-            title: 'Manual — the assistant stands down',
+            src: '/media/medical-family.png',
+            title: 'One phone, a whole family',
             caption:
-              'A contact switched to Manual gets no automated replies at all. The banner says so outright, because a doctor needs to know whether a patient is being answered without her.',
+              'Who the appointment is for comes first, with a button per person on file — in Bahasa, because that is how this father writes.',
+          },
+          {
+            src: '/media/medical-new-patient.png',
+            title: 'A new patient, or a familiar one',
+            caption:
+              'A new patient’s details come from a form, never typed into the chat. A match with someone already on file is asked about without naming them; this one said no — the merge above is what happens when that turns out to be wrong.',
+          },
+          {
+            src: '/media/medical-transfer.png',
+            title: 'A payment screenshot, opened',
+            caption:
+              'Files patients send open inside the app — photos, PDFs, voice notes. What a transfer screenshot came to is decided by the code rather than the model; this one matched its invoice.',
+          },
+          {
+            src: '/media/medical-thread.png',
+            title: 'She answers this one herself',
+            caption:
+              'Switched to “You reply”, the assistant stays out of the chat entirely. The prescription and the invoice from today’s consult arrived in that order, and “Mark as read” clears a thank-you that needs no answer.',
           },
           {
             src: '/media/medical-ai.png',
-            title: 'Suggest — drafts held for approval',
+            title: 'Check first',
             caption:
-              'Auto replies straight away, Suggest writes and waits, Manual steps back entirely. Anything clinical the assistant cannot answer from the practice’s own details gets handed to a person and surfaces here.',
+              'In the middle setting the assistant writes a reply and waits; nothing goes until she presses Send, edits it, or dismisses it.',
           },
         ],
       },
       {
         title: 'Getting paid, and getting reimbursed',
-        caption:
-          'Two different problems: chasing what patients owe, and filling in what insurers demand before they pay.',
+        caption: 'Two different problems: chasing what patients owe, and filling in what insurers demand before they pay.',
         steps: [
           {
             src: '/media/medical-payments.png',
             title: 'Every invoice and where it stands',
             caption:
-              'What was billed, what is outstanding, when the next reminder goes out. A transfer receipt sent over WhatsApp moves a bill to “needs review” rather than marking it paid — a photo of a transfer is a claim, not a confirmation.',
+              'What was billed, what is outstanding, when the next reminder goes, and which ones need a human look before anyone is told they have paid.',
           },
           {
-            src: '/media/medical-unpaid.png',
-            title: 'Chase what is unpaid',
+            src: '/media/medical-payment-proof.png',
+            title: 'A screenshot that was already used',
             caption:
-              'Filter to the ones still owing and send a reminder now instead of waiting for the nightly sweep. The server refuses to chase a bill that is already settled, or one with no number on it.',
+              'What was read off the screenshot — amount, time, the bank’s reference, who it went to — and why it can’t count: the same transfer already settled the bill from 2 October. This week’s stays open and stays on reminders.',
           },
           {
             src: '/media/medical-claims.png',
-            title: 'Claims waiting on her',
+            title: 'Claims, from reading to sent',
             caption:
-              'A patient sends their insurer’s own form over WhatsApp and it comes back here, already filled in from the visit and the consultation note.',
+              'Each claim’s stage — being read in the background, waiting for her stamp, signed, sent — including one she filled in by hand and filed from photos.',
           },
           {
             src: '/media/medical-claim.png',
-            title: 'Nothing is signed until she has read it',
+            title: 'The insurer’s own form, in its own boxes',
             caption:
-              'The answers on the left, the insurer’s own form filled in on the right — and the signature and stamp boxes still empty, because they go on only when she presses Sign & stamp. A signed claim she has not seen cannot exist. The form here is a stand-in drawn for the demo, from an insurer that does not exist; the real ones are scans the practice receives from patients.',
+              'The answers on the left, the form on the right: the name one letter per cell, the dates split into the boxes the form prints, the tick on its own box, the captions read in both languages. Nothing is signed until she presses Sign & stamp. The form is drawn for the capture from an insurer that does not exist; her details are blurred.',
+          },
+        ],
+      },
+      {
+        title: 'Her hours',
+        caption: 'When she is open, for which kind of appointment — and what happens to the people already booked when that changes.',
+        steps: [
+          {
+            src: '/media/medical-availability.png',
+            title: 'More than one block a day',
+            caption:
+              'In person and online are separate weeks with separate lengths, and a day can hold a morning block and an evening one, each packed on its own.',
+          },
+          {
+            src: '/media/medical-stranded.png',
+            title: 'Taking leave over booked patients',
+            caption:
+              'Leave doesn’t cancel or move anyone, so they would still come. It now lists who is booked, soonest first, each with Open to cancel or switch them right there, before “Save anyway”.',
+          },
+          {
+            src: '/media/medical-switch.png',
+            title: 'From the hospital to a video call',
+            caption:
+              'Switching is a move, not a cancellation: the same appointment, with a Meet made for it and the hospital told. A video call runs thirty minutes rather than twenty, so this one would run into the next patient, and it says so first.',
+          },
+        ],
+      },
+      {
+        title: 'The assistant',
+        caption: 'Claude Opus 5 with 40 named tools and no others — and a record of each step it took, beside what it says it did.',
+        steps: [
+          {
+            src: '/media/medical-assistant.png',
+            title: 'Asked to close a day, it asks first',
+            caption:
+              'Closing the Friday would strand two patients, so the tool refuses and says who. It asks whether to cancel, move or go ahead, and only after “move them both to Thursday” does it move them, tell them, and close the day. The red cross is the tool’s own refusal, not the model’s account of it.',
           },
         ],
       },
       {
         title: 'The parts nobody demos',
-        caption:
-          'What the assistant is allowed to tell patients, when the practice is open, and where each kind of notification lands.',
+        caption: 'Who a typed message goes out as, what the assistant may tell patients, and what the whole thing costs to run.',
         steps: [
           {
             src: '/media/medical-settings.png',
             title: 'Settings',
             caption:
-              'Who the practice replies as, what the WhatsApp assistant may tell patients, when the doors are open, and notifications per kind and per channel — the bell on the laptop, push on the phone. “The assistant replied on its own” is bell-only by default: it happens often enough that push would become noise. The blurred line is her email address.',
+              'Whether a message she types goes out as the doctor or the nurse, what the assistant may tell patients, when the practice is open, and notifications per kind and per channel. The blurred lines are her name, the hospital and her email.',
           },
           {
             src: '/media/medical-technical.png',
-            title: 'Technical — what the AI costs, and what broke',
+            title: 'What the AI and WhatsApp cost',
             caption:
-              'Behind a group that starts closed, because it is for whoever set the dashboard up rather than for her. The usage card counts all eight Claude call sites rather than the one she talks to, dollars leading and rupiah underneath because only one of the two is a fact — and the WhatsApp assistant alone is nearly half the bill. Underneath it, the errors the background sweeps wrote, now clearable in one press instead of twenty at a time.',
+              'Behind a group that starts closed, because it is for whoever set the dashboard up. Every Claude call site is counted, and WhatsApp is read from Twilio’s own billing, with how long the credit will last. The figures on these two cards are invented for the capture.',
           },
         ],
       },
@@ -377,7 +453,7 @@ export const PROJECTS: Project[] = [
         steps: [
           {
             src: '/media/medical-phone-overview.png',
-            title: 'The day, in a thumb',
+            title: 'The afternoon, in a thumb',
             caption:
               'The same overview, re-laid rather than shrunk. Every tab in the bottom bar carries a word as well as an icon, because on a phone there is no hover to reveal what an icon means.',
           },
@@ -391,31 +467,42 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-phone-record.png',
             title: 'The record, one panel at a time',
             caption:
-              'Below the split breakpoint the list and the record stop competing for width and show one at a time, with the reason she opened the patient at the top.',
+              'Below the split breakpoint the list and the record stop competing for width, and New consult comes first, because it is why she opened the patient.',
           },
           {
             src: '/media/medical-phone-consult.png',
             title: 'The consultation form gets the whole screen',
             caption:
-              'The most typing the app asks for, on the device where typing is worst — so every free-text field has a microphone beside it, and the transcript appends rather than replaces.',
+              'The reason they booked and their allergy at the top, then the form — with a microphone beside every free-text field, because this is the most typing the app asks for, on the device where typing is worst.',
           },
           {
             src: '/media/medical-phone-messages.png',
             title: 'WhatsApp, triaged',
             caption:
-              'Phones land on the conversation list first and open a thread only on an explicit tap — the same as every other messaging app, and not what the desktop layout does.',
+              'The chats that need a person above the ones the assistant is handling, each with its ticks, and unread dots that clear only when she says so.',
+          },
+          {
+            src: '/media/medical-phone-thread.png',
+            title: 'A family’s chat, in Bahasa',
+            caption:
+              'Who it is for, then in person or online, then the time — each a tap, and each logged under its message so she can see exactly what the patient was offered.',
+          },
+          {
+            src: '/media/medical-phone-running-late.png',
+            title: 'Running late, from the hospital corridor',
+            caption: 'How late, why, and who — with the draft shown before anything is sent.',
           },
           {
             src: '/media/medical-phone-settings.png',
             title: 'Settings, in her words',
             caption:
-              'Two-step sign-in and the screen lock sit together, both optional and both off until she turns them on, because a second step nobody chose is one that gets worked around.',
+              'Who she is replying as, and the practice details the assistant quotes from, with the hospital’s name blurred.',
           },
         ],
       },
     ],
     note:
-      'All captured from the real app running in its demo mode, which starts with no database credentials at all: it skips the login and physically cannot reach the practice’s data. Every patient, message, invoice, claim and document here is invented — the eight demo patients the app ships with, plus stand-in rows written for the screens that normally read from the live backend, so they could be photographed without touching anything real. The insurance form is likewise a mock-up, drawn for the demo from an insurer that does not exist. The doctor’s own details are blurred wherever they appear: her name, the hospital she practises at, her registration and licence numbers, phone, bank accounts, email and signature seal. Beyond that nothing has been retouched — every layout, control and state is the software as it ran. All of it was re-shot from the current build, driven by Playwright rather than photographed by hand, with the browser pinned to a Monday morning in Jakarta so the schedule is busy and the clock agrees with the bookings. Two things in these screens are stand-ins rather than demo-mode defaults: WhatsApp, payments, insurance and the two Technical cards read from the live backend and render empty without it, so invented rows were supplied for the capture and removed again afterwards. The figures on the AI usage card are therefore plausible rather than measured; every other number on this page is countable in the repository. The phone screens are the same React build at 412×916, the size the mobile pass was measured against.',
+      'Every screen is the real application — the current build, unmodified — driven by Playwright against a stand-in for its backend: every database read, edge function and WhatsApp file is answered inside the browser from an invented practice, and the build points at a local address, so the practice’s real database was not merely unused but unreachable; a run that tried to reach any other host failed rather than finishing. Every patient, conversation, appointment, invoice, payment, claim and document is invented, all on one afternoon in Jakarta. The documents are rendered by the app’s own templates, and the insurer’s claim form was drawn for the capture from an insurer that does not exist. The doctor’s own details are blurred wherever the app shows them — her name, the hospital she practises at, her registration and licence numbers, phone, bank accounts, email and signature seal — and checked in every frame before a file was written; in the walkthrough the blur is held while the app re-renders. The figures on the AI and WhatsApp cost cards are invented for the same reason; every other number on this page is countable in the repository. The phone screens are the same build at 412×916, the size the mobile pass was measured against. Dates in the form fields read in US order because the capture machine’s regional settings decide how a browser date field renders.',
     // A word from the doctor who runs on this every day. Deliberately left unset
     // until she has supplied and approved her own words — the sheet renders
     // nothing at all rather than a placeholder that reads as a real quote.

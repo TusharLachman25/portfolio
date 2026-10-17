@@ -117,9 +117,14 @@ treat them as the source of truth for how the site looks or what it says.
 Everything on screen is the real application. The data in it is not always
 real, and where it isn't, that's deliberate:
 
-- **Medical platform** — invented demo patients only. No document is shown at
-  all: the letterhead carries a real doctor's registration numbers, signature
-  seal and bank details.
+- **Medical platform** — the real build, driven against a stand-in for its
+  backend that answers every database read and edge function inside the
+  browser from an invented practice. The build points at a local address, so
+  the practice's database is unreachable, and a run that touches any other host
+  fails. The doctor's name, hospital, registration numbers, phone, bank details,
+  email and seal are blurred and verified in every frame — the walkthrough keeps
+  the blur live while React re-renders. The trailer is motion graphics in the
+  app's design, not a recording. Tooling: `../capture-tools/med-*.mjs`.
 - **Jarvis** — my own account, with the financial figures masked in the rendered
   page before capture. The masking is display-only and never touched the
   database; balances are scaled by a constant factor so the totals still add up.
@@ -131,9 +136,9 @@ real, and where it isn't, that's deliberate:
   write ran exactly as they do in use.
 - **Bets** — invented wagers between invented people, driven end to end against
   a stubbed network so every state change on screen is a real write.
-- **FitScroll** — no captures at all, and its sheet says so rather than filling
-  the space. It is a native Android app built around a camera, so the headless
-  Chrome trick every other sheet was shot with does not apply to it.
+- **FitScroll** — the real release APK driven through Appium on an Android
+  emulator. The workout screen is the one gap, and its sheet says why: the rep
+  counter is fed by a live camera, which an emulator cannot fake.
 
 ## Where the numbers come from
 
@@ -142,15 +147,18 @@ them can be checked in an interview:
 
 | Claim | Source |
 |---|---|
-| 75 edge functions | `supabase/functions/*` in the medical repo |
-| 42 migrations | `supabase/migrations/*` |
-| 725 unit tests | `npx vitest run` — 46 files, 725 passing (10 skipped) |
-| 38 assistant tools | `supabase/functions/_shared/aiTools/*` |
+| 89 edge functions | `supabase/functions/*/index.ts` in the medical repo (not `_shared`) |
+| 54 migrations | `supabase/migrations/*` |
+| 1,975 unit tests | `npx vitest run` — 99 files, 1,975 passing (51 skipped: the real-model tier) |
+| 48 real-model conversations | `REAL_CLAUDE=1 npx vitest run tests/patient/conversations.test.ts` |
+| 40 assistant tools | `name:` entries in `supabase/functions/_shared/aiTools/*` |
+| 15 WhatsApp agent tools | `name:` entries in `supabase/functions/_shared/whatsappAgentTools.ts` |
+| ~91,000 lines across 513 files | tracked `.ts`/`.tsx` in the medical repo (90,633) |
 | 125 unit tests | `./gradlew testDebugUnitTest` in FitScroll — `@Test` count, 125 |
 | 38 REST endpoints | `src/app/api/**/route.ts` in Jarvis |
 | 10 migrations | `supabase/migrations/*` in Jarvis |
-| 113 API + edge functions | 75 + 38 |
-| 850 unit tests | 725 + 125 |
+| 127 API + edge functions | 89 + 38 |
+| 2,100 unit tests | 1,975 + 125 |
 | ~5,000 lines of TypeScript | the twelve modules in the Locked In repo |
 | ~3,500 lines of Python | `wc -l *.py` in Kitchen OS (3,484) |
 | 66 backend functions | `def` count in Kitchen OS's `backend.py` |
