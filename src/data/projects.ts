@@ -52,6 +52,10 @@ export interface Project {
    * shipped app icons; the rest are drawn to match, because those projects
    * never had one. */
   logo: string;
+  /** The image that stands for the project: its home-page card, the panel at
+   * the top of its sheet and its link preview. Defaults to the first
+   * screenshot; set where that one isn't the strongest. */
+  hero?: string;
   /** The architecture, top to bottom. Rendered as a labelled spine (L00, L01…). */
   layers: string[];
   stack: string[];
@@ -104,12 +108,13 @@ export interface Project {
   moreToAdd?: string;
 }
 
-/** The first real screenshot of a project: a walked-through step where there is
- * one, then a loose shot, then — only as a last resort — the trailer's poster.
- * The poster is a designed title card with a play triangle on it, so using it
- * as a thumbnail makes a project card read as a video rather than as software. */
+/** The image a project leads with: its chosen `hero`, else the first real
+ * screenshot — a walked-through step where there is one, then a loose shot —
+ * and only as a last resort the trailer's poster. The poster is a designed
+ * title card with a play triangle on it, so using it as a thumbnail makes a
+ * project card read as a video rather than as software. */
 export function heroShot(p: Project): string | undefined {
-  return p.flows?.[0]?.steps[0]?.src ?? p.shots[0]?.src ?? p.trailerPoster;
+  return p.hero ?? p.flows?.[0]?.steps[0]?.src ?? p.shots[0]?.src ?? p.trailerPoster;
 }
 
 export const PROJECTS: Project[] = [
@@ -730,6 +735,10 @@ export const PROJECTS: Project[] = [
     role: 'Solo — design, build, ship',
     accent: '#fb7185',
     logo: '/logos/fitscroll.svg',
+    // The strictness dial beside the home screen, on the same dark field as
+    // the other phone apps' pairs. The home screen alone, cropped to a card,
+    // was a red "Blocking is not active" warning over an empty bank.
+    hero: '/media/fitscroll-hero.png',
     layers: [
       'Kotlin · Jetpack Compose (Material 3)',
       'CameraX preview → ML Kit pose detection, on-device',
