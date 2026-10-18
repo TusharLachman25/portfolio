@@ -6,10 +6,12 @@ function toast(message: string) {
   window.dispatchEvent(new CustomEvent('tl-toast', { detail: message }));
 }
 
-/** Copies the address and confirms it, rather than firing a `mailto:` — on a
- * laptop with no mail client configured that opens nothing at all, and the
- * visitor is left assuming the button is broken. The Shell listens for the
- * event, so any page can call this without threading a context through. */
+/** Copies the address and confirms it. This is the default rather than a
+ * `mailto:`, which on a laptop with no mail client configured opens nothing at
+ * all and leaves the visitor assuming the button is broken; the mailto: sits
+ * beside it as its own control (CopyEmailButton) for anyone who has one. The
+ * Shell listens for the event, so any page can call this without threading a
+ * context through. */
 export async function copyEmail() {
   try {
     await navigator.clipboard.writeText(EMAIL);

@@ -2332,6 +2332,38 @@ button {
   background: color-mix(in srgb, var(--accent) 78%, white);
 }
 
+/* The address copies, because a mailto: on a machine with no mail client set
+   up opens nothing at all; the envelope beside it opens the visitor's own mail
+   app for everyone who has one. One control with two ends. */
+.mailsplit {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+}
+.mailsplit > :first-child {
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.mailsplit > :last-child {
+  display: grid;
+  place-items: center;
+  padding-left: 15px;
+  padding-right: 16px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.mailsplit .btn-outline + .btn-outline {
+  margin-left: -1px;
+}
+.mailsplit .btn-accent + .btn-accent {
+  border-left: 1px solid rgba(4, 18, 26, 0.28);
+}
+/* Half a button rising on its own reads as something coming loose. */
+.mailsplit > :hover {
+  transform: none;
+}
+
 .footnote {
   margin: 26px 0 0;
   display: grid;

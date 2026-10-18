@@ -318,6 +318,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <a className="nav" href={RESUME} target="_blank" rel="noreferrer">
                 Résumé ↓
               </a>
+              <a className="nav" href={`mailto:${EMAIL}`}>
+                Email ✉
+              </a>
             </div>
           </nav>
 

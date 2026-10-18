@@ -53,6 +53,14 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       },
       { label: `Copy email — ${EMAIL}`, kind: 'ACTION', accent: '#64748b', run: copyEmail },
       {
+        label: 'Email — open in your mail app',
+        kind: 'LINK',
+        accent: '#64748b',
+        run: () => {
+          window.location.href = `mailto:${EMAIL}`;
+        },
+      },
+      {
         label: 'Download résumé',
         kind: 'LINK',
         accent: '#64748b',
