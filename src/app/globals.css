@@ -1800,6 +1800,24 @@ button {
   white-space: nowrap;
 }
 
+/* On a phone a heading and its count don't share a line — "Every feature, step
+   by step" is most of a 360px screen on its own, and the count beside it ran
+   24px off the edge. The count drops underneath as a caption, and the rule
+   that joined them goes. */
+@media (max-width: 779px) {
+  .h2row:has(.h2row__count) {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .h2row:has(.h2row__count) .rule {
+    display: none;
+  }
+  .h2row__count {
+    flex-basis: 100%;
+    white-space: normal;
+  }
+}
+
 .note-row {
   display: grid;
   grid-template-columns: var(--hl-cols);
