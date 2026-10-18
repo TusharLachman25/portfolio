@@ -1120,7 +1120,7 @@ export const PROJECTS: Project[] = [
     repo: 'https://github.com/TusharLachman25/Locked-In',
   },
   {
-    slug: 'ai-meal',
+    slug: 'kitchen-os',
     name: 'Kitchen OS',
     short: 'Kitchen OS',
     tagline: 'Know what is in your pantry, what you can cook, and what it does to your macros.',

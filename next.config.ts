@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
         destination: 'https://tusharlachman.dev/:path*',
         permanent: true,
       },
+      /* Kitchen OS lived at /work/ai-meal, after the folder it started in,
+       * until the address was made to match the product's name. Anyone sent
+       * the old link, and any search result still carrying it, lands on the
+       * page rather than on a 404. */
+      {
+        source: '/work/ai-meal',
+        destination: '/work/kitchen-os',
+        permanent: true,
+      },
     ];
   },
 };
