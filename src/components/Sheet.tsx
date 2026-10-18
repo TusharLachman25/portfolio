@@ -38,6 +38,9 @@ export interface SheetView {
   /** Portrait phone captures, which need the full width to stay readable. */
   portraitShots?: boolean;
   mediaNote?: string;
+  /** Two sentences of `mediaNote` to show by default. Where it exists the full
+   * note moves behind a "How these were captured" expander under it. */
+  mediaNoteSummary?: string;
   /** A word from whoever uses the thing. Rendered only when it exists. */
   testimonial?: { quote: string; attribution: string };
   trailer?: string;
@@ -145,7 +148,17 @@ export function Sheet(view: SheetView) {
       {view.mediaNote && (
         <div className="footnote">
           <span aria-hidden>*</span>
-          <p>{view.mediaNote}</p>
+          {view.mediaNoteSummary ? (
+            <div>
+              <p>{view.mediaNoteSummary}</p>
+              <details className="footnote__more">
+                <summary>HOW THESE WERE CAPTURED</summary>
+                <p>{view.mediaNote}</p>
+              </details>
+            </div>
+          ) : (
+            <p>{view.mediaNote}</p>
+          )}
         </div>
       )}
     </section>

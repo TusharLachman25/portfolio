@@ -72,6 +72,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       flows={project.flows}
       portraitShots={project.portraitShots}
       mediaNote={project.note}
+      mediaNoteSummary={project.noteSummary}
       testimonial={project.testimonial}
       trailer={project.trailer}
       trailerPoster={project.trailerPoster}

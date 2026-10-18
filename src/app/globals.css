@@ -2402,6 +2402,37 @@ button {
   line-height: 1.7;
   color: var(--ink-3);
 }
+.footnote__more {
+  margin-top: 10px;
+}
+.footnote__more summary {
+  display: inline-block;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--bd-2);
+  padding: 6px 2px 4px;
+  transition: color 0.2s;
+}
+.footnote__more summary::-webkit-details-marker {
+  display: none;
+}
+.footnote__more summary::before {
+  content: "+ ";
+}
+.footnote__more[open] summary::before {
+  content: "− ";
+}
+.footnote__more summary:hover {
+  color: var(--ink);
+}
+.footnote__more[open] summary {
+  margin-bottom: 14px;
+}
 
 .video-figure {
   margin: 0 0 52px;
