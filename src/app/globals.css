@@ -196,6 +196,26 @@ button {
   border: 0;
 }
 
+/* The first stop for a keyboard on every page: past the sidebar's twenty-odd
+   links and straight to the page itself. Off screen until it has focus. */
+.skip {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  transform: translateY(-200%);
+  transition: transform 0.18s;
+}
+.skip:focus {
+  transform: none;
+}
+
 @keyframes softIn {
   from {
     opacity: 0;
@@ -743,6 +763,11 @@ button {
      rather than `hidden` so it can't turn descendant `position: sticky` into a
      scroll container and silently kill the sticky bars. */
   overflow-x: clip;
+}
+/* The skip link's target. Focus lands here so the next Tab carries on from the
+   page, but it is not a control and shouldn't ring the whole page. */
+.content:focus {
+  outline: none;
 }
 
 .wrap {

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ACADEMIC, PROJECTS } from '@/data/projects';
 import { EMAIL, GITHUB, LINKEDIN, RESUME } from '@/data/site';
 import { CommandPalette } from './CommandPalette';
@@ -33,20 +33,63 @@ function setTheme(next: 'dark' | 'light') {
   }
 }
 
+const PHONE = '(max-width: 779px)';
+
+function subscribePhone(onChange: () => void) {
+  const mq = window.matchMedia(PHONE);
+  mq.addEventListener('change', onChange);
+  return () => mq.removeEventListener('change', onChange);
+}
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [drawer, setDrawer] = useState(false);
   const [palette, setPalette] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  // On a phone the closed drawer is still in the DOM, translated off screen,
+  // so without `inert` a keyboard tabs through twenty links nobody can see.
+  const phone = useSyncExternalStore(
+    subscribePhone,
+    () => window.matchMedia(PHONE).matches,
+    () => false,
+  );
+
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
+  const returnFocus = useRef(false);
+
+  // Following a link out of the drawer just closes it: the page the link opens
+  // is where focus belongs next.
   const closeDrawer = useCallback(() => setDrawer(false), []);
+
+  // Dismissing it (the ✕, the scrim, Escape) hands focus back to the button
+  // that opened it, so a keyboard carries on from where it was.
+  const dismissDrawer = useCallback(() => {
+    returnFocus.current = true;
+    setDrawer(false);
+  }, []);
 
   // The drawer lives as an attribute on <html> so the sidebar transform and the
   // scrim can be driven by the same CSS that handles the breakpoint.
   useEffect(() => {
     document.documentElement.dataset.drawer = drawer ? '1' : '0';
     document.body.style.overflow = drawer ? 'hidden' : '';
-  }, [drawer]);
+
+    if (drawer) {
+      drawerCloseRef.current?.focus();
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') dismissDrawer();
+      };
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+    }
+
+    if (returnFocus.current) {
+      returnFocus.current = false;
+      burgerRef.current?.focus();
+    }
+  }, [drawer, dismissDrawer]);
 
   // Route changes close both overlays — otherwise a back-button navigation on a
   // phone lands on a new page still covered by the menu. Adjusted during render
@@ -137,9 +180,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <a className="skip" href="#content">
+        Skip to content
+      </a>
+
       {/* Phone top bar — the only navigation on screen until the drawer opens */}
-      <div className="topbar">
-        <button className="topbar__burger" onClick={() => setDrawer(true)} aria-label="Open menu">
+      <div className="topbar" inert={drawer}>
+        <button
+          ref={burgerRef}
+          className="topbar__burger"
+          onClick={() => setDrawer(true)}
+          aria-label="Open menu"
+          aria-expanded={drawer}
+          aria-controls="sidebar"
+        >
           <span />
           <span />
           <span />
@@ -153,9 +207,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </button>
       </div>
 
-      {drawer && <button className="scrim" onClick={closeDrawer} aria-label="Close menu" />}
+      {drawer && <button className="scrim" onClick={dismissDrawer} aria-label="Close menu" tabIndex={-1} />}
 
-      <aside className="side">
+      <aside id="sidebar" className="side" inert={phone && !drawer}>
         {/* Expanded sidebar. Hidden by CSS when the rail is on, and always
             shown inside the phone drawer regardless of the rail setting. */}
         <div className="side__full">
@@ -180,8 +234,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
               «
             </button>
             <button
+              ref={drawerCloseRef}
               className="icon-btn side__close"
-              onClick={closeDrawer}
+              onClick={dismissDrawer}
               title="Close menu"
               aria-label="Close menu"
             >
@@ -335,10 +390,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="content">{children}</div>
+      {/* The skip link's target. tabIndex -1 lets it take focus without
+          becoming a stop of its own in the Tab order. */}
+      <div className="content" id="content" tabIndex={-1} inert={drawer}>
+        {children}
+      </div>
 
       {palette && <CommandPalette onClose={() => setPalette(false)} />}
-      {toast && <div className="toast">{toast}</div>}
+      {/* Always mounted, so a screen reader is already listening when the
+          message arrives — a live region inserted with its text in it is
+          often not announced at all. */}
+      <div role="status" aria-live="polite">
+        {toast && <div className="toast">{toast}</div>}
+      </div>
     </>
   );
 }

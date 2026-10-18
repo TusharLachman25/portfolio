@@ -83,7 +83,14 @@ export function Sheet(view: SheetView) {
               {view.trailerNote ?? 'A short, edited tour of the product, cut from footage of the real thing running.'}
             </span>
           </figcaption>
-          <video src={view.trailer} poster={view.trailerPoster} controls playsInline preload="metadata" />
+          <video
+            src={view.trailer}
+            poster={view.trailerPoster}
+            controls
+            playsInline
+            preload="metadata"
+            aria-label={`${view.name} — trailer`}
+          />
         </figure>
       )}
 
@@ -96,7 +103,14 @@ export function Sheet(view: SheetView) {
             </span>
             <span className="figure__desc">{view.videoNote ?? 'The app running, unedited and at real speed.'}</span>
           </figcaption>
-          <video src={view.video} poster={view.poster} controls playsInline preload="metadata" />
+          <video
+            src={view.video}
+            poster={view.poster}
+            controls
+            playsInline
+            preload="metadata"
+            aria-label={`${view.name} — full walkthrough`}
+          />
         </figure>
       )}
     </section>

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ACADEMIC, PROJECTS } from '@/data/projects';
 import { EMAIL, GITHUB, LINKEDIN, RESUME } from '@/data/site';
 import { copyEmail } from './copy';
+import { trapTab } from './focus';
 
 interface Item {
   label: string;
@@ -18,6 +19,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo<Item[]>(
     () => [
@@ -73,8 +75,16 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     return items.filter((i) => `${i.label} ${i.kind}`.toLowerCase().includes(needle));
   }, [items, q]);
 
+  // Focus goes to the search field on open and back to whatever opened the
+  // palette on close — the sidebar's search button, or wherever the keyboard
+  // was when the shortcut was pressed — so closing it doesn't strand focus at
+  // the top of the page.
   useEffect(() => {
+    const opener = document.activeElement;
     inputRef.current?.focus();
+    return () => {
+      if (opener instanceof HTMLElement && opener !== document.body && opener.isConnected) opener.focus();
+    };
   }, []);
 
   const choose = (item: Item | undefined) => {
@@ -89,12 +99,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === 'Escape') onClose();
+        trapTab(e, boxRef.current);
       }}
       role="dialog"
       aria-modal="true"
       aria-label="Search"
     >
-      <div className="palette" onClick={(e) => e.stopPropagation()}>
+      <div className="palette" ref={boxRef} onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
           value={q}
