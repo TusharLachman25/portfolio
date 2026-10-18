@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "resume": "node tools/make-resume.mjs",
-    "og": "node tools/make-og.mjs"
+    "og": "node tools/make-og.mjs",
+    "thumbs": "node tools/make-thumbs.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

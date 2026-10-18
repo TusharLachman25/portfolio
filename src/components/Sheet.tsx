@@ -1,8 +1,13 @@
 import Link from 'next/link';
 import type { Flow, Metric, NoteGroup, Shot } from '@/data/projects';
 import { accentVars, pad } from '@/lib/accent';
+import { responsive } from '@/lib/responsive';
 import { CopyEmailButton } from './CopyEmailButton';
-import { Gallery } from './Gallery';
+import { Gallery, type FlowView } from './Gallery';
+
+/** The hero screenshot's width in the layout: about 510px beside the title on
+ * a laptop, the full column once the hero stacks below 1180px. */
+const PANEL_SIZES = '(max-width: 779px) calc(100vw - 36px), (max-width: 1179px) calc(100vw - 314px), 620px';
 
 export interface SheetView {
   /** Breadcrumb root — "Projects" or "Academic projects". */
@@ -126,8 +131,12 @@ export function Sheet(view: SheetView) {
   // A project either has features walked through step by step, or a flat list
   // of screenshots. The flat list becomes one unnamed group so the gallery only
   // has to understand one shape.
-  const flows: Flow[] =
-    view.flows ?? (view.shots.length > 0 ? [{ title: '', caption: '', steps: view.shots }] : []);
+  const flows: FlowView[] = (
+    view.flows ?? (view.shots.length > 0 ? [{ title: '', caption: '', steps: view.shots }] : [])
+  ).map((flow: Flow) => ({
+    ...flow,
+    steps: flow.steps.map((step) => ({ ...step, ...responsive(step.src) })),
+  }));
 
   const stepCount = flows.reduce((n, f) => n + f.steps.length, 0);
 
@@ -163,6 +172,8 @@ export function Sheet(view: SheetView) {
       )}
     </section>
   );
+
+  const panel = view.panel ? responsive(view.panel) : undefined;
 
   // Every note is numbered once, in reading order: the ones shown in full
   // first, then each folded group carrying on from where the last stopped.
@@ -239,11 +250,16 @@ export function Sheet(view: SheetView) {
                   <span />
                 </div>
                 {/* The one eagerly-loaded image on the page, so it carries its
-                    real intrinsic size — without it the hero reflows the moment
-                    the screenshot lands. */}
+                    real intrinsic size — without it the hero reflows the
+                    moment the screenshot lands. Deliberately no
+                    fetchPriority="high": React carries it into the preloads
+                    Next issues for every route the sidebar prefetches, so
+                    each sheet's hero would jump the queue on every page. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={view.panel}
+                  srcSet={panel?.srcSet}
+                  sizes={panel?.srcSet ? PANEL_SIZES : undefined}
                   alt={`${view.name} — screenshot`}
                   width={view.panelSize?.width}
                   height={view.panelSize?.height}

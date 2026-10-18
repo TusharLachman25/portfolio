@@ -19,6 +19,7 @@ import {
   WORK_RIGHTS,
 } from '@/data/site';
 import { accentVars, pad } from '@/lib/accent';
+import { responsive } from '@/lib/responsive';
 
 /** Who the site is about, for search engines, in schema.org's terms: the same
  * facts the hero and the title block state. A current student, so the
@@ -36,6 +37,10 @@ const PERSON = {
   sameAs: [GITHUB, LINKEDIN],
   knowsAbout: ['Software engineering', 'Full-stack development', 'Android development', 'Machine learning', 'Data science'],
 };
+
+/** The project card's screenshot: 288px beside the text on a laptop, the
+ * card's full width once it stacks below 1180px. */
+const CARD_SIZES = '(max-width: 779px) calc(100vw - 72px), (max-width: 1179px) calc(100vw - 354px), 288px';
 
 export default function Home() {
   return (
@@ -92,6 +97,10 @@ export default function Home() {
 }
 
 function Hero() {
+  // 104px on screen (84px on a phone), so 2× and 3× copies rather than the
+  // 512px original.
+  const portrait = responsive('/tushar-lachman.jpg', [208, 312]);
+
   // Deliberately not revealed on scroll: it is the first thing on screen, and
   // fading it in means the page is blank until the bundle lands.
   return (
@@ -105,6 +114,8 @@ function Hero() {
           <img
             className="portrait"
             src="/tushar-lachman.jpg"
+            srcSet={portrait.srcSet}
+            sizes={portrait.srcSet ? '(max-width: 779px) 84px, 104px' : undefined}
             alt="Tushar Lachman"
             width={512}
             height={512}
@@ -161,6 +172,7 @@ function Hero() {
 
 function SheetCard({ project, index }: { project: Project; index: number }) {
   const thumb = heroShot(project);
+  const copies = thumb ? responsive(thumb) : undefined;
 
   return (
     <Link href={`/work/${project.slug}`} className="sheet-card" style={accentVars(project.accent)} data-reveal>
@@ -204,7 +216,15 @@ function SheetCard({ project, index }: { project: Project; index: number }) {
           {thumb ? (
             <div className="thumb">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={thumb} alt="" loading="lazy" />
+              <img
+                src={thumb}
+                srcSet={copies?.srcSet}
+                sizes={copies?.srcSet ? CARD_SIZES : undefined}
+                width={copies?.width}
+                height={copies?.height}
+                alt=""
+                loading="lazy"
+              />
             </div>
           ) : (
             <div className="thumb--empty mono">

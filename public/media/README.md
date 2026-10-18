@@ -33,5 +33,6 @@ Never publish a real patient record, even redacted.
 
 - **Aspect ratio**: shots render at 16:10, video at 16:9. Anything close is fine — they're cropped to fit.
 - **Size**: aim for ~1600px wide PNGs. Compress with [squoosh.app](https://squoosh.app) so the page stays fast.
+- **Thumbnails**: after adding or replacing a capture, run `npm run thumbs`. The site serves 640px and 1040px WebP copies from `thumbs/` and opens the original only in the viewer; without them it falls back to the original everywhere, which works but is heavier.
 - **Phone screens**: Locked In is a portrait app. Either screenshot the web build, or place two phone screens side by side on a dark background so the image fills the 16:10 frame instead of leaving big empty margins.
 - **Recording**: Windows `Win + Alt + R`, or [ScreenToGif](https://www.screentogif.com) for something lighter. Keep it under 90 seconds, no narration needed, and show the interesting part in the first 10 seconds.

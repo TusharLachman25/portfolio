@@ -33,11 +33,14 @@ src/components/Shell.tsx sidebar, icon rail, mobile drawer, theme, ⌘K palette
 src/components/Sheet.tsx the sheet layout both routes render into
 src/app/globals.css      the whole design system as CSS custom properties
 public/media/            trailers, walkthroughs and screenshots
+public/media/thumbs/     WebP copies of the screenshots, written by make-thumbs
+src/lib/responsive.ts    the srcset that serves those copies, original as the largest
 resume/resume.css        typography shared by both résumé variants
 resume/resume.html       the two-page résumé
 resume/resume-onepage.html   the one-page cut
 tools/make-resume.mjs    prints both to PDF; each must hit its page count
 tools/make-og.mjs        rebuilds public/og.png from the hero stats
+tools/make-thumbs.mjs    640px and 1040px WebP copies of every capture
 design-system/           standalone HTML previews (see the note below)
 ```
 
@@ -45,7 +48,14 @@ design-system/           standalone HTML previews (see the note below)
 npm run resume     # rebuild both PDFs
 npm run resume "path/to/dated/folder"   # ...and drop copies alongside them
 npm run og         # rebuild the link-preview card
+npm run thumbs     # WebP copies of any capture that is new or has changed
 ```
+
+The captures are 1,600px PNGs and most are drawn about 550px wide, so the grid,
+the home-page cards and each sheet's hero load a 640px or 1040px WebP copy
+instead, and the viewer still opens the original. A capture without copies just
+serves the original, so forgetting `npm run thumbs` costs bandwidth, not a
+broken image.
 
 ### The two résumés
 
@@ -72,9 +82,10 @@ a thing to do twice. After `npm run og`, bump the `?v=` on `OG_IMAGE` in
 `src/data/site.ts`: WhatsApp and LinkedIn cache a preview by URL and hold it
 for a long time.
 
-Adding a project means adding an entry to `src/data/projects.ts` and dropping
-files into `public/media/`. The route, the sidebar entry, the command-palette
-entry, the prev/next pager and the sitemap all come from that array.
+Adding a project means adding an entry to `src/data/projects.ts`, dropping
+files into `public/media/` and running `npm run thumbs`. The route, the sidebar
+entry, the command-palette entry, the prev/next pager and the sitemap all come
+from that array.
 
 ## Design notes worth knowing before editing
 

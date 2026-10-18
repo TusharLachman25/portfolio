@@ -5,18 +5,39 @@ import type { Flow, Shot } from '@/data/projects';
 import { pad } from '@/lib/accent';
 import { trapTab } from './focus';
 
+/** A screenshot as the gallery draws it: the shot, plus the smaller WebP copies
+ * the build found for it and the file's own size, so the grid can load a
+ * 640px copy into a 550px slot and still reserve the right box before it
+ * arrives. The viewer always opens the original. */
+export interface ShotView extends Shot {
+  srcSet?: string;
+  width?: number;
+  height?: number;
+}
+
+export interface FlowView extends Omit<Flow, 'steps'> {
+  steps: ShotView[];
+}
+
+/** How wide a screenshot is drawn, for picking a copy: two columns of about
+ * 550px on a laptop, one column below 1270px, the whole phone below 780px.
+ * Phone captures sit one to a row and stop at 640px tall, which for a
+ * 1600×1000 pair is 1024px wide. */
+const GRID_SIZES = '(max-width: 779px) calc(100vw - 70px), (max-width: 1269px) calc(100vw - 364px), 550px';
+const PORTRAIT_SIZES = '(max-width: 779px) calc(100vw - 70px), (max-width: 1269px) calc(100vw - 364px), 1024px';
+
 /** Steps grouped under the feature they belong to. A project that hasn't been
  * walked through feature by feature passes a single unnamed group instead.
  *
  * `portrait` widens the grid to one column: phone captures are tall and narrow,
  * and two of them in a half-width cell are a pair of unreadable slivers. */
-export function Gallery({ flows, portrait }: { flows: Flow[]; portrait?: boolean }) {
+export function Gallery({ flows, portrait }: { flows: FlowView[]; portrait?: boolean }) {
   const [open, setOpen] = useState<number | null>(null);
 
   // The lightbox runs across every step on the page, so the arrow keys walk the
   // whole sheet rather than stopping at the end of a group. Each group carries
   // the index its first step occupies in that flattened list.
-  const all = useMemo<Shot[]>(() => flows.flatMap((f) => f.steps), [flows]);
+  const all = useMemo<ShotView[]>(() => flows.flatMap((f) => f.steps), [flows]);
   const groups = useMemo(
     () =>
       flows.map((flow, i) => ({
@@ -106,7 +127,15 @@ export function Gallery({ flows, portrait }: { flows: Flow[]; portrait?: boolean
                   {/* The caption above already says what the screen shows, so
                       the alt text names it and stops there. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={shot.src} alt={shot.title} loading="lazy" />
+                  <img
+                    src={shot.src}
+                    srcSet={shot.srcSet}
+                    sizes={shot.srcSet ? (portrait ? PORTRAIT_SIZES : GRID_SIZES) : undefined}
+                    width={shot.width}
+                    height={shot.height}
+                    alt={shot.title}
+                    loading="lazy"
+                  />
                   <span className="figure__zoom mono" aria-hidden>
                     ⤢ ENLARGE
                   </span>
@@ -211,7 +240,7 @@ export function Gallery({ flows, portrait }: { flows: Flow[]; portrait?: boolean
           )}
           <figure onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img key={current.src} src={current.src} alt={current.title} />
+            <img key={current.src} src={current.src} alt={current.title} width={current.width} height={current.height} />
             {/* Polite live region: moving to the next image says which one. */}
             <figcaption className="mono" aria-live="polite">
               <span>{current.title}</span>
