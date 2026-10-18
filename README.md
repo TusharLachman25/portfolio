@@ -69,7 +69,7 @@ Both generators drive headless Chrome and fetch Poppins from Google, so they nee
 a network connection. The résumé had no source file at all until these existed —
 the PDF was rebuilt once by measuring the old one's content stream, which is not
 a thing to do twice. After `npm run og`, bump the `?v=` on `OG_IMAGE` in
-`src/app/layout.tsx`: WhatsApp and LinkedIn cache a preview by URL and hold it
+`src/data/site.ts`: WhatsApp and LinkedIn cache a preview by URL and hold it
 for a long time.
 
 Adding a project means adding an entry to `src/data/projects.ts` and dropping

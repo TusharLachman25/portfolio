@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
-import { SITE_URL } from "@/data/site";
+import { OG_IMAGE, SITE_URL } from "@/data/site";
 import { Analytics } from "@vercel/analytics/next";
 
 const display = Space_Grotesk({
@@ -30,25 +30,6 @@ const TITLE = "Tushar Lachman — Software, Data & AI/ML";
 
 const DESCRIPTION =
   "Computer Science student at RMIT University, minoring in AI & Machine Learning, open to any tech role. Seven products built end to end — including a medical practice platform sold on a paid monthly subscription and in daily clinical use in Jakarta.";
-
-/** One 1200×630 card for every page that doesn't set its own. Without it a
- * pasted link renders as a bare grey box in LinkedIn, Slack and mail clients —
- * which is most of the places this link actually gets shared.
- *
- * The card is composed centred rather than left-aligned: WhatsApp shows a link
- * preview as a small centre-cropped square, so a left-aligned name loses its
- * first half. Everything that has to survive sits inside the middle 630×630.
- *
- * The `?v=` is a cache-buster. WhatsApp and LinkedIn key their preview cache on
- * the image URL and hold it for a long time, so a redesign at the same path
- * keeps showing the old card to anyone who has already been sent the link.
- * Bump it whenever the card changes. */
-const OG_IMAGE = {
-  url: "/og.png?v=7",
-  width: 1200,
-  height: 630,
-  alt: "Tushar Lachman — software, data and AI/ML. Seven products built end to end.",
-};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

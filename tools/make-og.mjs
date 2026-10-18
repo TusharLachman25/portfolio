@@ -12,7 +12,7 @@
  *
  *   node tools/make-og.mjs
  *
- * Then bump the `?v=` on OG_IMAGE in src/app/layout.tsx — WhatsApp and LinkedIn
+ * Then bump the `?v=` on OG_IMAGE in src/data/site.ts — WhatsApp and LinkedIn
  * key their preview cache on the URL and hold it for a long time, so a new card
  * at the same path keeps showing the old one to anyone already sent the link.
  */

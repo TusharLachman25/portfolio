@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Sheet } from '@/components/Sheet';
 import { heroShot, PROJECTS } from '@/data/projects';
 import { imageSize } from '@/lib/imageSize';
+import { clamp } from '@/lib/text';
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ slug: p.slug }));
@@ -35,15 +36,6 @@ export async function generateMetadata({
     },
     twitter: { card: 'summary_large_image', images: card },
   };
-}
-
-/** Trim to whole sentences within `max`, falling back to a word boundary. */
-function clamp(text: string, max: number): string {
-  if (text.length <= max) return text;
-  const head = text.slice(0, max);
-  const lastStop = head.lastIndexOf('. ');
-  if (lastStop > max * 0.5) return head.slice(0, lastStop + 1);
-  return `${head.slice(0, head.lastIndexOf(' '))}…`;
 }
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
