@@ -171,5 +171,5 @@ them can be checked in an interview:
 | 127 API + edge functions | 89 + 38 |
 | 2,163 unit tests | 1,975 + 125 + 63 |
 | ~5,000 lines of TypeScript | the twelve modules in the Locked In repo |
-| ~3,500 lines of Python | `wc -l *.py` in Kitchen OS (3,484) |
+| ~3,400 lines of Python | `wc -l *.py` in Kitchen OS (3,417) |
 | 66 backend functions | `def` count in Kitchen OS's `backend.py` |

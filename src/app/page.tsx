@@ -116,7 +116,9 @@ function Hero() {
           <h1 className="hero-title">Tushar Lachman</h1>
           <p className="hero-lead">
             I build software end to end — and then get it into people&rsquo;s hands.{' '}
-            <strong>One of them runs a family practice in Jakarta every day, on a paid monthly subscription.</strong>
+            <strong>
+              One of those products runs a family practice in Jakarta every day, on a paid monthly subscription.
+            </strong>
           </p>
           <p className="hero-sub">
             Computer Science at RMIT, minoring in AI &amp; Machine Learning. Most of what I build starts as a problem I
@@ -328,8 +330,8 @@ function Closing() {
       <p>
         I&rsquo;m after a summer internship over {SUMMER_INTERNSHIP} and a graduate role from {GRAD_FROM}, and
         I&rsquo;m not precious about which corner of the stack it&rsquo;s in — software, data, ML, platform, QA or
-        product. Happy to walk through any of the private projects in detail: architecture, trade-offs, the parts that
-        went wrong.
+        product. Happy to walk through any of the projects in detail: architecture, trade-offs, the parts that went
+        wrong. The medical platform&rsquo;s code is private, so that one I&rsquo;ll show you on a call.
       </p>
       <p className="closing__rights">{WORK_RIGHTS}</p>
       <div className="actions">

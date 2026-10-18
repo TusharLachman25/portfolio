@@ -109,7 +109,8 @@ export const SKILLS: { label: string; items: string }[] = [
   },
   {
     label: 'AI & DATA SCIENCE',
-    items: 'Claude API (tool use) · Google Gemini (text & vision) · scikit-learn · pandas · NLTK · transformers · NetworkX',
+    items:
+      'Claude API (tool use) · Google Gemini (text & vision) · PyTorch · scikit-learn · pandas · NLTK · transformers · NetworkX',
   },
   {
     label: 'PRACTICE',
