@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ShortcutHint } from '@/components/ShortcutHint';
+
+/** Without this the tab and the history entry read "Tushar Lachman Portfolio"
+ * like the home page, for a page that isn't one. */
+export const metadata: Metadata = {
+  title: 'Not found',
+};
 
 export default function NotFound() {
   return (

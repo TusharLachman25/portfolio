@@ -8,6 +8,7 @@ import { EMAIL, GITHUB, LINKEDIN, RESUME } from '@/data/site';
 import { CommandPalette } from './CommandPalette';
 import { copyEmail } from './copy';
 import { ShortcutHint } from './ShortcutHint';
+import { toggleTheme } from './theme';
 
 /** Both glyphs are always in the DOM and CSS picks the one that matches
  * `html[data-theme]`. Deriving it from React state instead would mean the
@@ -23,15 +24,6 @@ function ThemeGlyph() {
       </span>
     </>
   );
-}
-
-function setTheme(next: 'dark' | 'light') {
-  document.documentElement.dataset.theme = next;
-  try {
-    localStorage.setItem('tl-theme', next);
-  } catch {
-    /* private browsing — the toggle still works for this session */
-  }
 }
 
 const PHONE = '(max-width: 779px)';
@@ -161,10 +153,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
       clearTimeout(fallback);
     };
   }, [pathname]);
-
-  const toggleTheme = () => {
-    setTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
-  };
 
   const toggleRail = () => {
     const root = document.documentElement;

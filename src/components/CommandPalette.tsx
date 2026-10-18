@@ -6,6 +6,7 @@ import { ACADEMIC, PROJECTS } from '@/data/projects';
 import { EMAIL, GITHUB, LINKEDIN, RESUME } from '@/data/site';
 import { copyEmail } from './copy';
 import { trapTab } from './focus';
+import { toggleTheme } from './theme';
 
 interface Item {
   label: string;
@@ -36,21 +37,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         run: () => router.push(`/academic/${a.slug}`),
       })),
       { label: 'Home — all work', kind: 'PAGE', accent: '#64748b', run: () => router.push('/') },
-      {
-        label: 'Toggle dark mode',
-        kind: 'ACTION',
-        accent: '#64748b',
-        run: () => {
-          const root = document.documentElement;
-          const next = root.dataset.theme === 'light' ? 'dark' : 'light';
-          root.dataset.theme = next;
-          try {
-            localStorage.setItem('tl-theme', next);
-          } catch {
-            /* ignore */
-          }
-        },
-      },
+      { label: 'Toggle dark mode', kind: 'ACTION', accent: '#64748b', run: toggleTheme },
       { label: `Copy email — ${EMAIL}`, kind: 'ACTION', accent: '#64748b', run: copyEmail },
       {
         label: 'Email — open in your mail app',

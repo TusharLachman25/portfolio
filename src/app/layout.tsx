@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
+import { THEME_COLOR, THEME_META_ID } from "@/components/theme";
 import { OG_IMAGE, SITE_URL } from "@/data/site";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -68,11 +69,13 @@ export const metadata: Metadata = {
   },
 };
 
+/** A phone's browser bar follows the site's theme, not the phone's. The site
+ * is dark unless a visitor chooses otherwise, so keying the bar to
+ * prefers-color-scheme, as this used to, put a light bar over a dark page on
+ * every phone set to light mode. A visitor who switches the site to light gets
+ * a light bar from the boot script below and from setTheme(). */
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0a0e13" },
-    { media: "(prefers-color-scheme: light)", color: "#f1f4f7" },
-  ],
+  themeColor: THEME_COLOR.dark,
 };
 
 /** Runs before the first paint: restores the saved theme and sidebar state,
@@ -82,8 +85,9 @@ export const viewport: Viewport = {
  * gets the full sidebar for a frame on every navigation. */
 const BOOT = `(function(){var r=document.documentElement;r.classList.add('js');
 try{var p=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||'';r.dataset.os=/mac|iphone|ipad|ipod/i.test(p)?'mac':'other';}catch(e){}
-try{var t=localStorage.getItem('tl-theme');r.dataset.theme=(t==='light'||t==='dark')?t:'dark';
-if(localStorage.getItem('tl-rail')==='1')r.dataset.rail='1';}catch(e){r.dataset.theme='dark';}})();`;
+var t='dark';try{if(localStorage.getItem('tl-theme')==='light')t='light';if(localStorage.getItem('tl-rail')==='1')r.dataset.rail='1';}catch(e){}
+r.dataset.theme=t;
+if(t==='light'){var m=document.createElement('meta');m.id='${THEME_META_ID}';m.name='theme-color';m.content='${THEME_COLOR.light}';document.head.prepend(m);}})();`;
 
 export default function RootLayout({
   children,

@@ -9,7 +9,9 @@ import {
   GRAD_FROM,
   HERO_STATS,
   LINKEDIN,
+  NAME,
   RESUME,
+  SITE_URL,
   SKILLS,
   SUMMER_INTERNSHIP,
   TITLE_BLOCK,
@@ -18,9 +20,32 @@ import {
 } from '@/data/site';
 import { accentVars, pad } from '@/lib/accent';
 
+/** Who the site is about, for search engines, in schema.org's terms: the same
+ * facts the hero and the title block state. A current student, so the
+ * university is an affiliation rather than `alumniOf`. */
+const PERSON = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: NAME,
+  url: SITE_URL,
+  image: `${SITE_URL}/tushar-lachman.jpg`,
+  description:
+    'Computer Science student at RMIT University, minoring in AI & Machine Learning, who builds software end to end — including a medical practice platform in daily clinical use.',
+  affiliation: { '@type': 'CollegeOrUniversity', name: 'RMIT University', url: 'https://www.rmit.edu.au' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Melbourne', addressRegion: 'VIC', addressCountry: 'AU' },
+  sameAs: [GITHUB, LINKEDIN],
+  knowsAbout: ['Software engineering', 'Full-stack development', 'Android development', 'Machine learning', 'Data science'],
+};
+
 export default function Home() {
   return (
     <main>
+      {/* `<` escaped as the Next docs advise, so no string in the data can
+          close the script tag early. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(PERSON).replace(/</g, '\\u003c') }}
+      />
       {/* Hidden on phones, where the app bar above it already says who this is
           and two stacked sticky headers eat a third of the screen. */}
       {/* The right-hand slot deliberately doesn't repeat the availability pill
