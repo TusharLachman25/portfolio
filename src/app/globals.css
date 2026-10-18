@@ -2524,6 +2524,39 @@ button {
   transform: scale(1.06);
 }
 
+/* Previous and next. A phone has no arrow keys, so without these the only way
+   through thirty screenshots was close, scroll, open, again. Swiping works as
+   well, but a swipe nobody is told about isn't an affordance. */
+.lightbox__nav {
+  position: fixed;
+  top: 50%;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  color: #f2f6fa;
+  background: rgba(20, 26, 35, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+}
+.lightbox__nav:hover {
+  background: rgba(38, 48, 62, 0.92);
+  transform: scale(1.06);
+}
+.lightbox__nav--prev {
+  left: clamp(8px, 2vw, 28px);
+}
+.lightbox__nav--next {
+  right: clamp(8px, 2vw, 28px);
+}
+
 .lightbox figure {
   margin: 0;
   max-width: 1180px;
@@ -2547,7 +2580,10 @@ button {
   gap: 6px 20px;
   font-size: 12px;
   letter-spacing: 0.1em;
-  color: #8794a6;
+  color: #c5ced9;
+}
+.lightbox__count {
+  color: #8f9bab;
 }
 
 @media (hover: none) {

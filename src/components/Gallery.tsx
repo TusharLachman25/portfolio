@@ -30,6 +30,7 @@ export function Gallery({ flows, portrait }: { flows: Flow[]; portrait?: boolean
   const opener = useRef<HTMLElement | null>(null);
   const shown = useRef<number | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const touch = useRef<{ x: number; y: number } | null>(null);
 
   const show = useCallback((i: number) => {
     opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -163,6 +164,20 @@ export function Gallery({ flows, portrait }: { flows: Flow[]; portrait?: boolean
           aria-label={current.title}
           onClick={close}
           onKeyDown={(e) => trapTab(e, e.currentTarget)}
+          onTouchStart={(e) => {
+            const t = e.touches[0];
+            touch.current = { x: t.clientX, y: t.clientY };
+          }}
+          onTouchEnd={(e) => {
+            const from = touch.current;
+            touch.current = null;
+            if (!from || all.length < 2) return;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - from.x;
+            const dy = t.clientY - from.y;
+            // A deliberate sideways swipe, not a scroll that drifted.
+            if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+          }}
         >
           {/* A phone has no Escape key, and the figure swallows taps so they
               don't dismiss the image being read — without this button there is
@@ -170,16 +185,40 @@ export function Gallery({ flows, portrait }: { flows: Flow[]; portrait?: boolean
           <button ref={closeRef} className="lightbox__close" onClick={close} aria-label="Close image">
             ✕
           </button>
+          {all.length > 1 && (
+            <>
+              <button
+                className="lightbox__nav lightbox__nav--prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  step(-1);
+                }}
+                aria-label="Previous image"
+              >
+                ←
+              </button>
+              <button
+                className="lightbox__nav lightbox__nav--next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  step(1);
+                }}
+                aria-label="Next image"
+              >
+                →
+              </button>
+            </>
+          )}
           <figure onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={current.src} alt={current.title} />
+            <img key={current.src} src={current.src} alt={current.title} />
             {/* Polite live region: moving to the next image says which one. */}
             <figcaption className="mono" aria-live="polite">
               <span>{current.title}</span>
-              <span style={{ opacity: 0.6 }}>
+              <span className="lightbox__count">
                 {(open ?? 0) + 1} / {all.length}
-                {/* Hidden on touch by CSS: a phone has neither key, and the ✕
-                    above is the affordance there. */}
+                {/* Hidden on touch by CSS: a phone has neither key, and the
+                    buttons beside the image are the affordance there. */}
                 <span className="lightbox__keys">
                   {all.length > 1 ? ' · ESC TO CLOSE · ← →' : ' · ESC TO CLOSE'}
                 </span>
