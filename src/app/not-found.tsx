@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ShortcutHint } from '@/components/ShortcutHint';
 
 export default function NotFound() {
   return (
@@ -10,8 +11,14 @@ export default function NotFound() {
         No sheet at this address.
       </h1>
       <p className="hero-sub" style={{ marginTop: 20 }}>
-        The page you asked for isn&rsquo;t here. Everything that does exist is one press of{' '}
-        <span className="mono">⌘K</span> away, or in the sidebar.
+        The page you asked for isn&rsquo;t here. Everything that does exist is in the{' '}
+        <span className="off-phone">sidebar</span>
+        <span className="on-phone">menu</span>
+        {/* The shortcut half drops out on touch screens, which have no key to press. */}
+        <span className="kbd-hint">
+          , or one press of <ShortcutHint className="mono" /> away
+        </span>
+        .
       </p>
       <div className="actions">
         <Link href="/" className="btn-solid">

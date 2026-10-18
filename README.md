@@ -80,7 +80,8 @@ entry, the prev/next pager and the sitemap all come from that array.
 
 - **The theme and rail are DOM attributes, not React state.** An inline script
   in `<head>` restores `data-theme` and `data-rail` from `localStorage` before
-  the first paint. Both the expanded sidebar and the icon rail are always in the
+  the first paint, and sets `data-os` so CSS can show ⌘K on a Mac and Ctrl K
+  elsewhere. Both the expanded sidebar and the icon rail are always in the
   DOM; CSS picks one. Deriving either from React state reintroduces a flash on
   every cold load.
 - **Responsive behaviour is pure CSS**, driven off two breakpoints — 1180px

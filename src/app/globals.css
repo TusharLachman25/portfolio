@@ -216,6 +216,38 @@ button {
   transform: none;
 }
 
+/* The shortcut is drawn twice and the boot script's data-os picks one: ⌘K on
+   Apple hardware, Ctrl K everywhere else. Neither shows on a touch screen,
+   where there is usually no keyboard to press it on. */
+.kbd-mac {
+  display: none;
+}
+[data-os="mac"] .kbd-mac {
+  display: inline;
+}
+[data-os="mac"] .kbd-other {
+  display: none;
+}
+@media (hover: none) {
+  .kbd-hint {
+    display: none;
+  }
+}
+
+/* "Sidebar" on a laptop, "menu" on a phone, where the sidebar is the drawer
+   behind the button in the top bar. */
+.on-phone {
+  display: none;
+}
+@media (max-width: 779px) {
+  .on-phone {
+    display: inline;
+  }
+  .off-phone {
+    display: none;
+  }
+}
+
 @keyframes softIn {
   from {
     opacity: 0;

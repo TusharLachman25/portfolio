@@ -94,13 +94,15 @@ export const viewport: Viewport = {
   ],
 };
 
-/** Runs before the first paint: restores the saved theme and sidebar state, and
- * marks the document as scripted so the scroll-reveal styles can safely hide
- * elements. Without this the page paints light, then flips — and a visitor who
- * chose the icon rail gets the full sidebar for a frame on every navigation. */
-const BOOT = `(function(){try{var r=document.documentElement;r.classList.add('js');
-var t=localStorage.getItem('tl-theme');r.dataset.theme=(t==='light'||t==='dark')?t:'dark';
-if(localStorage.getItem('tl-rail')==='1')r.dataset.rail='1';}catch(e){document.documentElement.dataset.theme='dark';}})();`;
+/** Runs before the first paint: restores the saved theme and sidebar state,
+ * notes whether this is Apple hardware (⌘K or Ctrl K), and marks the document
+ * as scripted so the scroll-reveal styles can safely hide elements. Without
+ * this the page paints dark, then flips — and a visitor who chose the icon rail
+ * gets the full sidebar for a frame on every navigation. */
+const BOOT = `(function(){var r=document.documentElement;r.classList.add('js');
+try{var p=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||'';r.dataset.os=/mac|iphone|ipad|ipod/i.test(p)?'mac':'other';}catch(e){}
+try{var t=localStorage.getItem('tl-theme');r.dataset.theme=(t==='light'||t==='dark')?t:'dark';
+if(localStorage.getItem('tl-rail')==='1')r.dataset.rail='1';}catch(e){r.dataset.theme='dark';}})();`;
 
 export default function RootLayout({
   children,

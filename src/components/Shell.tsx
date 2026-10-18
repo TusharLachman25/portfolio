@@ -7,6 +7,7 @@ import { ACADEMIC, PROJECTS } from '@/data/projects';
 import { EMAIL, GITHUB, LINKEDIN, RESUME } from '@/data/site';
 import { CommandPalette } from './CommandPalette';
 import { copyEmail } from './copy';
+import { ShortcutHint } from './ShortcutHint';
 
 /** Both glyphs are always in the DOM and CSS picks the one that matches
  * `html[data-theme]`. Deriving it from React state instead would mean the
@@ -247,7 +248,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="side__tools">
             <button className="side__search" onClick={() => setPalette(true)}>
               Search…
-              <span className="side__kbd mono">⌘K</span>
+              <ShortcutHint className="side__kbd mono" />
             </button>
             <button className="side__theme" onClick={toggleTheme} aria-label="Toggle colour theme">
               <ThemeGlyph />
