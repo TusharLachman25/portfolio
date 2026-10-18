@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { Flow, Metric, Shot } from '@/data/projects';
+import type { Flow, Metric, NoteGroup, Shot } from '@/data/projects';
 import { accentVars, pad } from '@/lib/accent';
 import { CopyEmailButton } from './CopyEmailButton';
 import { Gallery } from './Gallery';
@@ -22,8 +22,12 @@ export interface SheetView {
   layers: string[];
   stack: string[];
   metrics: Metric[];
-  /** "The hard parts" — the numbered rows. */
+  /** "The hard parts" — the numbered rows. Shown in full. */
   notes: string[];
+  /** Further notes, folded by topic under the ones above and numbered on from
+   * them. For a sheet with more decisions worth naming than anyone reads in
+   * one sitting. */
+  noteGroups?: NoteGroup[];
   /** Hero screenshot, framed in browser chrome. */
   panel?: string;
   /** Its intrinsic size, so the hero reserves the right box before it loads. */
@@ -145,6 +149,14 @@ export function Sheet(view: SheetView) {
         </div>
       )}
     </section>
+  );
+
+  // Every note is numbered once, in reading order: the ones shown in full
+  // first, then each folded group carrying on from where the last stopped.
+  const groups = view.noteGroups ?? [];
+  const noteTotal = groups.reduce((n, g) => n + g.notes.length, view.notes.length);
+  const groupStart = groups.map((_, i) =>
+    groups.slice(0, i).reduce((n, g) => n + g.notes.length, view.notes.length),
   );
 
   return (
@@ -323,7 +335,7 @@ export function Sheet(view: SheetView) {
         <div className="h2row">
           <h2>The hard parts</h2>
           <span className="rule" />
-          <span className="h2row__count mono">{pad(view.notes.length)} NOTES</span>
+          <span className="h2row__count mono">{pad(noteTotal)} NOTES</span>
         </div>
         <div>
           {view.notes.map((note, i) => (
@@ -333,6 +345,41 @@ export function Sheet(view: SheetView) {
             </div>
           ))}
         </div>
+        {/* The rest, folded by topic: the same disclosure the screenshots
+            use, so there is one way on the page of saying "more in here". */}
+        {groups.length > 0 && (
+          <div className="notegroups">
+            <div className="minirule">
+              <span className="mono">{pad(noteTotal - view.notes.length)} MORE, BY TOPIC</span>
+              <span className="rule" />
+            </div>
+            {groups.map((group, g) => (
+              <details className="flow flow--notes" key={group.title}>
+                <summary className="flow__summary">
+                  <span className="flow__head">
+                    <h3 className="flow__title">{group.title}</h3>
+                    <span className="rule" />
+                    <span className="flow__count mono">
+                      {pad(group.notes.length)} {group.notes.length === 1 ? 'NOTE' : 'NOTES'}
+                    </span>
+                    <span className="flow__toggle mono" aria-hidden>
+                      <span className="flow__chev">›</span>
+                      <span className="flow__when-closed">SHOW</span>
+                      <span className="flow__when-open">HIDE</span>
+                    </span>
+                  </span>
+                  <span className="flow__lead">{group.caption}</span>
+                </summary>
+                {group.notes.map((note, i) => (
+                  <div className="note-row" key={note.slice(0, 40)}>
+                    <span className="note-row__n">{groupStart[g] + i + 1}</span>
+                    <p>{note}</p>
+                  </div>
+                ))}
+              </details>
+            ))}
+          </div>
+        )}
         {view.moreToAdd && (
           <div
             style={{

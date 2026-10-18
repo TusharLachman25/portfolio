@@ -65,6 +65,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       stack={project.stack}
       metrics={project.metrics}
       notes={project.highlights}
+      noteGroups={project.moreHighlights}
       panel={panel}
       panelSize={panel ? imageSize(panel) : undefined}
       shots={project.shots}

@@ -1909,6 +1909,26 @@ button {
   text-wrap: pretty;
 }
 
+/* The rest of a long list of notes, folded by topic. Same disclosure as the
+   screenshot groups, so the page has one way of saying "there is more here". */
+.notegroups {
+  margin-top: 34px;
+}
+.notegroups .minirule {
+  margin: 0 0 14px;
+}
+.flow--notes[open] {
+  padding-bottom: 6px;
+}
+.flow--notes .note-row {
+  margin: 0 24px;
+}
+@media (max-width: 779px) {
+  .flow--notes .note-row {
+    margin: 0 16px;
+  }
+}
+
 .two-col {
   display: grid;
   grid-template-columns: var(--two-cols);
