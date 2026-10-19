@@ -80,7 +80,7 @@ export default async function AcademicPage({ params }: { params: Promise<{ slug:
       layers={item.stack}
       stack={item.stack}
       metrics={[]}
-      notes={item.points}
+      notes={item.points.map((body) => ({ body }))}
       panel={panel}
       panelSize={panel ? imageSize(panel) : undefined}
       shots={shots}

@@ -1900,6 +1900,21 @@ button {
      both grounds and in both themes. */
   opacity: 0.75;
 }
+.note-row__text {
+  min-width: 0;
+}
+/* The note's point in a line. Read down the list on their own, the headlines
+   are the whole section in a minute; the paragraph under each is the case. */
+.note-row__head {
+  margin: 0 0 8px;
+  max-width: 760px;
+  font-size: clamp(18px, 1.7vw, 20px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-wrap: balance;
+}
 .note-row p {
   margin: 0;
   max-width: 760px;
@@ -2402,10 +2417,12 @@ button {
   line-height: 1.7;
   color: var(--ink-3);
 }
-.footnote__more {
+.footnote__more,
+.note-row__more {
   margin-top: 10px;
 }
-.footnote__more summary {
+.footnote__more summary,
+.note-row__more summary {
   display: inline-block;
   cursor: pointer;
   list-style: none;
@@ -2418,19 +2435,24 @@ button {
   padding: 6px 2px 4px;
   transition: color 0.2s;
 }
-.footnote__more summary::-webkit-details-marker {
+.footnote__more summary::-webkit-details-marker,
+.note-row__more summary::-webkit-details-marker {
   display: none;
 }
-.footnote__more summary::before {
+.footnote__more summary::before,
+.note-row__more summary::before {
   content: "+ ";
 }
-.footnote__more[open] summary::before {
+.footnote__more[open] summary::before,
+.note-row__more[open] summary::before {
   content: "− ";
 }
-.footnote__more summary:hover {
+.footnote__more summary:hover,
+.note-row__more summary:hover {
   color: var(--ink);
 }
-.footnote__more[open] summary {
+.footnote__more[open] summary,
+.note-row__more[open] summary {
   margin-bottom: 14px;
 }
 

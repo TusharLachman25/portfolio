@@ -26,12 +26,22 @@ export interface Metric {
   label: string;
 }
 
+/** One of "the hard parts": a decision or a bug worth asking about in an
+ * interview. `head` is its point in a line, so the list can be skimmed;
+ * `body` makes the case; `more`, where a story runs long, is the rest of it,
+ * folded under the body. */
+export interface Note {
+  head: string;
+  body: string;
+  more?: string;
+}
+
 /** A topic's worth of further notes, folded shut under the ones shown in full. */
 export interface NoteGroup {
   title: string;
   /** One line on what the group covers, readable while it is still closed. */
   caption: string;
-  notes: string[];
+  notes: Note[];
 }
 
 export interface Project {
@@ -62,7 +72,7 @@ export interface Project {
   metrics: Metric[];
   blurb: string;
   /** "The hard parts" — the decisions worth asking about in an interview. */
-  highlights: string[];
+  highlights: Note[];
   /** More of them, folded by topic under the ones above: for a sheet with more
    * decisions worth naming than anyone reads in one sitting. */
   moreHighlights?: NoteGroup[];
@@ -167,95 +177,293 @@ export const PROJECTS: Project[] = [
     blurb:
       'I spent three years as a medical assistant digitising patient records by hand. This is the software that replaced that job. It started as something I built for myself to use, and the practice now licenses it on a paid monthly subscription: patients, appointments, billing, insurance claims, clinical documents and messaging in one place, on the web and on Android. Patients now book, move and pay through a WhatsApp assistant that holds the conversation itself, inside rules the code enforces.',
     highlights: [
-      'The browser only ever holds the read-only anon key. Every write goes through an edge function, so the privileged path is a list of 89 named functions, not a database the client can reach. A stolen key from a laptop in a consulting room reads nothing it should not and writes nothing at all.',
-      'That was the design, and for a while it was not what was running. A migration had converted every “allow read for all” policy to an authenticated-only one, but on the live database row-level security was switched off, and a policy on a table with RLS off is inert. Measured with nothing but the public anon key, no login and no session, eleven tables still answered: patients, medical records, history events, billing, files, generated documents, WhatsApp messages and four more. One of those rows was a real patient’s name, and that key ships inside the client bundle. The fix re-asserts the same expression the working tables already use, every step idempotent so it converges from any starting point, and turns RLS back on first, which was the step doing the real work.',
-      'The Google connection could have been completed by a stranger. `google-oauth-callback` is public by necessity (Google redirects a browser to it, and that carries no session), and what it did with that request was exchange any code it was handed and write the resulting refresh token in as the practice’s own, unconditionally. The client id and redirect URI both ship in the client bundle because OAuth requires them to, so anyone could build the consent URL, approve it with their own Google account, and let Google redirect them here; from that moment the nightly backup — every table, every patient, one gzipped file — and every generated report and signed claim would upload to a stranger’s Drive, with nobody at the practice doing anything or seeing anything. The missing piece was `state`, and it cannot live in the browser: the callback is a top-level redirect, not a fetch from the app, so it cannot read sessionStorage. It is minted server-side behind a real dashboard session, stored, and consumed exactly once, constant-time, within fifteen minutes. Building the URL server-side had a second effect worth having: the client id and redirect URI no longer ship in the client bundle at all.',
-      'Patient names stopped crossing the boundary to Anthropic. There is no BAA and no zero-retention arrangement (both were looked at, and ruled out as impractical to obtain from Indonesia), so the lever left is to send less. Every patient carries a number now, and the number is what goes out: names are scrubbed on the way to the API and restored on the way back, including in the arguments the model hands a tool, without which it passes P-0042 as the name to search for or print on a document. Values are walked, not serialised, because a name containing a quote appears escaped in JSON, so a scrub misses it and a rehydrate leaves a string that no longer parses: both failures silent, both on real names. `patient_number` is NOT NULL with its allocation as the column default, which matters more than it looks: the scrubber is a no-op given an empty number, so a nullable column would turn “we forgot to set it on this path” into “this patient’s real name went to the API”, silently, with every test still green. Chat titles used to come off Claude Fable 5, a Covered Model carrying 30-day retention, which made one sidebar label the practice’s entire retained footprint at Anthropic — and its own prompt asked for a patient name. Titles come from her own words, locally, now.',
-      'The WhatsApp assistant used to feel like a chatbot because it was one: a state machine walking a patient through fields, with the model asked only narrow questions along the way — which intent is this, extract the name from this reply. So when it asked for a full name and the patient asked something else, the something else became their name, and no prompt fixes that shape, because the form had decided what a message was before anything had read it. Claude Sonnet 5 runs the conversation now: it reads the whole chat, answers what was asked, and acts through fifteen tools — check the diary, propose a booking, a move, a switch between in person and online or a cancellation, file documents, start a claim, send a receipt, hand over to the team. What must never go wrong is still enforced in code rather than left to the model. Nothing changes the diary on its say-so: it proposes, the proposal is shown to the patient, and only a yes that arrives after that message went out lets the booking through. A slot is re-checked against the calendar at the proposal and again at the yes. It never sees a known patient’s name or anyone else’s appointments. And a number gets one turn at a time, so three quick bubbles are read together as one message, a screenshot waits for the words sent after it, and a turn that dies is taken over before it can wedge the chat.',
-      'A payment screenshot used to settle any open invoice for the same amount, and nearly every invoice is the one standard fee, so the same screenshot sent twice settled two. Nobody had to be dishonest: a parent with two children’s bills on one phone, re-sending because the first seemed slow, was enough. Every screenshot counted against an invoice now leaves a fingerprint (the image’s SHA-256, the bank reference read off it, and its amount, date and time), and one that matches an earlier fingerprint can’t count again. The reference is what survives WhatsApp recompressing a photo re-attached from the gallery, and amount plus date is only trusted alongside a legible time, since the same fee on the same day is two children’s consults, not one transfer. A repeat leaves the bill open and still on reminders, tells the patient the screenshot has already been used (never whose it was) and raises a notification; a transfer that plainly went to someone else’s account goes to review. What a screenshot came to is decided by the code and answered by the code: handed “Thanks, payment received!” to pass on, the model once asked the patient whether it was for their upcoming appointment.',
-      'She hates gaps in her day, and the times offered used to be an opening-time grid, which got an empty day right and little else: after a 30-minute call at 4:00, the 20-minute in-person grid offered 4:40 and left ten minutes dead. Which free times are offered is now decided by how well each one packs against what is already booked: filling a hole before extending either end of the day, a perfect fit before a partial one, with both sides of every booking as candidates, which is what lets a 20-minute visit follow a 30-minute call. In person fills from the start of clinic; online starts whenever the first call does. Patients are only offered back-to-back times, and a time she types that would leave a gap gets one tap to the time that wouldn’t. A day can hold more than one block (a morning clinic, a break, the afternoon), and each is packed on its own. And two people confirming the same slot within seconds both used to get it, because every path checked the diary at the start of the request and then waited on a model call before writing; each path now looks again straight after writing, and the later booking gives way and is offered what is still open that day.',
-      'It is built for a doctor in her sixties who does not much like computers and uses it mostly on her phone between patients, and that is a set of rules rather than a preference. Nothing smaller than 13px, on a six-step scale; it used to run from 9.5px, with 429 of 657 sized elements under the floor. The phone’s own font-size setting is passed through to the WebView and honoured up to 160%. Targets are 44px on a phone and 48px where a mistake costs something. No icon without a word, because on a phone there is no hover to reveal a tooltip. Below 760px every table becomes a list of cards, so nothing is ever reached by dragging a table sideways. And the app asks its own questions and never uses the system dialog, which in an installed app is a grey box with an internal address on it that she has been trained to dismiss unread.',
+      {
+        head: 'The browser only ever holds a read-only key',
+        body:
+          'Every write goes through an edge function, so the privileged path is a list of 89 named functions, not a database the client can reach. A stolen key from a laptop in a consulting room reads nothing it should not and writes nothing at all.',
+      },
+      {
+        head: 'Eleven tables answered the public key',
+        body:
+          'That was the design, and for a while it was not what was running. A migration had converted every “allow read for all” policy to an authenticated-only one, but on the live database row-level security was switched off, and a policy on a table with RLS off is inert. Measured with nothing but the public anon key, no login and no session, eleven tables still answered: patients, medical records, history events, billing, files, generated documents, WhatsApp messages and four more. One of those rows was a real patient’s name, and that key ships inside the client bundle. The fix re-asserts the same expression the working tables already use, every step idempotent so it converges from any starting point, and turns RLS back on first, which was the step doing the real work.',
+      },
+      {
+        head: 'A stranger could have pointed the backups at their own Drive',
+        body:
+          '`google-oauth-callback` is public by necessity (Google redirects a browser to it, and that carries no session), and what it did with that request was exchange any code it was handed and write the resulting refresh token in as the practice’s own, unconditionally. The client id and redirect URI both ship in the client bundle because OAuth requires them to, so anyone could build the consent URL, approve it with their own Google account, and let Google redirect them here; from that moment the nightly backup — every table, every patient, one gzipped file — and every generated report and signed claim would upload to a stranger’s Drive, with nobody at the practice doing anything or seeing anything.',
+        more:
+          'The missing piece was `state`, and it cannot live in the browser: the callback is a top-level redirect, not a fetch from the app, so it cannot read sessionStorage. It is minted server-side behind a real dashboard session, stored, and consumed exactly once, constant-time, within fifteen minutes. Building the URL server-side had a second effect worth having: the client id and redirect URI no longer ship in the client bundle at all.',
+      },
+      {
+        head: 'The model gets patient numbers, not names',
+        body:
+          'There is no BAA and no zero-retention arrangement (both were looked at, and ruled out as impractical to obtain from Indonesia), so the lever left is to send less. Every patient carries a number now, and the number is what goes out: names are scrubbed on the way to the API and restored on the way back, including in the arguments the model hands a tool, without which it passes P-0042 as the name to search for or print on a document.',
+        more:
+          'Values are walked, not serialised, because a name containing a quote appears escaped in JSON, so a scrub misses it and a rehydrate leaves a string that no longer parses: both failures silent, both on real names. `patient_number` is NOT NULL with its allocation as the column default, which matters more than it looks: the scrubber is a no-op given an empty number, so a nullable column would turn “we forgot to set it on this path” into “this patient’s real name went to the API”, silently, with every test still green. Chat titles used to come off Claude Fable 5, a Covered Model carrying 30-day retention, which made one sidebar label the practice’s entire retained footprint at Anthropic — and its own prompt asked for a patient name. Titles come from her own words, locally, now.',
+      },
+      {
+        head: 'The model runs the chat; the code holds the rules',
+        body:
+          'The WhatsApp assistant used to feel like a chatbot because it was one: a state machine walking a patient through fields, with the model asked only narrow questions along the way — which intent is this, extract the name from this reply. So when it asked for a full name and the patient asked something else, the something else became their name, and no prompt fixes that shape, because the form had decided what a message was before anything had read it. Claude Sonnet 5 runs the conversation now, and what must never go wrong is still enforced in code rather than left to the model.',
+        more:
+          'It reads the whole chat, answers what was asked, and acts through fifteen tools — check the diary, propose a booking, a move, a switch between in person and online or a cancellation, file documents, start a claim, send a receipt, hand over to the team. Nothing changes the diary on its say-so: it proposes, the proposal is shown to the patient, and only a yes that arrives after that message went out lets the booking through. A slot is re-checked against the calendar at the proposal and again at the yes. It never sees a known patient’s name or anyone else’s appointments. And a number gets one turn at a time, so three quick bubbles are read together as one message, a screenshot waits for the words sent after it, and a turn that dies is taken over before it can wedge the chat.',
+      },
+      {
+        head: 'One screenshot could settle two bills',
+        body:
+          'A payment screenshot used to settle any open invoice for the same amount, and nearly every invoice is the one standard fee, so the same screenshot sent twice settled two. Nobody had to be dishonest: a parent with two children’s bills on one phone, re-sending because the first seemed slow, was enough. Every screenshot counted against an invoice now leaves a fingerprint (the image’s SHA-256, the bank reference read off it, and its amount, date and time), and one that matches an earlier fingerprint can’t count again.',
+        more:
+          'The reference is what survives WhatsApp recompressing a photo re-attached from the gallery, and amount plus date is only trusted alongside a legible time, since the same fee on the same day is two children’s consults, not one transfer. A repeat leaves the bill open and still on reminders, tells the patient the screenshot has already been used (never whose it was) and raises a notification; a transfer that plainly went to someone else’s account goes to review. What a screenshot came to is decided by the code and answered by the code: handed “Thanks, payment received!” to pass on, the model once asked the patient whether it was for their upcoming appointment.',
+      },
+      {
+        head: 'Offered times pack her day without gaps',
+        body:
+          'She hates gaps in her day, and the times offered used to be an opening-time grid, which got an empty day right and little else: after a 30-minute call at 4:00, the 20-minute in-person grid offered 4:40 and left ten minutes dead. Which free times are offered is now decided by how well each one packs against what is already booked: filling a hole before extending either end of the day, a perfect fit before a partial one, with both sides of every booking as candidates, which is what lets a 20-minute visit follow a 30-minute call.',
+        more:
+          'In person fills from the start of clinic; online starts whenever the first call does. Patients are only offered back-to-back times, and a time she types that would leave a gap gets one tap to the time that wouldn’t. A day can hold more than one block (a morning clinic, a break, the afternoon), and each is packed on its own. And two people confirming the same slot within seconds both used to get it, because every path checked the diary at the start of the request and then waited on a model call before writing; each path now looks again straight after writing, and the later booking gives way and is offered what is still open that day.',
+      },
+      {
+        head: 'Built for a doctor in her sixties, on her phone',
+        body:
+          'She does not much like computers and uses it mostly between patients, so the design is a set of rules rather than a preference. Nothing smaller than 13px, on a six-step scale; it used to run from 9.5px, with 429 of 657 sized elements under the floor. The phone’s own font-size setting is passed through to the WebView and honoured up to 160%. Targets are 44px on a phone and 48px where a mistake costs something. No icon without a word, because on a phone there is no hover to reveal a tooltip. Below 760px every table becomes a list of cards, so nothing is ever reached by dragging a table sideways. And the app asks its own questions and never uses the system dialog, which in an installed app is a grey box with an internal address on it that she has been trained to dismiss unread.',
+      },
     ],
     moreHighlights: [
       {
         title: 'Keeping the records safe',
         caption: 'What the model is never shown, who can sign in, and getting back a deleted patient or the whole database.',
         notes: [
-          'Taking names out was only a first pass, because a name is not the only thing that says who somebody is: the record tools still returned date of birth, gender, phone and address beside it, and the assistant was observed reciting all three straight back. They are gone from what the model sees, and nothing needed them there: the tools that genuinely act on a phone number look it up server-side from the patient id and never hand it over, and every WhatsApp number a patient writes from is redacted on the way out. Insurance forms were the hard case, because the model lays the identity fields itself onto a page that must print them. They used to go out as masks of the same shape (“Xxxxx Xxxxxxxxx”, “00 Xxxxx 0000”) to be swapped back afterwards, which held for a box that took the whole value and nowhere else: real forms split a name into first and family names and a date of birth into day, month and year boxes, the model split the mask the same way, and on every real form tried that split either value the placeholder itself would have printed on the signed claim. They go out as named pieces now (first name, day of birth, month) that the model places wherever the form wants them and the code fills in afterwards. The visit’s own dates go the same way although they are not private, because a date the model has to reformat is a date it can get wrong: on one insurer’s form it wrote “3” in the day box for the 30th. A token can only be copied. What still goes, and none of it is fixable here: the scans an extraction call exists to read, where the name is pixels; the first words of somebody not yet on file, before there is a number to swap in; and partner-hospital bookings, which name the patient to the hospital by design.',
-          'Patient files are never committed and never cached locally. Google Drive is the authoritative store through a service account; Supabase holds only the structured data extracted alongside it. Both Android apps set FLAG_SECURE, so there are no screenshots and no patient record showing in the recent-apps thumbnail, and an optional PIN locks the screen after two minutes away. The APK she carries is signed with a real release key, not the universal Android debug key that any app can also sign with: the build script produced a debug APK, and a debug APK is debuggable. Plug the phone into a laptop, open chrome://inspect, and whatever record is on screen is readable, which is precisely what FLAG_SECURE was added to prevent. Where the keystore file is absent, on a fresh clone or for anyone who only builds debug, no signing config is created at all and the release build comes out unsigned, which is the honest outcome; silently falling back to the debug key would look like it had worked.',
-          'Two-step sign-in sits in Settings beside the screen lock and, like the lock, stays off until she turns it on: a second step nobody chose is one that gets worked around. The password stays shared between her and the nurse, which is a decision about how the practice runs; what changes is that a shared password is no longer the only thing in front of every patient record. The gate asks for the code on every pass, not only after the password screen, because a session restored from storage arrives at aal1 and would otherwise walk straight past it. The SQL that requires aal2 to read is deliberately not a migration: `db push` runs migrations, and a file that can lock the practice out of its own records should never run because somebody deployed.',
-          'Deleting a patient was final. Drive’s trash covered the files, but the extracted record (every visit, allergy and billing line) was gone the instant the confirm was dismissed, and on a phone OK sits under her thumb. The delete now snapshots those rows first and a restore replays them, with Settings → Recently deleted as the way back for 30 days, matching Drive’s own window. It still asks her to type the patient’s name.',
-          'Deleting a patient left their unpaid invoice behind, and the invoice went on chasing them. The delete archived seven tables and cascaded an eighth; `payments` was in neither list, has no foreign key to the patient, and is the only table the payment-reminder sweep reads. So a deleted patient stayed billable and kept being chased for money on the agreed schedule, by the name and number stored on the payment row, while the dialog she had to type a name into to confirm told her billing had been removed. The two table lists were duplicated, each carrying a comment warning that a new table “belongs in this list”; `payments` was added to the schema and put in neither, which is the very failure those comments were written to prevent. They are one list now.',
-          'The nightly backup runs on the server, not on my laptop. It started as a Windows scheduled task, which only works if that specific machine is on at 3am, in the timezone it was registered in, with its credentials still in place, and fails silently the week anyone travels. It now writes the whole database to Drive as one gzipped file at 03:00 Jakarta, thirty copies kept, older ones moved to Drive’s trash, not destroyed, so even the pruning is reversible. Pruning happens only after the upload succeeds, because the other order throws away a good backup to make room for one that never arrived. Uploaded with her OAuth token, because the service account has no Drive storage of its own.',
-          'That one file is the entire patient database, and Drive encrypts it already — with Google’s keys, so it decrypts transparently for anyone who can authenticate as her Google account, which the OAuth hole above had just finished demonstrating was not necessarily only her. AES-256-GCM now, a fresh IV every night, gzip first and encrypt second because ciphertext does not compress and the other order multiplies her Drive usage by the compression ratio, which on base64 signature images and stored document HTML is large. Honestly not end-to-end: the key is an Edge Function secret, so a compromise of Supabase yields both it and the database. Accepted on purpose, because it still splits one point of failure into two and the one it removes is the one this practice has been exposed through. A key living only on her phone would be stronger, and would also mean a lost phone loses every backup permanently. The key is required, not optional: with it unset the run fails loudly onto System health, because a backup quietly written in the clear on a night somebody believed it was protected is the worse outcome. The restore tool is Node and the writer is Deno, so they cannot share a module and the container format is spelled out in both: the arrangement that rots quietly, where the consequence of rotting is finding out the only backup cannot be opened on the day it is needed. A round-trip test encrypts with the real writer and decrypts with the real reader on every run, and old plaintext backups still age out on the same 30-day rotation, so none of them outlives the encrypted ones.',
+          {
+            head: 'Dates of birth, phones and addresses came out too',
+            body:
+              'Taking names out was only a first pass, because a name is not the only thing that says who somebody is: the record tools still returned date of birth, gender, phone and address beside it, and the assistant was observed reciting all three straight back. They are gone from what the model sees, and nothing needed them there: the tools that genuinely act on a phone number look it up server-side from the patient id and never hand it over, and every WhatsApp number a patient writes from is redacted on the way out. Insurance forms were the hard case, because the model lays the identity fields itself onto a page that must print them. They used to go out as masks of the same shape (“Xxxxx Xxxxxxxxx”, “00 Xxxxx 0000”) to be swapped back afterwards, which held for a box that took the whole value and nowhere else: real forms split a name into first and family names and a date of birth into day, month and year boxes, the model split the mask the same way, and on every real form tried that split either value the placeholder itself would have printed on the signed claim. They go out as named pieces now (first name, day of birth, month) that the model places wherever the form wants them and the code fills in afterwards. The visit’s own dates go the same way although they are not private, because a date the model has to reformat is a date it can get wrong: on one insurer’s form it wrote “3” in the day box for the 30th. A token can only be copied. What still goes, and none of it is fixable here: the scans an extraction call exists to read, where the name is pixels; the first words of somebody not yet on file, before there is a number to swap in; and partner-hospital bookings, which name the patient to the hospital by design.',
+          },
+          {
+            head: 'No screenshots, no local copies, no debuggable APK',
+            body:
+              'Patient files are never committed and never cached locally. Google Drive is the authoritative store through a service account; Supabase holds only the structured data extracted alongside it. Both Android apps set FLAG_SECURE, so there are no screenshots and no patient record showing in the recent-apps thumbnail, and an optional PIN locks the screen after two minutes away. The APK she carries is signed with a real release key, not the universal Android debug key that any app can also sign with: the build script produced a debug APK, and a debug APK is debuggable. Plug the phone into a laptop, open chrome://inspect, and whatever record is on screen is readable, which is precisely what FLAG_SECURE was added to prevent. Where the keystore file is absent, on a fresh clone or for anyone who only builds debug, no signing config is created at all and the release build comes out unsigned, which is the honest outcome; silently falling back to the debug key would look like it had worked.',
+          },
+          {
+            head: 'Two-step sign-in, on her terms',
+            body:
+              'Two-step sign-in sits in Settings beside the screen lock and, like the lock, stays off until she turns it on: a second step nobody chose is one that gets worked around. The password stays shared between her and the nurse, which is a decision about how the practice runs; what changes is that a shared password is no longer the only thing in front of every patient record. The gate asks for the code on every pass, not only after the password screen, because a session restored from storage arrives at aal1 and would otherwise walk straight past it. The SQL that requires aal2 to read is deliberately not a migration: `db push` runs migrations, and a file that can lock the practice out of its own records should never run because somebody deployed.',
+          },
+          {
+            head: 'A deleted patient can come back for 30 days',
+            body:
+              'Deleting a patient was final. Drive’s trash covered the files, but the extracted record (every visit, allergy and billing line) was gone the instant the confirm was dismissed, and on a phone OK sits under her thumb. The delete now snapshots those rows first and a restore replays them, with Settings → Recently deleted as the way back for 30 days, matching Drive’s own window. It still asks her to type the patient’s name.',
+          },
+          {
+            head: 'A deleted patient kept getting payment reminders',
+            body:
+              'Deleting a patient left their unpaid invoice behind, and the invoice went on chasing them. The delete archived seven tables and cascaded an eighth; `payments` was in neither list, has no foreign key to the patient, and is the only table the payment-reminder sweep reads. So a deleted patient stayed billable and kept being chased for money on the agreed schedule, by the name and number stored on the payment row, while the dialog she had to type a name into to confirm told her billing had been removed. The two table lists were duplicated, each carrying a comment warning that a new table “belongs in this list”; `payments` was added to the schema and put in neither, which is the very failure those comments were written to prevent. They are one list now.',
+          },
+          {
+            head: 'The nightly backup moved off my laptop',
+            body:
+              'It started as a Windows scheduled task, which only works if that specific machine is on at 3am, in the timezone it was registered in, with its credentials still in place, and fails silently the week anyone travels. It now writes the whole database to Drive as one gzipped file at 03:00 Jakarta, thirty copies kept, older ones moved to Drive’s trash, not destroyed, so even the pruning is reversible. Pruning happens only after the upload succeeds, because the other order throws away a good backup to make room for one that never arrived. Uploaded with her OAuth token, because the service account has no Drive storage of its own.',
+          },
+          {
+            head: 'The backup is encrypted with a key Google doesn’t hold',
+            body:
+              'That one file is the entire patient database, and Drive encrypts it already — with Google’s keys, so it decrypts transparently for anyone who can authenticate as her Google account, which the OAuth hole above had just finished demonstrating was not necessarily only her. AES-256-GCM now, a fresh IV every night, gzip first and encrypt second because ciphertext does not compress and the other order multiplies her Drive usage by the compression ratio, which on base64 signature images and stored document HTML is large. Honestly not end-to-end: the key is an Edge Function secret, so a compromise of Supabase yields both it and the database. Accepted on purpose, because it still splits one point of failure into two and the one it removes is the one this practice has been exposed through. A key living only on her phone would be stronger, and would also mean a lost phone loses every backup permanently. The key is required, not optional: with it unset the run fails loudly onto System health, because a backup quietly written in the clear on a night somebody believed it was protected is the worse outcome. The restore tool is Node and the writer is Deno, so they cannot share a module and the container format is spelled out in both: the arrangement that rots quietly, where the consequence of rotting is finding out the only backup cannot be opened on the day it is needed. A round-trip test encrypts with the real writer and decrypts with the real reader on every run, and old plaintext backups still age out on the same 30-day rotation, so none of them outlives the encrypted ones.',
+          },
         ],
       },
       {
         title: 'Her assistant',
         caption: 'Claude Opus 5 with 40 tools: what it can do, what it deliberately can’t, and what it all costs.',
         notes: [
-          'Claude Opus 5 runs the practice with her rather than beside it: 40 tools instead of the original eight, organised by area — the diary (book, move, cancel, switch between in person and online, block time, change one day’s hours or the standing week, set leave), a patient’s record, numbers and her own consultation notes, WhatsApp in both directions including taking a conversation off the assistant and handing it back, invoices and insurance claims, and the practice’s own details. It got there because two answers on one afternoon were both true and both useless: asked to invoice a patient she had just seen, it said it could not read the consultation notes; asked to check whether he wanted an appointment, it said its only outbound channel was sending a document. That is a search box with manners, not an assistant. She can reach it from her own phone, too: a message from her number to the practice’s WhatsApp goes to her assistant, never to the patient agent, and five minutes before every appointment it messages her the patient, the reason for the visit and, when it is online, the Meet link.',
-          'What it deliberately cannot do is the more interesting half. No shell, no SQL, no HTTP: every tool is a named operation with a schema, so it cannot reach outside this practice’s data. It cannot delete a patient, a record or a history event; those stay on the pages that ask twice. It cannot skip a scheduling guard; the check that asks her before stranding a patient asks it too. Booking, moving and cancelling tell the patient by default, and every tool reports what went out, so “no number on file” can never read as “sent”. Who WhatsApp may reach at all is one gate with three states, where there used to be thirteen copies of a comma-split: unset means silence, because a misconfigured deployment must fail closed; a list means the list; and only the exact value “*” opens it to everyone. That is a value someone has to type, because opening it is a decision about patient safety, not the consequence of clearing a secret.',
-          'A turn no longer runs on the request that started it. Twenty rounds of Opus at maximum effort against a Supabase function timeout meant a turn that ran long left her message with no answer while the tools had already fired — real WhatsApp messages to real patients, a real invoice, a signed claim, and a chat showing none of it. The likeliest next thing she does is say it again, which does all of it twice.',
-          'The assistant page was one endless thread: every instruction she had ever given in one list, with the last thirty turns replayed to the model regardless of subject, so this morning’s diary question was answered with last week’s invoicing sitting in front of it. It is a titled, searchable list of chats now, opening on a new one each time, named from her opening words by the smallest model there is.',
-          'The usage card in Settings said “AI assistant usage” and counted one path out of eight: the assistant she talks to on the AI page. Everything else went to the function logs and nowhere else: the WhatsApp assistant making three or four calls for every patient message, reading a new patient’s Drive folder a document at a time on the most capable model, every consultation report, medical certificate, insurance form and payment screenshot. So the one number she had was reliably the small half of the bill, under a heading that reads as the whole of it. All eight call sites record through one module now, best-effort by construction: it never throws and skips silently where there is no service key, because a failure to record what something cost must never be the reason the thing itself failed. The migration that turns it on drops the rows already there, so one corner of August’s spend is never added to the whole of the rest of it in the same figure, and stamps the date so the card can say “since 30 August”. Dollars lead and rupiah sits underneath, because only one of the two is a fact: Anthropic bills USD and that is what is stored, converting on the way in would freeze one day’s guess into the row forever, and the 3% an Indonesian card adds is an assumption the card labels as one.',
-          'Beside it sits what WhatsApp costs: the other bill, and the one with a fixed floor. It is read from Twilio’s own billing ledger, not priced locally, because Twilio doesn’t know what a message cost until hours after it is billed, and a local price table would drift every time Meta changes its rates. The catch is that usage categories are a hierarchy returned flat (the total contains phone numbers and channels, channels contain messaging, messaging contains inbound and outbound), so adding up the rows gives $14.13 for a $4.11 bill and looks entirely reasonable. The total comes from the total row, the breakdown from named leaves only, and the remainder by subtraction, so a category Twilio adds later makes the remainder bigger rather than the total wrong; the test fixtures are real rows from the account. And the credit runway refuses to answer until there is a week of spend to divide, because two days extrapolated to a year is not information.',
+          {
+            head: 'Her assistant went from 8 tools to 40',
+            body:
+              'Claude Opus 5 runs the practice with her rather than beside it: 40 tools instead of the original eight, organised by area — the diary (book, move, cancel, switch between in person and online, block time, change one day’s hours or the standing week, set leave), a patient’s record, numbers and her own consultation notes, WhatsApp in both directions including taking a conversation off the assistant and handing it back, invoices and insurance claims, and the practice’s own details. It got there because two answers on one afternoon were both true and both useless: asked to invoice a patient she had just seen, it said it could not read the consultation notes; asked to check whether he wanted an appointment, it said its only outbound channel was sending a document. That is a search box with manners, not an assistant. She can reach it from her own phone, too: a message from her number to the practice’s WhatsApp goes to her assistant, never to the patient agent, and five minutes before every appointment it messages her the patient, the reason for the visit and, when it is online, the Meet link.',
+          },
+          {
+            head: 'What her assistant deliberately can’t do',
+            body:
+              'What it deliberately cannot do is the more interesting half. No shell, no SQL, no HTTP: every tool is a named operation with a schema, so it cannot reach outside this practice’s data. It cannot delete a patient, a record or a history event; those stay on the pages that ask twice. It cannot skip a scheduling guard; the check that asks her before stranding a patient asks it too. Booking, moving and cancelling tell the patient by default, and every tool reports what went out, so “no number on file” can never read as “sent”. Who WhatsApp may reach at all is one gate with three states, where there used to be thirteen copies of a comma-split: unset means silence, because a misconfigured deployment must fail closed; a list means the list; and only the exact value “*” opens it to everyone. That is a value someone has to type, because opening it is a decision about patient safety, not the consequence of clearing a secret.',
+          },
+          {
+            head: 'Long turns run in the background',
+            body:
+              'A turn no longer runs on the request that started it. Twenty rounds of Opus at maximum effort against a Supabase function timeout meant a turn that ran long left her message with no answer while the tools had already fired — real WhatsApp messages to real patients, a real invoice, a signed claim, and a chat showing none of it. The likeliest next thing she does is say it again, which does all of it twice.',
+          },
+          {
+            head: 'One endless thread became searchable chats',
+            body:
+              'The assistant page was one endless thread: every instruction she had ever given in one list, with the last thirty turns replayed to the model regardless of subject, so this morning’s diary question was answered with last week’s invoicing sitting in front of it. It is a titled, searchable list of chats now, opening on a new one each time, named from her opening words by the smallest model there is.',
+          },
+          {
+            head: 'The AI cost card counted one call site in eight',
+            body:
+              'The usage card in Settings said “AI assistant usage” and counted one path out of eight: the assistant she talks to on the AI page. Everything else went to the function logs and nowhere else: the WhatsApp assistant making three or four calls for every patient message, reading a new patient’s Drive folder a document at a time on the most capable model, every consultation report, medical certificate, insurance form and payment screenshot. So the one number she had was reliably the small half of the bill, under a heading that reads as the whole of it. All eight call sites record through one module now, best-effort by construction: it never throws and skips silently where there is no service key, because a failure to record what something cost must never be the reason the thing itself failed. The migration that turns it on drops the rows already there, so one corner of August’s spend is never added to the whole of the rest of it in the same figure, and stamps the date so the card can say “since 30 August”. Dollars lead and rupiah sits underneath, because only one of the two is a fact: Anthropic bills USD and that is what is stored, converting on the way in would freeze one day’s guess into the row forever, and the 3% an Indonesian card adds is an assumption the card labels as one.',
+          },
+          {
+            head: 'WhatsApp’s bill, read from Twilio’s own ledger',
+            body:
+              'Beside it sits what WhatsApp costs: the other bill, and the one with a fixed floor. It is read from Twilio’s own billing ledger, not priced locally, because Twilio doesn’t know what a message cost until hours after it is billed, and a local price table would drift every time Meta changes its rates. The catch is that usage categories are a hierarchy returned flat (the total contains phone numbers and channels, channels contain messaging, messaging contains inbound and outbound), so adding up the rows gives $14.13 for a $4.11 bill and looks entirely reasonable. The total comes from the total row, the breakdown from named leaves only, and the remainder by subtraction, so a category Twilio adds later makes the remainder bigger rather than the total wrong; the test fixtures are real rows from the account. And the credit runway refuses to answer until there is a week of spend to divide, because two days extrapolated to a year is not information.',
+          },
         ],
       },
       {
         title: 'WhatsApp',
         caption: 'Buttons instead of typing, a form for a new patient’s details, and two ways messages went missing without anyone noticing.',
         notes: [
-          'Patients tap rather than type. The model can offer up to three buttons or a list of ten (in person or online with each fee, the days and times the diary has, which person, yes or no), made per message through Twilio’s Content API, which needs no Meta approval inside the 24-hour window, and deleted when the next one replaces them; if Twilio refuses, the same options go as a numbered list. Buttons can only answer one question, so a message asks one thing, always: measured against the real model, two in five first replies to “Appointment please” asked two things at once and offered nothing to tap, and after the change eight of eight asked one. One phone is often a whole family’s, so who an appointment is for is the first question, with a button per person on file, and the booking tool refuses a person on file unless the patient said who, because the failure it prevents is a parent tapping Yes on their own phone and booking their child’s appointment in their own name.',
-          'A new patient’s details never come from the chat, where a typo goes straight onto the record. They fill in a Google Form in the practice’s own account, linked from the chat with a reference that ties the answers back to it; the form’s Apps Script posts them to the webhook with a secret only it and the app know, and an answer that can’t be matched is never guessed: it waits in the form’s responses and she is told. A patient writing from a number the practice doesn’t know is asked, in her words, whether they are the person on file with the same name and date of birth — without ever naming who that is. When someone says no and was wrong after all, the patient page merges the two records: the Drive folder moves first, because that is the part that can fail halfway and a retry finishes it; then one transaction moves visits, bills, documents, payment proofs, claims, numbers and chat state across; and Settings can separate them again for thirty days.',
-          'WhatsApp only delivers a freely worded message within 24 hours of the patient last writing in, and Twilio doesn’t refuse the send: the API call succeeds, the message is logged, the Messages page shows it in the thread, and error 63016 lands on a webhook seconds later with nobody reading it. The patient never gets the message and nobody finds out. The window is now checked before sending, not learned from the failure: the usual wording while it is open, a template Meta approved word for word once it has closed, in English or Bahasa, and an honest refusal while a template is still in review. A document for someone outside the window is held rather than refused: they are sent a template asking them to reply, and everything held for them goes the moment they do, oldest first, the prescription still ahead of the bill. Every message the practice sends now shows WhatsApp’s ticks, and “Not delivered” with the reason when one never arrived, which used to look just like one that had.',
-          'On 10 October the Messages page listed 26 of the practice’s 50 WhatsApp chats. Nothing had been deleted; every message was in the database. The list was built from the newest 500 messages, whoever sent them, so anyone who hadn’t written since the 7th had dropped off it, and every new message pushed someone else off. The same flaw sat in three more places: her assistant’s “who needs me?”, which missed the people who had been waiting longest; the stop-the-assistant switch, which read through PostgREST’s 1,000-row cap without an error and would have stopped the assistant in 43 of the 50 chats while it went on answering the seven newest; and threads, which stopped at their oldest 500 messages, so a long chat would have lost its newest. A view now gives one row per chat, read under the same row-level rule as the messages themselves, and everything else reads in pages; the tests rebuild that day’s table and fail on the old code.',
+          {
+            head: 'Patients tap buttons instead of typing',
+            body:
+              'The model can offer up to three buttons or a list of ten (in person or online with each fee, the days and times the diary has, which person, yes or no), made per message through Twilio’s Content API, which needs no Meta approval inside the 24-hour window, and deleted when the next one replaces them; if Twilio refuses, the same options go as a numbered list. Buttons can only answer one question, so a message asks one thing, always: measured against the real model, two in five first replies to “Appointment please” asked two things at once and offered nothing to tap, and after the change eight of eight asked one. One phone is often a whole family’s, so who an appointment is for is the first question, with a button per person on file, and the booking tool refuses a person on file unless the patient said who, because the failure it prevents is a parent tapping Yes on their own phone and booking their child’s appointment in their own name.',
+          },
+          {
+            head: 'New patients fill in a form, not a chat',
+            body:
+              'A new patient’s details never come from the chat, where a typo goes straight onto the record. They fill in a Google Form in the practice’s own account, linked from the chat with a reference that ties the answers back to it; the form’s Apps Script posts them to the webhook with a secret only it and the app know, and an answer that can’t be matched is never guessed: it waits in the form’s responses and she is told. A patient writing from a number the practice doesn’t know is asked, in her words, whether they are the person on file with the same name and date of birth — without ever naming who that is. When someone says no and was wrong after all, the patient page merges the two records: the Drive folder moves first, because that is the part that can fail halfway and a retry finishes it; then one transaction moves visits, bills, documents, payment proofs, claims, numbers and chat state across; and Settings can separate them again for thirty days.',
+          },
+          {
+            head: 'Messages outside the 24-hour window used to vanish',
+            body:
+              'WhatsApp only delivers a freely worded message within 24 hours of the patient last writing in, and Twilio doesn’t refuse the send: the API call succeeds, the message is logged, the Messages page shows it in the thread, and error 63016 lands on a webhook seconds later with nobody reading it. The patient never gets the message and nobody finds out. The window is now checked before sending, not learned from the failure: the usual wording while it is open, a template Meta approved word for word once it has closed, in English or Bahasa, and an honest refusal while a template is still in review. A document for someone outside the window is held rather than refused: they are sent a template asking them to reply, and everything held for them goes the moment they do, oldest first, the prescription still ahead of the bill. Every message the practice sends now shows WhatsApp’s ticks, and “Not delivered” with the reason when one never arrived, which used to look just like one that had.',
+          },
+          {
+            head: 'The Messages page showed 26 of 50 chats',
+            body:
+              'On 10 October the Messages page listed 26 of the practice’s 50 WhatsApp chats. Nothing had been deleted; every message was in the database. The list was built from the newest 500 messages, whoever sent them, so anyone who hadn’t written since the 7th had dropped off it, and every new message pushed someone else off. The same flaw sat in three more places: her assistant’s “who needs me?”, which missed the people who had been waiting longest; the stop-the-assistant switch, which read through PostgREST’s 1,000-row cap without an error and would have stopped the assistant in 43 of the 50 chats while it went on answering the seven newest; and threads, which stopped at their oldest 500 messages, so a long chat would have lost its newest. A view now gives one row per chat, read under the same row-level rule as the messages themselves, and everything else reads in pages; the tests rebuild that day’s table and fail on the old code.',
+          },
         ],
       },
       {
         title: 'Her hours',
         caption: 'Two kinds of appointment on one diary, and what happens to the people already booked when her hours change or she runs late.',
         notes: [
-          'She sees patients in person at a partner hospital from four to six, and online by video from four to nine: twenty minutes for an in-person visit, thirty for an online one. None of that could be said: there was one `weekly_hours` column and every booking path wrote a hardcoded thirty minutes. So every online patient who asked for anything after six was told the practice was closed, which it is not — a booking simply lost, and lost by the WhatsApp assistant unattended, at a time of day she would never see it happen. In the other direction each in-person visit reserved half an hour of a two-hour afternoon, holding ten minutes nobody could be booked into, six times over.',
-          'What splits is the open hours and the appointment length, and nothing else. She is still one person, so the diary stays shared: everything on the calendar is busy time for both, and a 4:20 in-person visit blocks the 4:00 online slot that would have run over it. Refusals name the kind, because “that’s outside her working hours” was true of one schedule and false of the other, while “outside her in-person hours, she may still be free online then” is a sentence the assistant can act on. And setting a weekly schedule now requires naming which one: picking silently would write the change to a week she never mentioned and leave the other, quite possibly the one she meant, wrong.',
-          'Changing her hours used to strand people. Closing a day, changing one day’s hours, taking a special opening away, changing the weekly hours, taking leave and blocking time all stop new bookings and touch nobody already booked, and every one of them saved without a word, so a patient booked on a day she had closed stayed booked, wasn’t told, and would have come. All of them now ask first. The dashboard answers with each stranded patient, soonest first, with Open to cancel or switch them right there, then “… anyway” or “Never mind”; her assistant names them and asks whether to cancel, move or go ahead. With Google unreachable the change is still saved, because her hours are hers to change, and she is told nobody could be looked for.',
-          'Running late used to message one person: whoever was next. It now reaches everyone still waiting (the one in the room, the rest of the afternoon, someone added by name or number), each with their own name and time. A reason she types goes to the model and comes back as one calm sentence in English and Bahasa, written for several people reading at once, so “mrs tan consult ran over” becomes “An earlier appointment has taken longer than expected”, with nobody’s name and no clinical detail. The draft dims while it is being reworded and Send waits for it, so nothing goes out in a wording she hasn’t read. And the delay carries on after the message: the assistant tells anyone who asks the time they are now expected, not the time they booked, and their reminder waits for it.',
+          {
+            head: 'In person and online keep different hours',
+            body:
+              'She sees patients in person at a partner hospital from four to six, and online by video from four to nine: twenty minutes for an in-person visit, thirty for an online one. None of that could be said: there was one `weekly_hours` column and every booking path wrote a hardcoded thirty minutes. So every online patient who asked for anything after six was told the practice was closed, which it is not — a booking simply lost, and lost by the WhatsApp assistant unattended, at a time of day she would never see it happen. In the other direction each in-person visit reserved half an hour of a two-hour afternoon, holding ten minutes nobody could be booked into, six times over.',
+          },
+          {
+            head: 'Two schedules, one diary',
+            body:
+              'What splits is the open hours and the appointment length, and nothing else. She is still one person, so the diary stays shared: everything on the calendar is busy time for both, and a 4:20 in-person visit blocks the 4:00 online slot that would have run over it. Refusals name the kind, because “that’s outside her working hours” was true of one schedule and false of the other, while “outside her in-person hours, she may still be free online then” is a sentence the assistant can act on. And setting a weekly schedule now requires naming which one: picking silently would write the change to a week she never mentioned and leave the other, quite possibly the one she meant, wrong.',
+          },
+          {
+            head: 'Changing her hours asks before stranding anyone',
+            body:
+              'Closing a day, changing one day’s hours, taking a special opening away, changing the weekly hours, taking leave and blocking time all stop new bookings and touch nobody already booked, and every one of them saved without a word, so a patient booked on a day she had closed stayed booked, wasn’t told, and would have come. All of them now ask first. The dashboard answers with each stranded patient, soonest first, with Open to cancel or switch them right there, then “… anyway” or “Never mind”; her assistant names them and asks whether to cancel, move or go ahead. With Google unreachable the change is still saved, because her hours are hers to change, and she is told nobody could be looked for.',
+          },
+          {
+            head: 'Running late tells everyone still waiting',
+            body:
+              'Running late used to message one person: whoever was next. It now reaches everyone still waiting (the one in the room, the rest of the afternoon, someone added by name or number), each with their own name and time. A reason she types goes to the model and comes back as one calm sentence in English and Bahasa, written for several people reading at once, so “mrs tan consult ran over” becomes “An earlier appointment has taken longer than expected”, with nobody’s name and no clinical detail. The draft dims while it is being reworded and Send waits for it, so nothing goes out in a wording she hasn’t read. And the delay carries on after the message: the assistant tells anyone who asks the time they are now expected, not the time they booked, and their reminder waits for it.',
+          },
         ],
       },
       {
         title: 'Documents and claims',
         caption: 'Insurers’ own forms, a signature that only goes on after she has read the page, and documents that arrive in order.',
         notes: [
-          'An insurance claims module that fills in insurers’ own reimbursement forms, not lookalikes, tried end to end on sixteen real insurers’ forms (English, Bahasa and bilingual, a phone photo among them) with invented patients and the real model. PDFs with real form fields are filled by name, with each field’s type and size given to the model, because a real form silently refused answers it couldn’t take while the review screen went on showing them. Flat forms are read with pdf.js: answers go one character per cell where the form prints cells, ticks onto their own boxes, nothing across the form’s own lines. And a caption printed on a line belongs to the row above it, which had put every answer on one insurer’s form a line low. Each form is read once, in the background, after the patient replies; it used to be read twice inside the reply, where a long form could outrun the function and lose the claim. And a form she would rather fill in by hand can be printed, photographed and filed as the signed claim.',
-          'Nothing is signed until she has read it: the mark goes on only at the moment of approval, so a signed claim she has not seen cannot exist. And it is one mark: her stamp carries her signature across it, so every document is stamped alone, and a claim form gets the stamp wherever it has room and her signature only where the stamp won’t fit — never in the patient’s section.',
-          'Documents carry a server-assigned sequential number issued from an atomic counter, so paperwork cannot be forged or duplicated.',
-          'The document templates live in one shared package because they used to be a copy each. The dashboard learned to take the signature and stamp from Settings and the phone app did not, so the same prescription carried a different seal depending on which one produced it. Sharing the code was the fix; the bug is the reason the package exists.',
-          'A second Android app, the practice’s own “Documents”, that writes one document and shares it and can do nothing else, installed alongside the dashboard with its own icon and session, for the times she needs a prescription on a phone and nothing more.',
-          'One write-up sends everything, in order. The consult page writes the visit up, then sends the prescription, a medical certificate and a referral letter — and the bill only after them. WhatsApp fetches each file from Drive before sending it, so a bill sent straight after a prescription could arrive first; each send now waits until WhatsApp has the document before the next starts, and when that can’t be confirmed the bill is held back and she is told what to send. A child’s bill can go to the parent paying it while the prescription still goes to the child’s chat, and an in-person visit isn’t billed by default, because the partner hospital bills those. Every message also says who wrote it: her tag and the nurse’s only on words one of them typed, and [AI] on everything the app worded itself, documents included, even when she pressed the button.',
+          {
+            head: 'Claims go on the insurer’s own form',
+            body:
+              'An insurance claims module that fills in insurers’ own reimbursement forms, not lookalikes, tried end to end on sixteen real insurers’ forms (English, Bahasa and bilingual, a phone photo among them) with invented patients and the real model. PDFs with real form fields are filled by name, with each field’s type and size given to the model, because a real form silently refused answers it couldn’t take while the review screen went on showing them. Flat forms are read with pdf.js: answers go one character per cell where the form prints cells, ticks onto their own boxes, nothing across the form’s own lines. And a caption printed on a line belongs to the row above it, which had put every answer on one insurer’s form a line low. Each form is read once, in the background, after the patient replies; it used to be read twice inside the reply, where a long form could outrun the function and lose the claim. And a form she would rather fill in by hand can be printed, photographed and filed as the signed claim.',
+          },
+          {
+            head: 'Nothing is signed until she has read it',
+            body:
+              'The mark goes on only at the moment of approval, so a signed claim she has not seen cannot exist. And it is one mark: her stamp carries her signature across it, so every document is stamped alone, and a claim form gets the stamp wherever it has room and her signature only where the stamp won’t fit — never in the patient’s section.',
+          },
+          {
+            head: 'Document numbers come from the server',
+            body:
+              'Documents carry a server-assigned sequential number issued from an atomic counter, so paperwork cannot be forged or duplicated.',
+          },
+          {
+            head: 'One set of templates, not one per app',
+            body:
+              'The document templates live in one shared package because they used to be a copy each. The dashboard learned to take the signature and stamp from Settings and the phone app did not, so the same prescription carried a different seal depending on which one produced it. Sharing the code was the fix; the bug is the reason the package exists.',
+          },
+          {
+            head: 'A second app that only writes documents',
+            body:
+              'A second Android app, the practice’s own “Documents”, that writes one document and shares it and can do nothing else, installed alongside the dashboard with its own icon and session, for the times she needs a prescription on a phone and nothing more.',
+          },
+          {
+            head: 'One write-up sends every document, in order',
+            body:
+              'The consult page writes the visit up, then sends the prescription, a medical certificate and a referral letter — and the bill only after them. WhatsApp fetches each file from Drive before sending it, so a bill sent straight after a prescription could arrive first; each send now waits until WhatsApp has the document before the next starts, and when that can’t be confirmed the bill is held back and she is told what to send. A child’s bill can go to the parent paying it while the prescription still goes to the child’s chat, and an in-person visit isn’t billed by default, because the partner hospital bills those. Every message also says who wrote it: her tag and the nurse’s only on words one of them typed, and [AI] on everything the app worded itself, documents included, even when she pressed the button.',
+          },
         ],
       },
       {
         title: 'On her phone',
         caption: 'Fonts that load in airplane mode, the phone turned sideways, text at 160%, dictation, and updates without reinstalling.',
         notes: [
-          'Both apps pulled their typeface and their icon font from Google with a stylesheet link, and neither APK bundled anything. A link is fetched once at page load and never retried, so on a Pixel 6 cold-launched in airplane mode there were zero font faces and every icon rendered the ligature name it was written as: the tab bar read “space_dashboardHome groupsPatients calendar_monthCalendar”, came to 644px inside a 412px screen, and put the AI tab 238px past the edge with no way to reach it. It recovers on the next launch once the WebView has cached the files, so this was a first-run failure only, which is the one launch that has to work. Both are vendored now, the icon font subset to the 125 icons the apps use. An icon outside that subset renders as its own name in the middle of the interface, so a test scans both apps and fails if any name is missing from the list. When that test turned out to skip icon names kept in a lookup table, two of a new card’s five icons were about to render as the words “sms” and “inbox” in the middle of Settings.',
-          'Three greys were below WCAG AA and one badly: #94a3b8 measured 2.39:1 against the app background and carried 188 pieces of real text — hints, timestamps, day names, and the four unselected labels in the bottom tab bar, which is most of how she knows where she is. Contrast sensitivity falls with age; that is not a shade of grey, it is an absence. The ramp sits at 5.84, 5.10 and 4.62 now, the three closer together than before because that is what AA on a near-white background leaves room for.',
-          'The bugs that mattered most were the ones only a real phone and real data could produce, found by driving the installed APK on a Pixel 6 against the live backend, not demo rows. A patient name needs to be long enough to overflow: “Aisha Khan” painted straight through the badge beside it, and on a 360px screen the row’s fixed parts came to 411px and left the name a column 0px wide. A document library needs real documents: its title column got 39px, so every row read “Inv…” or “Co…”. The patient header came to 436px of a 412px screen, with the More button (a third of what you can do to a patient) entirely off the right edge, behind a sideways scroll the layout’s own rules say does not exist. And the leave switch was a button inside a label that also wrapped its explanation, so reading the explanation with a finger put the practice on leave.',
-          'Turned sideways her phone is 916×412, wider than the 760px that decides what a phone is, so landscape brought the entire laptop layout back: the sidebar, the desktop top bar, and every control down to its 36px mouse size on a touchscreen, with the bottom of the sidebar, Settings included, sitting below a 412px-tall screen and no way to scroll to it. A viewport under 500px tall counts as a phone now too, in the CSS variant and in the hook alike, with a test holding the two identical. The same pass found nine flex items rendering wider than the space they were given, because a flex item will not shrink below its own content unless told to: one chat titled with a whole sentence made the AI page’s 200px list 684px wide. Four pages between 768 and 1023px had run out of room without saying so: a patient record 102px wide cutting its own filenames in half, a send button outside the screen, a week column 43px too narrow to print a name in. And a button is not exempt from the phone’s font-size setting, which goes to 160%: at that size “Stop the assistant replying” ended 25px past the right edge. Found by driving 11 routes across 9 viewports, 25 modals and sheets across 3, and the installed APK in four configurations: portrait and landscape, at 100% and 160% font.',
-          'Every free-text field on the consultation form has a microphone beside it: seven of them, and by far the most typing the app asks for, on the device where typing is worst. The transcript appends to whatever the field already holds, so stopping and starting again adds a second sentence instead of wiping the first. Where speech recognition is unavailable, including Capacitor’s Android WebView, the button is absent, not broken, and the form says to use the keyboard’s own microphone instead.',
-          'Notifications land where they will be seen: an in-app bell on the laptop, because the dashboard is already open and a popup would interrupt a consult, and Android push through Firebase for the phone, which is usually closed. Every kind can be switched off per channel.',
-          'The phone app used to carry its own copy of the screens, so every change meant building and sending her a new APK, and her uninstalling and reinstalling it. The release build now opens the same site the laptop does, which Vercel rebuilds on every push, so a change reaches her phone the next time she opens the app; with no connection it shows a bundled page that keeps trying instead of a blank screen. It offers “Update now” only when the screens themselves changed: the build publishes the name of its main script (which Vite derives from the script’s content), not the commit, because most pushes change only the edge functions and would have offered her an update that changed nothing she could see. Android’s automatic backup is off, so the WebView’s stored sign-in is never copied into a Google backup.',
+          {
+            head: 'In airplane mode the icons turned into words',
+            body:
+              'Both apps pulled their typeface and their icon font from Google with a stylesheet link, and neither APK bundled anything. A link is fetched once at page load and never retried, so on a Pixel 6 cold-launched in airplane mode there were zero font faces and every icon rendered the ligature name it was written as: the tab bar read “space_dashboardHome groupsPatients calendar_monthCalendar”, came to 644px inside a 412px screen, and put the AI tab 238px past the edge with no way to reach it. It recovers on the next launch once the WebView has cached the files, so this was a first-run failure only, which is the one launch that has to work. Both are vendored now, the icon font subset to the 125 icons the apps use. An icon outside that subset renders as its own name in the middle of the interface, so a test scans both apps and fails if any name is missing from the list. When that test turned out to skip icon names kept in a lookup table, two of a new card’s five icons were about to render as the words “sms” and “inbox” in the middle of Settings.',
+          },
+          {
+            head: 'The greys pass WCAG AA now',
+            body:
+              'Three greys were below WCAG AA and one badly: #94a3b8 measured 2.39:1 against the app background and carried 188 pieces of real text — hints, timestamps, day names, and the four unselected labels in the bottom tab bar, which is most of how she knows where she is. Contrast sensitivity falls with age; that is not a shade of grey, it is an absence. The ramp sits at 5.84, 5.10 and 4.62 now, the three closer together than before because that is what AA on a near-white background leaves room for.',
+          },
+          {
+            head: 'Bugs only a real phone and real names could find',
+            body:
+              'The bugs that mattered most were the ones only a real phone and real data could produce, found by driving the installed APK on a Pixel 6 against the live backend, not demo rows. A patient name needs to be long enough to overflow: “Aisha Khan” painted straight through the badge beside it, and on a 360px screen the row’s fixed parts came to 411px and left the name a column 0px wide. A document library needs real documents: its title column got 39px, so every row read “Inv…” or “Co…”. The patient header came to 436px of a 412px screen, with the More button (a third of what you can do to a patient) entirely off the right edge, behind a sideways scroll the layout’s own rules say does not exist. And the leave switch was a button inside a label that also wrapped its explanation, so reading the explanation with a finger put the practice on leave.',
+          },
+          {
+            head: 'A phone turned sideways got the laptop layout',
+            body:
+              'Turned sideways her phone is 916×412, wider than the 760px that decides what a phone is, so landscape brought the entire laptop layout back: the sidebar, the desktop top bar, and every control down to its 36px mouse size on a touchscreen, with the bottom of the sidebar, Settings included, sitting below a 412px-tall screen and no way to scroll to it. A viewport under 500px tall counts as a phone now too, in the CSS variant and in the hook alike, with a test holding the two identical. The same pass found nine flex items rendering wider than the space they were given, because a flex item will not shrink below its own content unless told to: one chat titled with a whole sentence made the AI page’s 200px list 684px wide. Four pages between 768 and 1023px had run out of room without saying so: a patient record 102px wide cutting its own filenames in half, a send button outside the screen, a week column 43px too narrow to print a name in. And a button is not exempt from the phone’s font-size setting, which goes to 160%: at that size “Stop the assistant replying” ended 25px past the right edge. Found by driving 11 routes across 9 viewports, 25 modals and sheets across 3, and the installed APK in four configurations: portrait and landscape, at 100% and 160% font.',
+          },
+          {
+            head: 'Dictation on every consultation field',
+            body:
+              'Every free-text field on the consultation form has a microphone beside it: seven of them, and by far the most typing the app asks for, on the device where typing is worst. The transcript appends to whatever the field already holds, so stopping and starting again adds a second sentence instead of wiping the first. Where speech recognition is unavailable, including Capacitor’s Android WebView, the button is absent, not broken, and the form says to use the keyboard’s own microphone instead.',
+          },
+          {
+            head: 'A bell on the laptop, push on the phone',
+            body:
+              'Notifications land where they will be seen: an in-app bell on the laptop, because the dashboard is already open and a popup would interrupt a consult, and Android push through Firebase for the phone, which is usually closed. Every kind can be switched off per channel.',
+          },
+          {
+            head: 'The phone app updates itself from the live site',
+            body:
+              'The phone app used to carry its own copy of the screens, so every change meant building and sending her a new APK, and her uninstalling and reinstalling it. The release build now opens the same site the laptop does, which Vercel rebuilds on every push, so a change reaches her phone the next time she opens the app; with no connection it shows a bundled page that keeps trying instead of a blank screen. It offers “Update now” only when the screens themselves changed: the build publishes the name of its main script (which Vite derives from the script’s content), not the commit, because most pushes change only the edge functions and would have offered her an update that changed nothing she could see. Android’s automatic backup is off, so the WebView’s stored sign-in is never copied into a Google backup.',
+          },
         ],
       },
       {
         title: 'Failing loudly',
         caption: 'The codebase, a write that can’t be cut off halfway, failures that look like failures, and the tests.',
         notes: [
-          'A TypeScript monorepo on npm workspaces: a React dashboard, a second Android app, a shared package holding the document templates, and standalone tools for ingestion, backup and restore, and submitting WhatsApp templates to Meta — around 91,000 lines across 513 files, with 89 serverless Deno edge functions and 54 PostgreSQL migrations behind them, covered by 1,975 unit tests.',
-          'Every write blocks the whole app while it runs, and that rule had to be inverted to be worth anything. Saving a consultation is a render, a Drive upload and three database writes; a tap landing halfway through can file a visit with no document or a document with no visit. The overlay existed and covered six call sites out of about sixty, which is the wrong shape for a safety rule, since it depends on whoever adds the next write remembering to opt in. Now every mutation blocks unless it says so, with 350ms of grace so nothing flashes, and the Android back button (the reflex when a screen seems stuck, and a short step from the system reclaiming the process mid-write) refuses to respond for just as long.',
-          'Failures used to be green. The toast hardcoded a tick and timed out after 2.6 seconds, so “Could not send via WhatsApp” looked identical to “Sent”, and the patient never got their prescription. Fifty-five error call sites converted, plus seven more that were reporting failure through the success path; failures are red and stay until dismissed. She also saw raw machinery (FunctionsHttpError, Postgres constraint names, Failed to fetch), so one module lets a sentence written for her through and replaces everything else, keeping the original for the log. Offline was unhandled entirely; every write goes through one wrapper, so no connection means no attempt and a standing bar across the top, because an empty patient list looks identical to a lost one.',
-          'The field that exists to say what went wrong said nothing. `String(err)` on a plain object produces “[object Object]”, and twenty-five places called it on whatever they had just caught before writing it to the error log. But Supabase errors are plain objects carrying a message, a code, details and a hint, not Errors. That is how the appointment-reminder sweep failed every fifteen minutes for three weeks, 4,402 times, while System health showed her 4,402 rows each reading “Sweep failed” and “[object Object]”. A single describer now spells out Errors, Supabase errors and fetch-shaped failures, and a test holds it to never returning that string again. The same 4,402 rows are also why the list can be emptied in one press: the sweeps that write them iterate every contact, so one broken thing writes a row an hour, and since the card only ever shows the twenty most recent, dismissing them one small x at a time just uncovered the next twenty. Clearing asks first, and says plainly that it clears everything on file, not only what she can see, and that anything still broken will write a fresh line the next time it fails.',
-          'The tests are pure logic by design (scheduling, date maths across the Jakarta timezone, claim assembly, document rendering), plus a patient simulator that drives the real WhatsApp webhook and agent one message at a time and then looks at what happened to the calendar and the database. It runs in two tiers: against a scripted model on every run, and against the real model on request — 48 conversations, at about a cent and a half per patient message, several of them reproducing chats that went wrong on the live practice. Linting is deliberately kept out of the build, because a lint error should never be the reason a document cannot be issued.',
+          {
+            head: '91,000 lines, 89 functions, 54 migrations, 1,975 tests',
+            body:
+              'A TypeScript monorepo on npm workspaces: a React dashboard, a second Android app, a shared package holding the document templates, and standalone tools for ingestion, backup and restore, and submitting WhatsApp templates to Meta — around 91,000 lines across 513 files, with 89 serverless Deno edge functions and 54 PostgreSQL migrations behind them, covered by 1,975 unit tests.',
+          },
+          {
+            head: 'A write can’t be interrupted halfway',
+            body:
+              'Every write blocks the whole app while it runs, and that rule had to be inverted to be worth anything. Saving a consultation is a render, a Drive upload and three database writes; a tap landing halfway through can file a visit with no document or a document with no visit. The overlay existed and covered six call sites out of about sixty, which is the wrong shape for a safety rule, since it depends on whoever adds the next write remembering to opt in. Now every mutation blocks unless it says so, with 350ms of grace so nothing flashes, and the Android back button (the reflex when a screen seems stuck, and a short step from the system reclaiming the process mid-write) refuses to respond for just as long.',
+          },
+          {
+            head: 'Failures look like failures now',
+            body:
+              'The toast hardcoded a tick and timed out after 2.6 seconds, so “Could not send via WhatsApp” looked identical to “Sent”, and the patient never got their prescription. Fifty-five error call sites converted, plus seven more that were reporting failure through the success path; failures are red and stay until dismissed. She also saw raw machinery (FunctionsHttpError, Postgres constraint names, Failed to fetch), so one module lets a sentence written for her through and replaces everything else, keeping the original for the log. Offline was unhandled entirely; every write goes through one wrapper, so no connection means no attempt and a standing bar across the top, because an empty patient list looks identical to a lost one.',
+          },
+          {
+            head: '4,402 errors that all read “[object Object]”',
+            body:
+              'The field that exists to say what went wrong said nothing. `String(err)` on a plain object produces “[object Object]”, and twenty-five places called it on whatever they had just caught before writing it to the error log. But Supabase errors are plain objects carrying a message, a code, details and a hint, not Errors. That is how the appointment-reminder sweep failed every fifteen minutes for three weeks, 4,402 times, while System health showed her 4,402 rows each reading “Sweep failed” and “[object Object]”. A single describer now spells out Errors, Supabase errors and fetch-shaped failures, and a test holds it to never returning that string again. The same 4,402 rows are also why the list can be emptied in one press: the sweeps that write them iterate every contact, so one broken thing writes a row an hour, and since the card only ever shows the twenty most recent, dismissing them one small x at a time just uncovered the next twenty. Clearing asks first, and says plainly that it clears everything on file, not only what she can see, and that anything still broken will write a fresh line the next time it fails.',
+          },
+          {
+            head: 'Pure-logic tests, and a simulated patient on the real model',
+            body:
+              'The tests are pure logic by design (scheduling, date maths across the Jakarta timezone, claim assembly, document rendering), plus a patient simulator that drives the real WhatsApp webhook and agent one message at a time and then looks at what happened to the calendar and the database. It runs in two tiers: against a scripted model on every run, and against the real model on request — 48 conversations, at about a cent and a half per patient message, several of them reproducing chats that went wrong on the live practice. Linting is deliberately kept out of the build, because a lint error should never be the reason a document cannot be issued.',
+          },
         ],
       },
     ],
@@ -612,18 +820,66 @@ export const PROJECTS: Project[] = [
     blurb:
       'Built for the home game my friends and I play: a $10 buy-in at five- and ten-cent blinds, where the money is small and the arguments about it are not. Poker Tracker is the ledger: log a night in the time it takes to type the cash-outs, keep everyone’s running total to the cent, and settle up in the fewest payments that clear the table. It works offline on each phone, and with sharing on, the whole group reads and writes one ledger.',
     highlights: [
-      'Every amount is stored as integer cents and only turned into dollars on the way to the screen. Poker maths is a night of sums and differences, and floating point drifts (0.1 + 0.2 is not 0.3), so a float ledger at ten-cent blinds can finish a night a cent out. Display has its own rule: whole amounts show bare and anything with cents shows both digits, never one, which is what letting the formatter drop a trailing zero produces — “$13.5”, which reads as broken.',
-      'A new night opens with everyone at the standard buy-in and a one-tap + buy-in on each row, so a normal session only needs the cash-outs typed. The editor adds the table up as you go and holds its verdict until a cash-out exists, because with buy-ins pre-filled a fresh session would otherwise open showing a loss on every row and a warning that isn’t true yet. When the totals disagree it says by how much, and why that matters: chips can’t appear or vanish, so the difference is a typo, not a result. It still lets you save, and the leaderboard flags any night that doesn’t balance instead of quietly folding it in.',
-      'Settling up is the provably fewest payments, not just a short list. Balances are netted first, so nobody both pays and gets paid. Then everyone is split into as many groups as possible whose balances sum to zero, because a group of k people always needs exactly k−1 payments, so the minimum is n minus the number of groups. Paying the biggest debtor into the biggest creditor, the obvious approach, only guarantees n−1 and misses tables where a subset cancels out: on the night in the captures below it takes four payments where this takes three. Finding the best split is exponential, 3ⁿ, so it runs exactly for up to 14 people with a balance (about five million steps, held under 250ms by a performance test) and falls back to the greedy pass above that, which a home game never reaches. A property test replays 200 random tables and checks every player lands exactly on their net.',
-      'Sessions say who won; they don’t say who has since handed money over. Payments are records of their own (from, to, amount, date), and what anyone still owes is their session nets plus what they’ve paid minus what they’ve been paid. The settle-up plan is built from that, not from raw winnings, so a debt already paid stops being suggested, part payments work, and overpaying flips who is owed instead of breaking anything. Each suggested transfer has a button that records it with the amount pre-filled.',
-      'Each phone keeps its own copy, saved on every change, and works with no signal at all; sharing is optional. With it on, a sync pulls the group’s ledger, merges it with the phone’s and pushes the result back. Every record carries a timestamp and the newer copy wins, so two people logging different nights on different phones both keep their work; only edits to the same record conflict. Deletes are tombstones with their own timestamp, so an older copy on another phone can’t bring a deleted session back. Edits are ordered by each phone’s own clock: a fair bet for one group of friends, and the limit of last-write-wins.',
-      'Settings were the one record that didn’t merge that way, and that was a bug. The merge took the server’s whole settings record whenever it had a group name (which, once sharing is on, is always), so changing the currency appeared to save, reverted two and a half seconds later just as the sync fired, and was pushed back to everyone. Settings now carry their own timestamp and merge like every other record, and untouched defaults are stamped zero so a phone joining a group still adopts the group’s currency, buy-in and stakes. Regression tests cover the reported case, the reverse direction, a first join and a repeated sync; the smoke test changes the currency and checks it is still there four seconds later.',
-      'Capturing this page turned up one more sync bug, in the live app. Every sync changes the ledger (the merge commits a fresh copy of it), and the engine pushed a couple of seconds after any change to the ledger, so each sync scheduled the next: an open phone pulled and pushed the entire ledger every 2.5 seconds for as long as the app stayed open, twelve round trips in thirty idle seconds. The store now counts edits made on the phone and the engine schedules on that count; a merge from the group isn’t an edit, because the sync that brought it in has already pushed it back. Taking the loop out exposed what it had been covering for: a sync asked for while another was running was dropped, so an edit made mid-sync waited for the minute timer. That now queues one more run. The same idle phone now makes none.',
-      'The Supabase anon key is designed to ship to clients, so the table is locked rather than the key. Row-level security is on with no policies, which leaves the anonymous role unable to touch the table at all, and every read and write goes through one of three SECURITY DEFINER functions that each require the group’s password; without it you can’t read, write or even confirm a group exists. Group names are forgiving on purpose (“friday felt” finds “Friday Felt”, accents and punctuation aside), so the password is what protects a group, with an eight-character floor enforced in the client and again in the SQL. It is compared as typed, not hashed (whoever created the Supabase project can read the group’s numbers anyway), which is why the setup guide says not to reuse a password you care about.',
-      'The first version baked the group’s Supabase project and join code into the build, so friends needed no setup at all. It lasted about ten minutes: the site is public on GitHub Pages, and anything in its JavaScript is readable by anyone who finds the URL. Nothing is baked in now: the project URL, key, group name and password travel together in one invite a phone’s Settings composes. For this page both the live site’s scripts and the released APK were checked, and neither contains a Supabase address or a key.',
-      'Every session, payment and roster change is written through one path that appends to an activity log, so nothing can change the numbers without leaving a trace. An edit records the nets on both sides (“Nadia: +$6.20 → -$6.10”), because a quietly rewritten bad night is the thing worth catching, and the log has an Edits & deletions filter for just that. The author is whoever the phone is set to in Settings, saved by name at the time so a later rename can’t rewrite history, and the screen says plainly that it is an honour-system record: it answers “who changed my numbers?”, not much more. Entries are never edited, so on a merge the log is a union rather than a contest, capped at the newest 300.',
-      'iPhones can’t sideload, so they get the installable web app (its own icon, no browser chrome, works offline), and Android gets a real APK from the same build through Capacitor. The service worker is registered by hand so the native build can skip it: inside Capacitor the files are already on the phone, and a worker’s precache there would keep serving the previous version’s screens after an update until someone cleared the app’s data. The Supabase client, about 350 kB, is only loaded once sharing is switched on.',
-      '63 unit tests pin down the money, the stats, the settle-up, the merge and the activity diffs, and a Puppeteer smoke test drives the real interface the way a person would: adds players, logs a night with a rebuy, checks the leaderboard and the settle-up agree with what was typed, records a payment, changes the currency and checks it stays changed, edits a session and reads the edit back out of the log. It compares money by sign and digits only, so it passes whatever the currency and whatever the machine’s locale.',
+      {
+        head: 'Money is integer cents',
+        body:
+          'Every amount is stored as integer cents and only turned into dollars on the way to the screen. Poker maths is a night of sums and differences, and floating point drifts (0.1 + 0.2 is not 0.3), so a float ledger at ten-cent blinds can finish a night a cent out. Display has its own rule: whole amounts show bare and anything with cents shows both digits, never one, which is what letting the formatter drop a trailing zero produces — “$13.5”, which reads as broken.',
+      },
+      {
+        head: 'A night has to add up before it counts',
+        body:
+          'A new night opens with everyone at the standard buy-in and a one-tap + buy-in on each row, so a normal session only needs the cash-outs typed. The editor adds the table up as you go and holds its verdict until a cash-out exists, because with buy-ins pre-filled a fresh session would otherwise open showing a loss on every row and a warning that isn’t true yet. When the totals disagree it says by how much, and why that matters: chips can’t appear or vanish, so the difference is a typo, not a result. It still lets you save, and the leaderboard flags any night that doesn’t balance instead of quietly folding it in.',
+      },
+      {
+        head: 'Settling up in the provably fewest payments',
+        body:
+          'Balances are netted first, so nobody both pays and gets paid. Then everyone is split into as many groups as possible whose balances sum to zero, because a group of k people always needs exactly k−1 payments, so the minimum is n minus the number of groups. Paying the biggest debtor into the biggest creditor, the obvious approach, only guarantees n−1 and misses tables where a subset cancels out: on the night in the captures below it takes four payments where this takes three. Finding the best split is exponential, 3ⁿ, so it runs exactly for up to 14 people with a balance (about five million steps, held under 250ms by a performance test) and falls back to the greedy pass above that, which a home game never reaches. A property test replays 200 random tables and checks every player lands exactly on their net.',
+      },
+      {
+        head: 'Payments are records, not inferred from winnings',
+        body:
+          'Sessions say who won; they don’t say who has since handed money over. Payments are records of their own (from, to, amount, date), and what anyone still owes is their session nets plus what they’ve paid minus what they’ve been paid. The settle-up plan is built from that, not from raw winnings, so a debt already paid stops being suggested, part payments work, and overpaying flips who is owed instead of breaking anything. Each suggested transfer has a button that records it with the amount pre-filled.',
+      },
+      {
+        head: 'Works offline, and syncs by last write wins',
+        body:
+          'Each phone keeps its own copy, saved on every change, and works with no signal at all; sharing is optional. With it on, a sync pulls the group’s ledger, merges it with the phone’s and pushes the result back. Every record carries a timestamp and the newer copy wins, so two people logging different nights on different phones both keep their work; only edits to the same record conflict. Deletes are tombstones with their own timestamp, so an older copy on another phone can’t bring a deleted session back. Edits are ordered by each phone’s own clock: a fair bet for one group of friends, and the limit of last-write-wins.',
+      },
+      {
+        head: 'A settings change undid itself 2.5 seconds later',
+        body:
+          'Settings were the one record that didn’t merge that way, and that was a bug. The merge took the server’s whole settings record whenever it had a group name (which, once sharing is on, is always), so changing the currency appeared to save, reverted two and a half seconds later just as the sync fired, and was pushed back to everyone. Settings now carry their own timestamp and merge like every other record, and untouched defaults are stamped zero so a phone joining a group still adopts the group’s currency, buy-in and stakes. Regression tests cover the reported case, the reverse direction, a first join and a repeated sync; the smoke test changes the currency and checks it is still there four seconds later.',
+      },
+      {
+        head: 'An idle phone was syncing every 2.5 seconds',
+        body:
+          'Capturing this page turned up one more sync bug, in the live app. Every sync changes the ledger (the merge commits a fresh copy of it), and the engine pushed a couple of seconds after any change to the ledger, so each sync scheduled the next: an open phone pulled and pushed the entire ledger every 2.5 seconds for as long as the app stayed open, twelve round trips in thirty idle seconds. The store now counts edits made on the phone and the engine schedules on that count; a merge from the group isn’t an edit, because the sync that brought it in has already pushed it back. Taking the loop out exposed what it had been covering for: a sync asked for while another was running was dropped, so an edit made mid-sync waited for the minute timer. That now queues one more run. The same idle phone now makes none.',
+      },
+      {
+        head: 'The key is public, so the table is locked',
+        body:
+          'The Supabase anon key is designed to ship to clients, so the table is locked rather than the key. Row-level security is on with no policies, which leaves the anonymous role unable to touch the table at all, and every read and write goes through one of three SECURITY DEFINER functions that each require the group’s password; without it you can’t read, write or even confirm a group exists. Group names are forgiving on purpose (“friday felt” finds “Friday Felt”, accents and punctuation aside), so the password is what protects a group, with an eight-character floor enforced in the client and again in the SQL. It is compared as typed, not hashed (whoever created the Supabase project can read the group’s numbers anyway), which is why the setup guide says not to reuse a password you care about.',
+      },
+      {
+        head: 'Credentials in the build lasted ten minutes',
+        body:
+          'The first version baked the group’s Supabase project and join code into the build, so friends needed no setup at all. It lasted about ten minutes: the site is public on GitHub Pages, and anything in its JavaScript is readable by anyone who finds the URL. Nothing is baked in now: the project URL, key, group name and password travel together in one invite a phone’s Settings composes. For this page both the live site’s scripts and the released APK were checked, and neither contains a Supabase address or a key.',
+      },
+      {
+        head: 'Every change leaves a trace',
+        body:
+          'Every session, payment and roster change is written through one path that appends to an activity log, so nothing can change the numbers without leaving a trace. An edit records the nets on both sides (“Nadia: +$6.20 → -$6.10”), because a quietly rewritten bad night is the thing worth catching, and the log has an Edits & deletions filter for just that. The author is whoever the phone is set to in Settings, saved by name at the time so a later rename can’t rewrite history, and the screen says plainly that it is an honour-system record: it answers “who changed my numbers?”, not much more. Entries are never edited, so on a merge the log is a union rather than a contest, capped at the newest 300.',
+      },
+      {
+        head: 'One build: a web app for iPhone, an APK for Android',
+        body:
+          'iPhones can’t sideload, so they get the installable web app (its own icon, no browser chrome, works offline), and Android gets a real APK from the same build through Capacitor. The service worker is registered by hand so the native build can skip it: inside Capacitor the files are already on the phone, and a worker’s precache there would keep serving the previous version’s screens after an update until someone cleared the app’s data. The Supabase client, about 350 kB, is only loaded once sharing is switched on.',
+      },
+      {
+        head: '63 unit tests and a smoke test through the real UI',
+        body:
+          '63 unit tests pin down the money, the stats, the settle-up, the merge and the activity diffs, and a Puppeteer smoke test drives the real interface the way a person would: adds players, logs a night with a rebuy, checks the leaderboard and the settle-up agree with what was typed, records a payment, changes the currency and checks it stays changed, edits a session and reads the edit back out of the log. It compares money by sign and digits only, so it passes whatever the currency and whatever the machine’s locale.',
+      },
     ],
     trailer: '/media/poker-trailer.mp4',
     trailerPoster: '/media/poker-trailer-poster.jpg',
@@ -770,19 +1026,71 @@ export const PROJECTS: Project[] = [
     blurb:
       'I did not want another app telling me how long I had been on Instagram. I wanted one that made me pay for it. FitScroll counts your push-ups through the phone’s camera, banks each clean rep as one minute of screen time, and enforces that budget on whichever apps you pick. Every minute expires 24 hours after you earn it, so you cannot grind once on Sunday and coast all week. Everything that counts a rep or spends a minute runs on-device: no account, no sync, no analytics, and no camera frame ever leaves the phone.',
     highlights: [
-      'The rules are pure functions taking an explicit `now`: the bank, the rep counter, the blocking decision, the drain reconciler, the per-second meter. That is what makes 125 tests possible with no device and no 24-hour wait: expiry boundaries, oldest-first spending, cap overflow and every anti-cheat gate are pinned down as arithmetic. The parts that genuinely need Android get Robolectric: the stored ledger, its reload, the day rollover, and the corrupt-ledger path that has to fail into an empty bank, not a crash loop, because a crash loop leaves the accessibility service holding the block with no way to reach the camera.',
-      'The gate that makes a rep a push-up is not an angle. Stand up, hold the phone in front of you and curl your arms, and every angle check passes: elbow locked out at the top, bent at the bottom, a dead-straight body line throughout. Only the fact that your body never moved gives it away. So a rep also requires your shoulders to drop by a fraction of your own shoulder-to-hip length, measured as a ratio so it holds at any distance from the lens, and set low enough that anyone on the floor clears it without thinking about it.',
-      'Strictness tightens five things at once, and deliberately not a sixth. It used to raise the required landmark confidence as well, which meant level 5 was quietly asking for a better view of you, not a better push-up. Looking down at the floor is enough to drop the pose model’s confidence across every landmark, so reps stopped counting entirely at level 5 while the identical rep counted at level 1. There is one visibility floor for all five levels now; strictness governs form only.',
-      'The body-line thresholds look lenient on paper and are not. This is a 2D estimate from a single camera: unless the lens sits exactly perpendicular to you, perspective foreshortens your torso and a genuinely straight back measures well under 180°. Thresholds that are correct in geometry reject real push-ups at real phone placements.',
-      'A rep is not judged frame by frame, because the pose model jitters by a few degrees on a motionless subject and a single noisy sample was throwing away clean reps. Each level instead carries a sag allowance: how long within one rep you may be outside tolerance before it is voided. Real sag lasts; noise does not. And if your legs are out of frame the model *guesses* your knee position, so the app declines to judge your back at all instead of failing you on a guess, and says “back not checked” on screen so a refusal reads as feedback, not as a broken app.',
-      'The lock lands on top of the blocked app mid-scroll, not only at the moment you open it. It is drawn as an accessibility overlay, which the service is granted directly, so “Display over other apps” stays genuinely optional, and where it is missing the one button that needs it says so instead of appearing to do nothing.',
-      'Knowing which app is in front takes two kinds of event, not one. A window-state change says a window just took the screen, which is the only signal that an app switch happened at all, but it describes transitions only. Pull the notification shade down over Instagram and the app underneath never goes away, so nothing announces its return when the shade closes. A scroll event says a package is on screen right now, which closes that gap. The service is declared `canRetrieveWindowContent="false"` and reads nothing off either event but the package name and the window class.',
-      'The meter charges measured time, not a count of ticks, because a timer that is throttled, coalesced or briefly starved silently under-bills, and the failure looks just like the app working. Below an hour the balance counts in seconds for the same reason: a number that only moves once a minute looks identical whether the drain is running or stuck, which made every real bug in it hard to tell from an imagined one.',
-      'Android reports app switches, not a live answer to “what is on screen”, so sometimes the meter has to guess: a service killed mid-scroll, or a phone unlocked back into whatever it was showing. It resumes on the remembered package, because the alternative is free scrolling every time the process is recycled, but a guessed *drain* expires after 30 seconds unless something confirms it, so the most a wrong one can cost you is half a minute. A guessed *lock* is not put on the same clock, because the failures are not comparable: a drain that guessed wrong spends a bank silently, while a lock that guessed wrong is a screen in front of you with a button on it.',
-      'Copies handed out by hand have no update channel, so every sideloaded build checks one published file and withdraws itself if told to. It is a version floor, not a switch: one number retires everything older at once, and a notice can never retire a build that did not exist when it was written. It fails open on purpose: no answer, for any reason, leaves the last one standing, and the first answer is “supported”, because bricking someone’s app because their plane has no wifi would be a worse bug than a build living too long. When a build does retire it stops blocking first, and the banked minutes stay on disk for whatever installs over the top. The Play build compiles the URL to an empty string and never touches the network.',
-      'Android identifies an app by package name *and* signing certificate, so the key you hand builds out with is a commitment: a build signed with a different key cannot update one already installed; it has to be uninstalled first, which deletes the user’s banked minutes. Release builds fall back to the debug key when there is no keystore, so a fresh clone still produces something installable, and the README says plainly that anything given to another person must be built with the real one.',
-      'ML Kit ships native inference for four ABIs and two of them only ever run on emulators, which made the universal APK 82MB — more than half of it code no phone can execute. Filtering at the source, not only in the split, brings the safe-for-anything build to 44MB and the arm64 one to 29MB. The APKs are also named after the app and its version instead of the build system, because handed over in a chat the filename is the only label they have.',
-      'It is a commitment device, not a jail, and the README says so first, not last: on Android you can disable the accessibility service or uninstall the app in under a minute. It works by adding friction at the moment of the impulse. Expiry rides the wall clock and you own the wall clock. Winding it back cannot mint minutes, since a credit stamped in the future is pulled back to now, so the worst it buys is one ordinary day. Nothing here pretends to be tamper-proof.',
+      {
+        head: '125 tests without a phone or a 24-hour wait',
+        body:
+          'The rules are pure functions taking an explicit `now`: the bank, the rep counter, the blocking decision, the drain reconciler, the per-second meter. That is what makes 125 tests possible with no device and no 24-hour wait: expiry boundaries, oldest-first spending, cap overflow and every anti-cheat gate are pinned down as arithmetic. The parts that genuinely need Android get Robolectric: the stored ledger, its reload, the day rollover, and the corrupt-ledger path that has to fail into an empty bank, not a crash loop, because a crash loop leaves the accessibility service holding the block with no way to reach the camera.',
+      },
+      {
+        head: 'A push-up is a body moving, not an angle',
+        body:
+          'Stand up, hold the phone in front of you and curl your arms, and every angle check passes: elbow locked out at the top, bent at the bottom, a dead-straight body line throughout. Only the fact that your body never moved gives it away. So a rep also requires your shoulders to drop by a fraction of your own shoulder-to-hip length, measured as a ratio so it holds at any distance from the lens, and set low enough that anyone on the floor clears it without thinking about it.',
+      },
+      {
+        head: 'Strictness judges form, not how well you’re seen',
+        body:
+          'Strictness tightens five things at once, and deliberately not a sixth. It used to raise the required landmark confidence as well, which meant level 5 was quietly asking for a better view of you, not a better push-up. Looking down at the floor is enough to drop the pose model’s confidence across every landmark, so reps stopped counting entirely at level 5 while the identical rep counted at level 1. There is one visibility floor for all five levels now; strictness governs form only.',
+      },
+      {
+        head: 'Thresholds bent for a camera that sees in 2D',
+        body:
+          'The body-line thresholds look lenient on paper and are not. This is a 2D estimate from a single camera: unless the lens sits exactly perpendicular to you, perspective foreshortens your torso and a genuinely straight back measures well under 180°. Thresholds that are correct in geometry reject real push-ups at real phone placements.',
+      },
+      {
+        head: 'A rep isn’t judged on one noisy frame',
+        body:
+          'A rep is not judged frame by frame, because the pose model jitters by a few degrees on a motionless subject and a single noisy sample was throwing away clean reps. Each level instead carries a sag allowance: how long within one rep you may be outside tolerance before it is voided. Real sag lasts; noise does not. And if your legs are out of frame the model *guesses* your knee position, so the app declines to judge your back at all instead of failing you on a guess, and says “back not checked” on screen so a refusal reads as feedback, not as a broken app.',
+      },
+      {
+        head: 'The lock lands mid-scroll',
+        body:
+          'The lock lands on top of the blocked app mid-scroll, not only at the moment you open it. It is drawn as an accessibility overlay, which the service is granted directly, so “Display over other apps” stays genuinely optional, and where it is missing the one button that needs it says so instead of appearing to do nothing.',
+      },
+      {
+        head: 'Two kinds of event to know which app is in front',
+        body:
+          'A window-state change says a window just took the screen, which is the only signal that an app switch happened at all, but it describes transitions only. Pull the notification shade down over Instagram and the app underneath never goes away, so nothing announces its return when the shade closes. A scroll event says a package is on screen right now, which closes that gap. The service is declared `canRetrieveWindowContent="false"` and reads nothing off either event but the package name and the window class.',
+      },
+      {
+        head: 'The meter charges measured time',
+        body:
+          'The meter charges measured time, not a count of ticks, because a timer that is throttled, coalesced or briefly starved silently under-bills, and the failure looks just like the app working. Below an hour the balance counts in seconds for the same reason: a number that only moves once a minute looks identical whether the drain is running or stuck, which made every real bug in it hard to tell from an imagined one.',
+      },
+      {
+        head: 'Guessing what’s on screen, and what a wrong guess costs',
+        body:
+          'Android reports app switches, not a live answer to “what is on screen”, so sometimes the meter has to guess: a service killed mid-scroll, or a phone unlocked back into whatever it was showing. It resumes on the remembered package, because the alternative is free scrolling every time the process is recycled, but a guessed *drain* expires after 30 seconds unless something confirms it, so the most a wrong one can cost you is half a minute. A guessed *lock* is not put on the same clock, because the failures are not comparable: a drain that guessed wrong spends a bank silently, while a lock that guessed wrong is a screen in front of you with a button on it.',
+      },
+      {
+        head: 'A version floor that fails open',
+        body:
+          'Copies handed out by hand have no update channel, so every sideloaded build checks one published file and withdraws itself if told to. It is a version floor, not a switch: one number retires everything older at once, and a notice can never retire a build that did not exist when it was written. It fails open on purpose: no answer, for any reason, leaves the last one standing, and the first answer is “supported”, because bricking someone’s app because their plane has no wifi would be a worse bug than a build living too long. When a build does retire it stops blocking first, and the banked minutes stay on disk for whatever installs over the top. The Play build compiles the URL to an empty string and never touches the network.',
+      },
+      {
+        head: 'The signing key is a promise',
+        body:
+          'Android identifies an app by package name *and* signing certificate, so the key you hand builds out with is a commitment: a build signed with a different key cannot update one already installed; it has to be uninstalled first, which deletes the user’s banked minutes. Release builds fall back to the debug key when there is no keystore, so a fresh clone still produces something installable, and the README says plainly that anything given to another person must be built with the real one.',
+      },
+      {
+        head: 'From 82MB down to 29MB',
+        body:
+          'ML Kit ships native inference for four ABIs and two of them only ever run on emulators, which made the universal APK 82MB — more than half of it code no phone can execute. Filtering at the source, not only in the split, brings the safe-for-anything build to 44MB and the arm64 one to 29MB. The APKs are also named after the app and its version instead of the build system, because handed over in a chat the filename is the only label they have.',
+      },
+      {
+        head: 'A commitment device, not a jail',
+        body:
+          'The README says so first, not last: on Android you can disable the accessibility service or uninstall the app in under a minute. It works by adding friction at the moment of the impulse. Expiry rides the wall clock and you own the wall clock. Winding it back cannot mint minutes, since a credit stamped in the future is pulled back to now, so the worst it buys is one ordinary day. Nothing here pretends to be tamper-proof.',
+      },
     ],
     trailer: '/media/fitscroll-trailer.mp4',
     trailerPoster: '/media/fitscroll-trailer-poster.jpg',
@@ -870,14 +1178,46 @@ export const PROJECTS: Project[] = [
     blurb:
       'Moving from Jakarta to Melbourne meant my life was split across two countries and about six apps. Jarvis pulls it into a single dark HUD-style command centre: what I have to do today, what is in my calendar, how I have been sleeping and eating, and what my money is doing in two currencies at once.',
     highlights: [
-      '38 REST endpoints and 10 PostgreSQL migrations behind a Next.js App Router front end, grouped by the thing they serve: auth, calendar, tasks, health, finance, fx, profile.',
-      'A Google OAuth flow with token refresh, syncing Calendar, Tasks and Gmail into one dashboard.',
-      'I wear a Fitbit and a Samsung Galaxy Watch 8 Classic, and the two ecosystems do not talk to each other: the Fitbit reports into Google Health, the Galaxy Watch into Samsung Health. Jarvis reconciles both into a single day: Google Health read live from its API, Samsung Health’s file export parsed by Claude into structured activities and meals.',
-      'Re-importing an export can’t duplicate anything: every activity carries the source file’s own record id, so an overlapping second import is a no-op, not a double-counted run.',
-      'Claude also reads uploaded bank statements and Gmail receipts and returns structured transactions, turning unstructured documents into queryable records.',
-      'The money side tracks both currencies separately and honestly: AUD statements and transactions, IDR statements from home, tuition instalments, and email-synced receipts, each with their own ingestion path.',
-      'An AUD-to-IDR remittance tracker that compares the live rate against a 30-day average and flags good windows to transfer money home, with a log of what was sent and what arrived.',
-      'The health surface is more than a step count: a day view, a weekly roll-up, resting and latest heart rate, body measurements over time, and nutrition synced from the same export.',
+      {
+        head: '38 REST endpoints and 10 migrations',
+        body:
+          'Behind a Next.js App Router front end, grouped by the thing they serve: auth, calendar, tasks, health, finance, fx, profile.',
+      },
+      {
+        head: 'Calendar, Tasks and Gmail on one screen',
+        body:
+          'One Google OAuth flow, with token refresh, syncs all three into the dashboard.',
+      },
+      {
+        head: 'Two watches that don’t talk, reconciled into one day',
+        body:
+          'I wear a Fitbit and a Samsung Galaxy Watch 8 Classic, and the two ecosystems do not talk to each other: the Fitbit reports into Google Health, the Galaxy Watch into Samsung Health. Jarvis reconciles both into a single day: Google Health read live from its API, Samsung Health’s file export parsed by Claude into structured activities and meals.',
+      },
+      {
+        head: 'Re-importing can’t double-count',
+        body:
+          'Every activity carries the source file’s own record id, so an overlapping second import is a no-op, not a double-counted run.',
+      },
+      {
+        head: 'Statements and receipts become transactions',
+        body:
+          'Claude also reads uploaded bank statements and Gmail receipts and returns structured transactions, turning unstructured documents into queryable records.',
+      },
+      {
+        head: 'Two currencies, kept apart',
+        body:
+          'The money side tracks both currencies separately and honestly: AUD statements and transactions, IDR statements from home, tuition instalments, and email-synced receipts, each with their own ingestion path.',
+      },
+      {
+        head: 'When to send money home',
+        body:
+          'An AUD-to-IDR remittance tracker that compares the live rate against a 30-day average and flags good windows to transfer money home, with a log of what was sent and what arrived.',
+      },
+      {
+        head: 'Health beyond a step count',
+        body:
+          'A day view, a weekly roll-up, resting and latest heart rate, body measurements over time, and nutrition synced from the same export.',
+      },
     ],
     // Cut from the walkthrough below, with two built scenes: the opening, and
     // the two-wearable story that no single screen shows well.
@@ -1064,14 +1404,46 @@ export const PROJECTS: Project[] = [
     blurb:
       'Training alone is easy to skip, so I built the accountability in. Locked In is part workout log, part social feed: you post a session, your squad sees it, and the leaderboard keeps everyone honest. Shipped as a real Android APK through EAS with a web build on Vercel.',
     highlights: [
-      'Around 5,000 lines of TypeScript across twelve modules (feed, profile, posting, search, inbox, chat, notifications, auth) on Supabase Auth, Storage, Realtime subscriptions and row-level security.',
-      'Gemini vision reads a workout screenshot straight from your smartwatch app and auto-fills activity, distance, duration, pace and calories. No manual entry, because manual entry is where a fitness app dies.',
-      'Push notifications are sent by the database, not the app: a Postgres trigger calls the Expo Push Service through pg_net, so a like or a comment notifies whether or not anyone has the app open.',
-      'Web push is deliberately not implemented. It is fragile enough on iOS Safari that shipping it would have meant supporting something that quietly fails for half the squad.',
-      'Schema changes are additive on purpose. Old APKs are already on people’s phones and will ignore a new column, but a rename or a drop breaks them, so nothing gets renamed once it has shipped.',
-      'Realtime is opt-in per table through the supabase_realtime publication, so a new table has to be added deliberately; nothing starts broadcasting on its own.',
-      'Distributed as an Android APK via EAS Build, with the web version auto-deploying to Vercel on push to main.',
-      'Written up with developer onboarding docs covering environment setup, release builds and schema-migration practice, so friends could contribute without me in the room.',
+      {
+        head: '5,000 lines across twelve modules',
+        body:
+          'Feed, profile, posting, search, inbox, chat, notifications and auth, on Supabase Auth, Storage, Realtime subscriptions and row-level security.',
+      },
+      {
+        head: 'A screenshot instead of a form',
+        body:
+          'Gemini vision reads a workout screenshot straight from your smartwatch app and auto-fills activity, distance, duration, pace and calories. No manual entry, because manual entry is where a fitness app dies.',
+      },
+      {
+        head: 'The database sends the notifications',
+        body:
+          'A Postgres trigger calls the Expo Push Service through pg_net, so a like or a comment notifies whether or not anyone has the app open.',
+      },
+      {
+        head: 'No web push, on purpose',
+        body:
+          'It is fragile enough on iOS Safari that shipping it would have meant supporting something that quietly fails for half the squad.',
+      },
+      {
+        head: 'Schema changes only ever add',
+        body:
+          'Old APKs are already on people’s phones and will ignore a new column, but a rename or a drop breaks them, so nothing gets renamed once it has shipped.',
+      },
+      {
+        head: 'Realtime is opt-in per table',
+        body:
+          'A new table joins the supabase_realtime publication deliberately, so nothing starts broadcasting on its own.',
+      },
+      {
+        head: 'An APK for the squad, a web build on every push',
+        body:
+          'The Android APK is built through EAS, and the web version deploys to Vercel on every push to main.',
+      },
+      {
+        head: 'Docs so friends could contribute',
+        body:
+          'Onboarding docs cover environment setup, release builds and schema-migration practice, so nobody needs me in the room.',
+      },
     ],
     // Shot at phone width and paired on a dark field: it's a portrait
     // mobile app, and a single tall screenshot dropped into a landscape
@@ -1224,14 +1596,46 @@ export const PROJECTS: Project[] = [
     blurb:
       'A pantry, recipe and nutrition tracker built in Python on a relational schema I designed from an entity-relationship diagram. Cook a recipe and it works out what you used and takes it out of your pantry, converting between grams, millilitres and pieces where it has to.',
     highlights: [
-      'Automatic pantry deduction when a recipe is cooked, with unit normalisation across weight, volume and count: a recipe asking for 200 ml of milk can be paid for out of a 1 kg entry, and a recipe asking for two eggs cannot.',
-      'The whole app is a Streamlit front end over a 66-function data layer, so every read and write goes through one module instead of being scattered through the pages.',
-      'A conversational recipe assistant on Gemini with real chat sessions (created, renamed, reopened and deleted) instead of one flat history that grows until it is useless.',
-      'Photograph a meal and Gemini vision estimates the macros and logs it against the day.',
-      'Personalised calorie and macronutrient targets calculated from body metrics and activity level, with a daily dashboard and full history charted in Altair.',
-      'Custom foods and reusable meal bundles, so the things you eat every week are one tap rather than four entries.',
-      'Cooking a recipe writes a log you can rate and review afterwards, and those ratings build a taste profile the assistant can use.',
-      'Shopping list that flows back into the pantry when items are marked as bought, closing the loop instead of leaving two lists to reconcile by hand.',
+      {
+        head: 'Cooking takes it out of the pantry',
+        body:
+          'Unit normalisation across weight, volume and count means a recipe asking for 200 ml of milk can be paid for out of a 1 kg entry, and a recipe asking for two eggs cannot.',
+      },
+      {
+        head: 'One data layer, 66 functions',
+        body:
+          'The whole app is a Streamlit front end over a 66-function data layer, so every read and write goes through one module instead of being scattered through the pages.',
+      },
+      {
+        head: 'Chats that persist',
+        body:
+          'A conversational recipe assistant on Gemini with real chat sessions (created, renamed, reopened and deleted) instead of one flat history that grows until it is useless.',
+      },
+      {
+        head: 'Log a meal from a photo',
+        body:
+          'Gemini vision estimates the macros and logs it against the day.',
+      },
+      {
+        head: 'Targets from body metrics',
+        body:
+          'Personalised calorie and macronutrient targets calculated from body metrics and activity level, with a daily dashboard and full history charted in Altair.',
+      },
+      {
+        head: 'The usual breakfast is one tap',
+        body:
+          'Custom foods and reusable meal bundles, so the things you eat every week are one tap rather than four entries.',
+      },
+      {
+        head: 'Ratings teach the assistant your taste',
+        body:
+          'Cooking a recipe writes a log you can rate and review afterwards, and those ratings build a taste profile the assistant can use.',
+      },
+      {
+        head: 'Bought items land on the shelf',
+        body:
+          'Shopping list that flows back into the pantry when items are marked as bought, closing the loop instead of leaving two lists to reconcile by hand.',
+      },
     ],
     // The trailer is built motion, not screen capture — the one sheet on this
     // site whose trailer is. The walkthrough underneath is the real app driven
@@ -1449,12 +1853,36 @@ export const PROJECTS: Project[] = [
     blurb:
       'My friends and I bet on things constantly and then argue about who owes what. The Vault is the ledger: a wager is written down with its terms, both sides and the stake at the moment it is made, and it stays open until somebody settles it. The record exists before the argument does.',
     highlights: [
-      'Two kinds of wager, and they behave differently. A One-Off resolves exactly once: you tap whoever won and it locks with the winner recorded against the bet. An Ongoing wager never resolves; it keeps a running tally per player that either side can add to, which is what a season-long argument looks like.',
-      'A bet is only valid if it is complete: description, both players and the stake are all required before it can be locked in, so the vague ones never make it into the ledger. That guard used to be one early return in addBet, which meant it failed silently: the button simply did nothing. The bet with a missing term is precisely the one that gets argued about later, so an unexplained refusal loses the record it was trying to protect. It now names the field and marks it, and the mark clears as you type into it. Fields are trimmed before being checked and before being stored, because a stake of a single space is the same vague bet wearing a disguise.',
-      'The ledger is shared, not per-device: every wager lives in Supabase, so both sides see the same open bets and the same settled ones.',
-      'There are no accounts at all. No sign-in, no user table, and the players are just names typed into a field, not users who exist somewhere. It was built for one group of friends and handed to them directly, so the app never had to answer “who are you”: everyone holding it sees the same single ledger. The Supabase client is configured with AsyncStorage for session persistence, which is dead configuration: nothing in the app ever signs anyone in.',
-      'One React Native codebase produces both the Android APK, built through EAS and sent round the group, and a web build through react-native-web.',
-      'Building the same source for the web is where the abstraction leaks, and it leaks in one identifiable place. react-native-web renders a TextInput as an <input>, which carries a min-content width Yoga does not, so the paired name fields refused to shrink and overflowed the card below about 700px — every phone. Native was never affected. One minWidth fixes it, but only after knowing which of the two layout engines you are actually arguing with.',
+      {
+        head: 'Two kinds of wager',
+        body:
+          'A One-Off resolves exactly once: you tap whoever won and it locks with the winner recorded against the bet. An Ongoing wager never resolves; it keeps a running tally per player that either side can add to, which is what a season-long argument looks like.',
+      },
+      {
+        head: 'An incomplete bet is refused, out loud',
+        body:
+          'A bet is only valid if it is complete: description, both players and the stake are all required before it can be locked in, so the vague ones never make it into the ledger. That guard used to be one early return in addBet, which meant it failed silently: the button simply did nothing. The bet with a missing term is precisely the one that gets argued about later, so an unexplained refusal loses the record it was trying to protect. It now names the field and marks it, and the mark clears as you type into it. Fields are trimmed before being checked and before being stored, because a stake of a single space is the same vague bet wearing a disguise.',
+      },
+      {
+        head: 'One shared ledger',
+        body:
+          'Every wager lives in Supabase, so both sides see the same open bets and the same settled ones.',
+      },
+      {
+        head: 'No accounts at all',
+        body:
+          'No sign-in, no user table, and the players are just names typed into a field, not users who exist somewhere. It was built for one group of friends and handed to them directly, so the app never had to answer “who are you”: everyone holding it sees the same single ledger. The Supabase client is configured with AsyncStorage for session persistence, which is dead configuration: nothing in the app ever signs anyone in.',
+      },
+      {
+        head: 'One codebase, an APK and a web build',
+        body:
+          'One React Native codebase produces both the Android APK, built through EAS and sent round the group, and a web build through react-native-web.',
+      },
+      {
+        head: 'Where react-native-web leaks',
+        body:
+          'Building the same source for the web is where the abstraction leaks, and it leaks in one identifiable place. react-native-web renders a TextInput as an <input>, which carries a min-content width Yoga does not, so the paired name fields refused to shrink and overflowed the card below about 700px — every phone. Native was never affected. One minWidth fixes it, but only after knowing which of the two layout engines you are actually arguing with.',
+      },
     ],
     // The trailer is built motion, not screen capture — the second sheet on
     // this site whose trailer is, for the same reason as Kitchen OS: the app is

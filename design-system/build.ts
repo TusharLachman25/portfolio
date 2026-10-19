@@ -152,7 +152,7 @@ function projectHeadHtml(p: Project): string {
 
 function highlightsHtml(p: Project): string {
   const items = p.highlights
-    .map((h) => `<li><span class="dot" style="background: ${p.accent}"></span><span>${esc(h)}</span></li>`)
+    .map((h) => `<li><span class="dot" style="background: ${p.accent}"></span><span><strong>${esc(h.head)}</strong> ${esc(h.body)}</span></li>`)
     .join('\n          ');
   return `<ul class="highlights">\n          ${items}\n        </ul>`;
 }

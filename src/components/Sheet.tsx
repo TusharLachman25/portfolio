@@ -9,6 +9,14 @@ import { Gallery, type FlowView } from './Gallery';
  * a laptop, the full column once the hero stacks below 1180px. */
 const PANEL_SIZES = '(max-width: 779px) calc(100vw - 36px), (max-width: 1179px) calc(100vw - 314px), 620px';
 
+/** A note as the sheet draws it. Every project note has a headline; the
+ * academic units' shorter points go without one. */
+export interface SheetNote {
+  head?: string;
+  body: string;
+  more?: string;
+}
+
 export interface SheetView {
   /** Breadcrumb root — "Projects" or "Academic projects". */
   crumb: string;
@@ -28,7 +36,7 @@ export interface SheetView {
   stack: string[];
   metrics: Metric[];
   /** "The hard parts" — the numbered rows. Shown in full. */
-  notes: string[];
+  notes: SheetNote[];
   /** Further notes, folded by topic under the ones above and numbered on from
    * them. For a sheet with more decisions worth naming than anyone reads in
    * one sitting. */
@@ -64,6 +72,28 @@ export interface SheetView {
   nextAccent: string;
   /** Copy for the dashed "more to add" slot, where one is warranted. */
   moreToAdd?: string;
+}
+
+/** One numbered note: its point in a line, the case for it, and, where the
+ * story runs long, the rest folded underneath. The headline is a real heading
+ * so a screen reader can walk the list the way a skimmer reads it: an h3 under
+ * the section, an h4 inside a folded topic, whose title is the h3. */
+function NoteRow({ n, note, heading: Heading }: { n: number; note: SheetNote; heading: 'h3' | 'h4' }) {
+  return (
+    <div className="note-row">
+      <span className="note-row__n">{n}</span>
+      <div className="note-row__text">
+        {note.head && <Heading className="note-row__head">{note.head}</Heading>}
+        <p>{note.body}</p>
+        {note.more && (
+          <details className="note-row__more">
+            <summary>READ THE REST</summary>
+            <p>{note.more}</p>
+          </details>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function Sheet(view: SheetView) {
@@ -368,10 +398,7 @@ export function Sheet(view: SheetView) {
         </div>
         <div>
           {view.notes.map((note, i) => (
-            <div className="note-row" key={note.slice(0, 40)}>
-              <span className="note-row__n">{i + 1}</span>
-              <p>{note}</p>
-            </div>
+            <NoteRow key={note.head ?? note.body.slice(0, 40)} n={i + 1} note={note} heading="h3" />
           ))}
         </div>
         {/* The rest, folded by topic: the same disclosure the screenshots
@@ -400,10 +427,7 @@ export function Sheet(view: SheetView) {
                   <span className="flow__lead">{group.caption}</span>
                 </summary>
                 {group.notes.map((note, i) => (
-                  <div className="note-row" key={note.slice(0, 40)}>
-                    <span className="note-row__n">{groupStart[g] + i + 1}</span>
-                    <p>{note}</p>
-                  </div>
+                  <NoteRow key={note.head} n={groupStart[g] + i + 1} note={note} heading="h4" />
                 ))}
               </details>
             ))}
