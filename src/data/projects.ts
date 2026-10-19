@@ -496,7 +496,7 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-appointments.png',
             title: 'Look at the week',
             caption:
-              'In-person visits and video calls in one diary, because she is one person and anything booked is busy time for both. Shaded where she is open, the current time drawn across today, and time she has blocked out shown as hers rather than as a patient.',
+              'In-person visits and video calls share one diary, because anything booked is busy time for both. Shaded where she is open, with today’s time drawn across it and her own blocked time marked as hers.',
           },
           {
             src: '/media/medical-day.png',
@@ -514,7 +514,7 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-running-late.png',
             title: 'Tell everyone she is running late',
             caption:
-              'Everyone still waiting, with the patient in the room and the next one ticked. Her reason comes back as one calm sentence in English and Bahasa with nobody’s name and no clinical detail, and the draft says who gets the pre-approved template because they haven’t written in for a day, and who gets it in Bahasa.',
+              'Everyone still waiting, with the patient in the room and the next one ticked. Her reason comes back as one calm sentence in English and Bahasa, with nobody’s name and no clinical detail.',
           },
         ],
       },
@@ -533,7 +533,7 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-patients.png',
             title: 'Read the record',
             caption:
-              'The allergy in red before anything else, the problem list, files synced from the practice’s Drive, and every WhatsApp number they write from. This patient has started using a second phone and confirmed it was theirs on WhatsApp; anything about an appointment goes to the number it was booked from.',
+              'The allergy in red before anything else, then the problem list, files synced from the practice’s Drive, and every WhatsApp number the patient writes from. Anything about an appointment goes to the number it was booked from.',
           },
           {
             src: '/media/medical-history.png',
@@ -551,19 +551,19 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-consult.png',
             title: 'Write the consult up',
             caption:
-              'The record stays open on the left. Below the notes, everything she adds goes to the patient in order once the visit is saved: a prescription (clarithromycin, with the penicillin allergy on screen above it), a certificate, a referral, and the bill last. For an in-person visit the bill starts off, because the partner hospital bills those.',
+              'The record stays open on the left. Below the notes, everything she adds goes to the patient in order once the visit is saved: a prescription (clarithromycin, with the penicillin allergy on screen above it), a certificate, a referral, and the bill last.',
           },
           {
             src: '/media/medical-consult-cert.png',
             title: 'A sick note that keeps the diagnosis private',
             caption:
-              'A certificate goes to an employer or a school, so the diagnosis has its own switch, off by default — and off means off, whatever the field still holds. The wording is drafted from today’s notes and never invents a rest period the notes don’t give.',
+              'A certificate goes to an employer or a school, so the diagnosis has its own switch, off by default, and off means off whatever the field still holds. The wording is drafted from today’s notes and never invents a rest period.',
           },
           {
             src: '/media/medical-merge.png',
             title: 'Two records, one person',
             caption:
-              'A new patient told WhatsApp they weren’t the person on file with the same name and date of birth — and were, with their own name typed a letter out. Merging sets the two side by side, keeps the one with more history unless she picks the other, moves everything across in one transaction, and can be undone from Settings for thirty days.',
+              'A new patient told WhatsApp they weren’t the person on file with the same name and date of birth, and were, with their name typed a letter out. Merging moves everything across in one transaction, and can be undone for thirty days.',
           },
         ],
       },
@@ -575,13 +575,13 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-documents.png',
             title: 'What is waiting',
             caption:
-              'What WhatsApp asked for, what is due, and what is being held: a certificate for a patient who hasn’t written in for a day, which WhatsApp won’t take until they do. They have been asked to reply, and it goes to them the moment they do.',
+              'What WhatsApp asked for, what is due, and what is being held: a certificate for a patient outside WhatsApp’s 24-hour window, which goes the moment they reply.',
           },
           {
             src: '/media/medical-doc-editor.png',
             title: 'Find the patient by typing',
             caption:
-              'A search box in place of a dropdown of every patient, which was fine for twenty and hopeless for a practice. Every word typed has to appear in the name and accents don’t matter. A new document starts with nobody chosen; it used to start on the first name in the list, and file itself in their folder.',
+              'A search box in place of a dropdown of every patient, which was fine for twenty and hopeless for a practice. A new document starts with nobody chosen; it used to start on the first name in the list, and file itself in their folder.',
           },
           {
             src: '/media/medical-doc-invoice.png',
@@ -660,7 +660,7 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-claim.png',
             title: 'The insurer’s own form, in its own boxes',
             caption:
-              'The answers on the left, the form on the right: the name one letter per cell, the dates split into the boxes the form prints, the tick on its own box, the captions read in both languages. Nothing is signed until she presses Sign & stamp. The form is drawn for the capture from an insurer that does not exist; her details are blurred.',
+              'The answers on the left, the form on the right: the name one letter per cell, the dates split into the form’s own boxes, and nothing signed until she presses Sign & stamp. The form is drawn for the capture from an insurer that does not exist, and her details are blurred.',
           },
         ],
       },
@@ -696,7 +696,7 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-assistant.png',
             title: 'Asked to close a day, it asks first',
             caption:
-              'Closing the Friday would strand two patients, so the tool refuses and says who. It asks whether to cancel, move or go ahead, and only after “move them both to Thursday” does it move them, tell them, and close the day. The red cross is the tool’s own refusal, not the model’s account of it.',
+              'Closing the Friday would strand two patients, so the tool refuses and says who; only after “move them both to Thursday” does it move them, tell them, and close the day. The red cross is the tool’s own refusal, not the model’s account of it.',
           },
         ],
       },
@@ -714,7 +714,7 @@ export const PROJECTS: Project[] = [
             src: '/media/medical-technical.png',
             title: 'What the AI and WhatsApp cost',
             caption:
-              'Behind a group that starts closed, because it is for whoever set the dashboard up. Every Claude call site is counted, and WhatsApp is read from Twilio’s own billing, with how long the credit will last. The figures on these two cards are invented for the capture.',
+              'Every Claude call site is counted, and WhatsApp is read from Twilio’s own billing, with how long the credit will last. The figures on these two cards are invented for the capture.',
           },
         ],
       },
@@ -920,7 +920,7 @@ export const PROJECTS: Project[] = [
             src: '/media/poker-standings.png',
             title: 'Who’s up, and by how much',
             caption:
-              'Left, the leaderboard after six nights: a running-profit line per player, then everyone ranked with their sessions, wins and losses, streak and ROI. Right, Mira’s page — +$49.50 across six sessions, her line on its own, and the form tiles: win rate, average and best and worst night, money staked, ROI, and an hourly rate from the nights that recorded how long they ran. Filters narrow the leaderboard to 30 days, 90, or this year.',
+              'Left, the leaderboard after six nights: a running-profit line per player, then everyone ranked with their streak and ROI. Right, Mira’s page, +$49.50 across six sessions, with her win rate, best and worst night, ROI and hourly rate.',
           },
         ],
       },
@@ -933,13 +933,13 @@ export const PROJECTS: Project[] = [
             src: '/media/poker-night.png',
             title: 'Rebuys in a tap, and a typo caught',
             caption:
-              'Left, tonight before anyone has cashed out: Marcus switched off because he sat it out, Theo three buy-ins deep and Leo two, both from the + buy-in button. Right, the cash-outs typed — and Tushar’s 24.10 entered as 21.40. The totals read $90 in and $87.30 out, and the editor says so: chips can’t appear or vanish, so the difference is a typo, not a result. It still lets you save; the totals are just marked as off.',
+              'Left, tonight before anyone has cashed out, with Theo three buy-ins deep and Leo two. Right, Tushar’s 24.10 typed as 21.40, and the editor saying the table is $2.70 short: chips can’t appear or vanish, so the difference is a typo, not a result.',
           },
           {
             src: '/media/poker-balanced.png',
             title: 'Balanced, then settled',
             caption:
-              'The cash-out corrected and the table balancing to the cent. Right, Settle this night: three payments clear it. On these nets (+25.15, +14.10, −14.10, −17.05, −8.10), paying the biggest debtor into the biggest creditor first would take four; Leo’s −14.10 cancels Tushar’s +14.10 exactly, Theo’s and Nadia’s together cancel Mira’s, and the app finds both.',
+              'The cash-out corrected and the table balancing to the cent. Right, three payments clear the night where paying the biggest debtor first would take four, because Leo’s −14.10 cancels Tushar’s +14.10 exactly and Theo’s and Nadia’s together cancel Mira’s.',
           },
         ],
       },
@@ -952,13 +952,13 @@ export const PROJECTS: Project[] = [
             src: '/media/poker-owed.png',
             title: 'Who owes who, and recording it',
             caption:
-              'Left, the Payments page after tonight: the same three transfers, each with a button to record it, and everyone’s standing with what they have already paid and been paid. Right, Record this payment on Theo → Mira: the sheet pre-filled with both names and $17.05, a note added. Part payments are fine; recording one takes it off the totals.',
+              'Left, the Payments page after tonight: the same three transfers, each with a button to record it. Right, recording Theo → Mira, the sheet pre-filled with both names and $17.05; part payments are fine too.',
           },
           {
             src: '/media/poker-paid.png',
             title: 'Two left, and the history',
             caption:
-              'Saved, the plan is down to two payments and Theo is off the list. Right, the payment history: tonight’s at the top and the two earlier settle-ups below it (what the app suggested on 27 September and 11 October, recorded through the same button), with the total settled across eight payments.',
+              'Saved, the plan is down to two payments and Theo is off the list. Right, the payment history: tonight’s at the top, the two earlier settle-ups below it, and the total settled across eight payments.',
           },
         ],
       },
@@ -971,7 +971,7 @@ export const PROJECTS: Project[] = [
             src: '/media/poker-share.png',
             title: 'The invite, and joining with it',
             caption:
-              'Left, Tushar’s phone: everyone in Friday Felt sees the same numbers, and one button copies an invite with everything a friend needs. Right, Marcus’s new phone joining: the group name typed in lower case, because “friday felt” and “Friday Felt” reach the same group, while the password has to be exact. The project URL and key are a stand-in, explained in the note below.',
+              'Left, the invite one button copies, with everything a friend needs to join Friday Felt. Right, Marcus’s new phone joining with the name typed in lower case, which still finds the group; the project URL and key are a stand-in, explained in the note below.',
           },
           {
             src: '/media/poker-joined.png',
@@ -989,7 +989,7 @@ export const PROJECTS: Project[] = [
             src: '/media/poker-activity.png',
             title: 'Who changed what',
             caption:
-              'Left, everything, newest first: Tushar recording Theo’s payment and logging tonight, then the earlier settle-ups, nights and players, each under the name of whoever the phone belonged to. Right, Edits & deletions: the one edit in the group’s history, Jonah putting his and Nadia’s cash-outs back in their own rows on 3 October, with both nets before and after. It is an honour-system record, and the screen says so.',
+              'Left, everything, newest first, each change under the name of whoever the phone belonged to. Right, Edits & deletions: Jonah’s correction from 3 October with both nets before and after, in a log the screen calls an honour-system record.',
           },
         ],
       },
@@ -1153,13 +1153,13 @@ export const PROJECTS: Project[] = [
             src: '/media/fitscroll-home.png',
             title: 'An empty bank locks everything',
             caption:
-              'Nothing banked, so the blocked apps are locked, and it says so outright instead of showing a zero for you to work out. The warning underneath is the honest one: minutes can be earned right now, but nothing is locked until the accessibility service is on, and Android only lets you grant that by hand.',
+              'Nothing banked, so the blocked apps are locked, and it says so outright instead of showing a zero. The warning underneath is the honest one: nothing is locked until the accessibility service is on, which Android only lets you grant by hand.',
           },
           {
             src: '/media/fitscroll-settings.png',
             title: 'What counts as a rep is a dial, not an opinion',
             caption:
-              'Five settings, each spelled out in degrees rather than left to vibes: Standard wants a bend past 92°, a lock-out past 152°, a body straighter than 128°, and at least 0.6s per rep. Underneath, the 24-hour bank limit: reps past it stop counting, so one huge session cannot buy a whole week.',
+              'Five settings, each spelled out in degrees: Standard wants a bend past 92°, a lock-out past 152°, a body straighter than 128° and at least 0.6s per rep. Underneath, the 24-hour bank limit, so one huge session cannot buy a whole week.',
           },
           {
             src: '/media/fitscroll-picker.png',
@@ -1323,7 +1323,7 @@ export const PROJECTS: Project[] = [
             src: '/media/jarvis-health.png',
             title: 'The day, measured',
             caption:
-              'Nine panels on one page: rings, the activity breakdown, heart, sleep staged deep to awake, body composition, nutrition, a seven-day step history, the day’s workouts and the weekly active-zone total. Google Health arrives live from its API; Samsung Health arrives as a file export Claude has parsed.',
+              'Nine panels on one page, from rings and heart to sleep stages, body composition, nutrition and the week’s steps. Google Health arrives live from its API; Samsung Health arrives as a file export Claude has parsed.',
           },
           {
             src: '/media/jarvis-heart.png',
@@ -1379,7 +1379,7 @@ export const PROJECTS: Project[] = [
             src: '/media/jarvis-upload.png',
             title: 'Hand it the statement',
             caption:
-              'Upload the PDF the bank sent. The dialog says up front what happens next, including that nothing is written until it has been reviewed. The bank on this one does not exist.',
+              'Upload the PDF the bank sent; the dialog says up front that nothing is written until it has been reviewed. The bank on this one does not exist.',
           },
           {
             src: '/media/jarvis-review.png',
@@ -1507,13 +1507,13 @@ export const PROJECTS: Project[] = [
             src: '/media/lockedin-feed.png',
             title: 'Open it',
             caption:
-              'Squad stories along the top (a gradient ring for one you have not watched, grey for one you have) and the week ranked underneath. The same week by points on the left and by duration on the right: Marcus trains the longest hours of anyone and is still fourth, because points reward the effort a minute costs.',
+              'Squad stories along the top and the week ranked underneath, by points on the left and by duration on the right. Marcus trains the longest hours of anyone and is still fourth, because points reward the effort a minute costs.',
           },
           {
             src: '/media/lockedin-rankings.png',
             title: 'Where a number came from',
             caption:
-              'A row opens into that person’s week, session by session, with what each one was worth. The rules behind those numbers are on the right, including the thing that has to be said out loud in a squad spread across four time zones: the leaderboard resets at 00:00 UTC, which is Monday 10am in Melbourne and Sunday 8pm in Toronto.',
+              'A row opens into that person’s week, session by session, with what each one was worth. The rules are on the right, including the reset at 00:00 UTC: Monday 10am in Melbourne, Sunday 8pm in Toronto.',
           },
         ],
       },
@@ -1595,7 +1595,7 @@ export const PROJECTS: Project[] = [
             src: '/media/lockedin-nudges.png',
             title: 'The nudge, and the roast',
             caption:
-              'Notifications are aggregated (“and 3 others liked your workout” is one row, not four) and sent by a Postgres trigger, not the app, so they arrive whether or not anyone has it open. On the right: what the squad sees when you post nothing all week.',
+              'Notifications are aggregated (“and 3 others liked your workout” is one row) and sent by a Postgres trigger, so they arrive whether or not anyone has the app open. On the right, what the squad sees when you post nothing all week.',
           },
         ],
       },
@@ -1831,7 +1831,7 @@ export const PROJECTS: Project[] = [
             src: '/media/kitchenos-quickadd.png',
             title: 'Log a one-off',
             caption:
-              'Four routes behind one button. Quick Add is for the thing eaten once and never again, logged without being saved as a food. Micronutrients sit behind an expander so the common case stays four fields.',
+              'Four routes behind one button; Quick Add is for the thing eaten once and never again, logged without being saved as a food. Micronutrients sit behind an expander so the common case stays four fields.',
           },
           {
             src: '/media/kitchenos-scan.png',
@@ -1947,13 +1947,13 @@ export const PROJECTS: Project[] = [
             src: '/media/bets-write.png',
             title: 'The form, and what it refuses',
             caption:
-              'Empty on the left. On the right, three of the four required fields filled (description, both players, no stake) and “Lock It In” already pressed, and the app says which one is missing instead of doing nothing: the stakes field marked, “Still missing the stakes.” underneath it, and the ledger behind it unchanged because nothing was written. That refusal used to be silent, which made a rejected bet and a saved one look identical.',
+              'Empty on the left. On the right, “Lock It In” pressed with no stake: the field is marked and named, where the refusal used to be silent and a rejected bet looked like a saved one.',
           },
           {
             src: '/media/bets-locked-in.png',
             title: 'The fourth field, and the write',
             caption:
-              'The stake typed in, and the same button now doing something. The row goes to Postgres and comes back carrying the id it was given, which the app puts at the head of the list instead of refetching; the ledger is ordered by created_at descending, so the newest wager is always the top of the page.',
+              'The stake typed in, and the same button now writing. The row comes back from Postgres with its id and goes to the top of the list without a refetch, since the ledger is ordered newest first.',
           },
         ],
       },
@@ -1966,7 +1966,7 @@ export const PROJECTS: Project[] = [
             src: '/media/bets-settle.png',
             title: 'Two buttons, one of them true',
             caption:
-              'Active on the left with a button per side; Completed on the right, the winner written into the row and the badge turned green. The buttons are gone because the card renders them only while the status is Active. Resolving has no undo in the UI, which is rather the point of having written the bet down.',
+              'Active on the left with a button per side; Completed on the right, with the winner written into the row. The buttons render only while a bet is Active, so resolving has no undo, which is rather the point of writing the bet down.',
           },
         ],
       },
@@ -1979,7 +1979,7 @@ export const PROJECTS: Project[] = [
             src: '/media/bets-ongoing.png',
             title: 'Made as Ongoing',
             caption:
-              'The type switcher decides what the card will be rather than how it looks: picking Ongoing stores type as Ongoing, and the card then renders a tally block instead of a pair of win buttons. It opens at 0–0 from a column default, not from anything the form sends.',
+              'Picking Ongoing stores the type, and the card renders a tally block instead of a pair of win buttons. It opens at 0–0 from a column default, not from anything the form sends.',
           },
           {
             src: '/media/bets-tally.png',
@@ -1998,7 +1998,7 @@ export const PROJECTS: Project[] = [
             src: '/media/bets-ledger.png',
             title: 'A settled bet, and five seconds to change your mind',
             caption:
-              'The completed wager at the bottom of the ledger, and the list immediately after Delete was pressed. Delete sits directly beneath the button that resolves the bet and used to take effect on the first press. A confirm dialog is the obvious fix and the wrong one, since it taxes every delete to guard the rare misfire. So the card leaves the screen at once and the DELETE is held for five seconds behind this toast. Nothing is written during that window, which means Undo has nothing to restore: it cancels a write that had not happened yet, and the card returns to its own place in the ledger, not to the top.',
+              'The completed wager, and the list just after Delete was pressed: the card leaves at once, and the DELETE is held for five seconds behind this toast. A confirm dialog would tax every delete to guard the rare misfire; Undo instead cancels a write that hasn’t happened yet.',
           },
         ],
       },
