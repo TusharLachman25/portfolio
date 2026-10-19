@@ -836,49 +836,69 @@ export const PROJECTS: Project[] = [
           'Balances are netted first, so nobody both pays and gets paid. Then everyone is split into as many groups as possible whose balances sum to zero, because a group of k people always needs exactly k−1 payments, so the minimum is n minus the number of groups. Paying the biggest debtor into the biggest creditor, the obvious approach, only guarantees n−1 and misses tables where a subset cancels out: on the night in the captures below it takes four payments where this takes three. Finding the best split is exponential, 3ⁿ, so it runs exactly for up to 14 people with a balance (about five million steps, held under 250ms by a performance test) and falls back to the greedy pass above that, which a home game never reaches. A property test replays 200 random tables and checks every player lands exactly on their net.',
       },
       {
-        head: 'Payments are records, not inferred from winnings',
-        body:
-          'Sessions say who won; they don’t say who has since handed money over. Payments are records of their own (from, to, amount, date), and what anyone still owes is their session nets plus what they’ve paid minus what they’ve been paid. The settle-up plan is built from that, not from raw winnings, so a debt already paid stops being suggested, part payments work, and overpaying flips who is owed instead of breaking anything. Each suggested transfer has a button that records it with the amount pre-filled.',
-      },
-      {
         head: 'Works offline, and syncs by last write wins',
         body:
           'Each phone keeps its own copy, saved on every change, and works with no signal at all; sharing is optional. With it on, a sync pulls the group’s ledger, merges it with the phone’s and pushes the result back. Every record carries a timestamp and the newer copy wins, so two people logging different nights on different phones both keep their work; only edits to the same record conflict. Deletes are tombstones with their own timestamp, so an older copy on another phone can’t bring a deleted session back. Edits are ordered by each phone’s own clock: a fair bet for one group of friends, and the limit of last-write-wins.',
       },
       {
-        head: 'A settings change undid itself 2.5 seconds later',
-        body:
-          'Settings were the one record that didn’t merge that way, and that was a bug. The merge took the server’s whole settings record whenever it had a group name (which, once sharing is on, is always), so changing the currency appeared to save, reverted two and a half seconds later just as the sync fired, and was pushed back to everyone. Settings now carry their own timestamp and merge like every other record, and untouched defaults are stamped zero so a phone joining a group still adopts the group’s currency, buy-in and stakes. Regression tests cover the reported case, the reverse direction, a first join and a repeated sync; the smoke test changes the currency and checks it is still there four seconds later.',
-      },
-      {
         head: 'An idle phone was syncing every 2.5 seconds',
         body:
-          'Capturing this page turned up one more sync bug, in the live app. Every sync changes the ledger (the merge commits a fresh copy of it), and the engine pushed a couple of seconds after any change to the ledger, so each sync scheduled the next: an open phone pulled and pushed the entire ledger every 2.5 seconds for as long as the app stayed open, twelve round trips in thirty idle seconds. The store now counts edits made on the phone and the engine schedules on that count; a merge from the group isn’t an edit, because the sync that brought it in has already pushed it back. Taking the loop out exposed what it had been covering for: a sync asked for while another was running was dropped, so an edit made mid-sync waited for the minute timer. That now queues one more run. The same idle phone now makes none.',
+          'Capturing this page turned up a sync bug in the live app. Every sync changes the ledger (the merge commits a fresh copy of it), and the engine pushed a couple of seconds after any change to the ledger, so each sync scheduled the next: an open phone pulled and pushed the entire ledger every 2.5 seconds for as long as the app stayed open, twelve round trips in thirty idle seconds. The store now counts edits made on the phone and the engine schedules on that count; a merge from the group isn’t an edit, because the sync that brought it in has already pushed it back. Taking the loop out exposed what it had been covering for: a sync asked for while another was running was dropped, so an edit made mid-sync waited for the minute timer. That now queues one more run. The same idle phone now makes none.',
       },
       {
         head: 'The key is public, so the table is locked',
         body:
           'The Supabase anon key is designed to ship to clients, so the table is locked rather than the key. Row-level security is on with no policies, which leaves the anonymous role unable to touch the table at all, and every read and write goes through one of three SECURITY DEFINER functions that each require the group’s password; without it you can’t read, write or even confirm a group exists. Group names are forgiving on purpose (“friday felt” finds “Friday Felt”, accents and punctuation aside), so the password is what protects a group, with an eight-character floor enforced in the client and again in the SQL. It is compared as typed, not hashed (whoever created the Supabase project can read the group’s numbers anyway), which is why the setup guide says not to reuse a password you care about.',
       },
+    ],
+    moreHighlights: [
       {
-        head: 'Credentials in the build lasted ten minutes',
-        body:
-          'The first version baked the group’s Supabase project and join code into the build, so friends needed no setup at all. It lasted about ten minutes: the site is public on GitHub Pages, and anything in its JavaScript is readable by anyone who finds the URL. Nothing is baked in now: the project URL, key, group name and password travel together in one invite a phone’s Settings composes. For this page both the live site’s scripts and the released APK were checked, and neither contains a Supabase address or a key.',
+        title: 'The ledger',
+        caption: 'Payments as records of their own, and a log that answers “who changed my numbers?”',
+        notes: [
+          {
+            head: 'Payments are records, not inferred from winnings',
+            body:
+              'Sessions say who won; they don’t say who has since handed money over. Payments are records of their own (from, to, amount, date), and what anyone still owes is their session nets plus what they’ve paid minus what they’ve been paid. The settle-up plan is built from that, not from raw winnings, so a debt already paid stops being suggested, part payments work, and overpaying flips who is owed instead of breaking anything. Each suggested transfer has a button that records it with the amount pre-filled.',
+          },
+          {
+            head: 'Every change leaves a trace',
+            body:
+              'Every session, payment and roster change is written through one path that appends to an activity log, so nothing can change the numbers without leaving a trace. An edit records the nets on both sides (“Nadia: +$6.20 → -$6.10”), because a quietly rewritten bad night is the thing worth catching, and the log has an Edits & deletions filter for just that. The author is whoever the phone is set to in Settings, saved by name at the time so a later rename can’t rewrite history, and the screen says plainly that it is an honour-system record: it answers “who changed my numbers?”, not much more. Entries are never edited, so on a merge the log is a union rather than a contest, capped at the newest 300.',
+          },
+        ],
       },
       {
-        head: 'Every change leaves a trace',
-        body:
-          'Every session, payment and roster change is written through one path that appends to an activity log, so nothing can change the numbers without leaving a trace. An edit records the nets on both sides (“Nadia: +$6.20 → -$6.10”), because a quietly rewritten bad night is the thing worth catching, and the log has an Edits & deletions filter for just that. The author is whoever the phone is set to in Settings, saved by name at the time so a later rename can’t rewrite history, and the screen says plainly that it is an honour-system record: it answers “who changed my numbers?”, not much more. Entries are never edited, so on a merge the log is a union rather than a contest, capped at the newest 300.',
+        title: 'Sharing it safely',
+        caption: 'A settings bug the sync was hiding, and credentials that lasted ten minutes in the build.',
+        notes: [
+          {
+            head: 'A settings change undid itself 2.5 seconds later',
+            body:
+              'Settings were the one record that didn’t merge by timestamp, and that was a bug. The merge took the server’s whole settings record whenever it had a group name (which, once sharing is on, is always), so changing the currency appeared to save, reverted two and a half seconds later just as the sync fired, and was pushed back to everyone. Settings now carry their own timestamp and merge like every other record, and untouched defaults are stamped zero so a phone joining a group still adopts the group’s currency, buy-in and stakes. Regression tests cover the reported case, the reverse direction, a first join and a repeated sync; the smoke test changes the currency and checks it is still there four seconds later.',
+          },
+          {
+            head: 'Credentials in the build lasted ten minutes',
+            body:
+              'The first version baked the group’s Supabase project and join code into the build, so friends needed no setup at all. It lasted about ten minutes: the site is public on GitHub Pages, and anything in its JavaScript is readable by anyone who finds the URL. Nothing is baked in now: the project URL, key, group name and password travel together in one invite a phone’s Settings composes. For this page both the live site’s scripts and the released APK were checked, and neither contains a Supabase address or a key.',
+          },
+        ],
       },
       {
-        head: 'One build: a web app for iPhone, an APK for Android',
-        body:
-          'iPhones can’t sideload, so they get the installable web app (its own icon, no browser chrome, works offline), and Android gets a real APK from the same build through Capacitor. The service worker is registered by hand so the native build can skip it: inside Capacitor the files are already on the phone, and a worker’s precache there would keep serving the previous version’s screens after an update until someone cleared the app’s data. The Supabase client, about 350 kB, is only loaded once sharing is switched on.',
-      },
-      {
-        head: '63 unit tests and a smoke test through the real UI',
-        body:
-          '63 unit tests pin down the money, the stats, the settle-up, the merge and the activity diffs, and a Puppeteer smoke test drives the real interface the way a person would: adds players, logs a night with a rebuy, checks the leaderboard and the settle-up agree with what was typed, records a payment, changes the currency and checks it stays changed, edits a session and reads the edit back out of the log. It compares money by sign and digits only, so it passes whatever the currency and whatever the machine’s locale.',
+        title: 'Shipping it',
+        caption: 'One build for iPhone and Android, and the tests that hold the money to the cent.',
+        notes: [
+          {
+            head: 'One build: a web app for iPhone, an APK for Android',
+            body:
+              'iPhones can’t sideload, so they get the installable web app (its own icon, no browser chrome, works offline), and Android gets a real APK from the same build through Capacitor. The service worker is registered by hand so the native build can skip it: inside Capacitor the files are already on the phone, and a worker’s precache there would keep serving the previous version’s screens after an update until someone cleared the app’s data. The Supabase client, about 350 kB, is only loaded once sharing is switched on.',
+          },
+          {
+            head: '63 unit tests and a smoke test through the real UI',
+            body:
+              '63 unit tests pin down the money, the stats, the settle-up, the merge and the activity diffs, and a Puppeteer smoke test drives the real interface the way a person would: adds players, logs a night with a rebuy, checks the leaderboard and the settle-up agree with what was typed, records a payment, changes the currency and checks it stays changed, edits a session and reads the edit back out of the log. It compares money by sign and digits only, so it passes whatever the currency and whatever the machine’s locale.',
+          },
+        ],
       },
     ],
     trailer: '/media/poker-trailer.mp4',
@@ -1027,11 +1047,6 @@ export const PROJECTS: Project[] = [
       'I did not want another app telling me how long I had been on Instagram. I wanted one that made me pay for it. FitScroll counts your push-ups through the phone’s camera, banks each clean rep as one minute of screen time, and enforces that budget on whichever apps you pick. Every minute expires 24 hours after you earn it, so you cannot grind once on Sunday and coast all week. Everything that counts a rep or spends a minute runs on-device: no account, no sync, no analytics, and no camera frame ever leaves the phone.',
     highlights: [
       {
-        head: '125 tests without a phone or a 24-hour wait',
-        body:
-          'The rules are pure functions taking an explicit `now`: the bank, the rep counter, the blocking decision, the drain reconciler, the per-second meter. That is what makes 125 tests possible with no device and no 24-hour wait: expiry boundaries, oldest-first spending, cap overflow and every anti-cheat gate are pinned down as arithmetic. The parts that genuinely need Android get Robolectric: the stored ledger, its reload, the day rollover, and the corrupt-ledger path that has to fail into an empty bank, not a crash loop, because a crash loop leaves the accessibility service holding the block with no way to reach the camera.',
-      },
-      {
         head: 'A push-up is a body moving, not an angle',
         body:
           'Stand up, hold the phone in front of you and curl your arms, and every angle check passes: elbow locked out at the top, bent at the bottom, a dead-straight body line throughout. Only the fact that your body never moved gives it away. So a rep also requires your shoulders to drop by a fraction of your own shoulder-to-hip length, measured as a ratio so it holds at any distance from the lens, and set low enough that anyone on the floor clears it without thinking about it.',
@@ -1042,24 +1057,9 @@ export const PROJECTS: Project[] = [
           'Strictness tightens five things at once, and deliberately not a sixth. It used to raise the required landmark confidence as well, which meant level 5 was quietly asking for a better view of you, not a better push-up. Looking down at the floor is enough to drop the pose model’s confidence across every landmark, so reps stopped counting entirely at level 5 while the identical rep counted at level 1. There is one visibility floor for all five levels now; strictness governs form only.',
       },
       {
-        head: 'Thresholds bent for a camera that sees in 2D',
-        body:
-          'The body-line thresholds look lenient on paper and are not. This is a 2D estimate from a single camera: unless the lens sits exactly perpendicular to you, perspective foreshortens your torso and a genuinely straight back measures well under 180°. Thresholds that are correct in geometry reject real push-ups at real phone placements.',
-      },
-      {
         head: 'A rep isn’t judged on one noisy frame',
         body:
           'A rep is not judged frame by frame, because the pose model jitters by a few degrees on a motionless subject and a single noisy sample was throwing away clean reps. Each level instead carries a sag allowance: how long within one rep you may be outside tolerance before it is voided. Real sag lasts; noise does not. And if your legs are out of frame the model *guesses* your knee position, so the app declines to judge your back at all instead of failing you on a guess, and says “back not checked” on screen so a refusal reads as feedback, not as a broken app.',
-      },
-      {
-        head: 'The lock lands mid-scroll',
-        body:
-          'The lock lands on top of the blocked app mid-scroll, not only at the moment you open it. It is drawn as an accessibility overlay, which the service is granted directly, so “Display over other apps” stays genuinely optional, and where it is missing the one button that needs it says so instead of appearing to do nothing.',
-      },
-      {
-        head: 'Two kinds of event to know which app is in front',
-        body:
-          'A window-state change says a window just took the screen, which is the only signal that an app switch happened at all, but it describes transitions only. Pull the notification shade down over Instagram and the app underneath never goes away, so nothing announces its return when the shade closes. A scroll event says a package is on screen right now, which closes that gap. The service is declared `canRetrieveWindowContent="false"` and reads nothing off either event but the package name and the window class.',
       },
       {
         head: 'The meter charges measured time',
@@ -1072,24 +1072,64 @@ export const PROJECTS: Project[] = [
           'Android reports app switches, not a live answer to “what is on screen”, so sometimes the meter has to guess: a service killed mid-scroll, or a phone unlocked back into whatever it was showing. It resumes on the remembered package, because the alternative is free scrolling every time the process is recycled, but a guessed *drain* expires after 30 seconds unless something confirms it, so the most a wrong one can cost you is half a minute. A guessed *lock* is not put on the same clock, because the failures are not comparable: a drain that guessed wrong spends a bank silently, while a lock that guessed wrong is a screen in front of you with a button on it.',
       },
       {
-        head: 'A version floor that fails open',
+        head: '125 tests without a phone or a 24-hour wait',
         body:
-          'Copies handed out by hand have no update channel, so every sideloaded build checks one published file and withdraws itself if told to. It is a version floor, not a switch: one number retires everything older at once, and a notice can never retire a build that did not exist when it was written. It fails open on purpose: no answer, for any reason, leaves the last one standing, and the first answer is “supported”, because bricking someone’s app because their plane has no wifi would be a worse bug than a build living too long. When a build does retire it stops blocking first, and the banked minutes stay on disk for whatever installs over the top. The Play build compiles the URL to an empty string and never touches the network.',
+          'The rules are pure functions taking an explicit `now`: the bank, the rep counter, the blocking decision, the drain reconciler, the per-second meter. That is what makes 125 tests possible with no device and no 24-hour wait: expiry boundaries, oldest-first spending, cap overflow and every anti-cheat gate are pinned down as arithmetic. The parts that genuinely need Android get Robolectric: the stored ledger, its reload, the day rollover, and the corrupt-ledger path that has to fail into an empty bank, not a crash loop, because a crash loop leaves the accessibility service holding the block with no way to reach the camera.',
+      },
+    ],
+    moreHighlights: [
+      {
+        title: 'Watching the screen',
+        caption: 'How the lock lands mid-scroll, and how the app knows which app is in front.',
+        notes: [
+          {
+            head: 'The lock lands mid-scroll',
+            body:
+              'The lock lands on top of the blocked app mid-scroll, not only at the moment you open it. It is drawn as an accessibility overlay, which the service is granted directly, so “Display over other apps” stays genuinely optional, and where it is missing the one button that needs it says so instead of appearing to do nothing.',
+          },
+          {
+            head: 'Two kinds of event to know which app is in front',
+            body:
+              'A window-state change says a window just took the screen, which is the only signal that an app switch happened at all, but it describes transitions only. Pull the notification shade down over Instagram and the app underneath never goes away, so nothing announces its return when the shade closes. A scroll event says a package is on screen right now, which closes that gap. The service is declared `canRetrieveWindowContent="false"` and reads nothing off either event but the package name and the window class.',
+          },
+        ],
       },
       {
-        head: 'The signing key is a promise',
-        body:
-          'Android identifies an app by package name *and* signing certificate, so the key you hand builds out with is a commitment: a build signed with a different key cannot update one already installed; it has to be uninstalled first, which deletes the user’s banked minutes. Release builds fall back to the debug key when there is no keystore, so a fresh clone still produces something installable, and the README says plainly that anything given to another person must be built with the real one.',
+        title: 'Shipping it by hand',
+        caption: 'No store behind it: a kill switch that fails open, a signing key that is a promise, and a smaller APK.',
+        notes: [
+          {
+            head: 'A version floor that fails open',
+            body:
+              'Copies handed out by hand have no update channel, so every sideloaded build checks one published file and withdraws itself if told to. It is a version floor, not a switch: one number retires everything older at once, and a notice can never retire a build that did not exist when it was written. It fails open on purpose: no answer, for any reason, leaves the last one standing, and the first answer is “supported”, because bricking someone’s app because their plane has no wifi would be a worse bug than a build living too long. When a build does retire it stops blocking first, and the banked minutes stay on disk for whatever installs over the top. The Play build compiles the URL to an empty string and never touches the network.',
+          },
+          {
+            head: 'The signing key is a promise',
+            body:
+              'Android identifies an app by package name *and* signing certificate, so the key you hand builds out with is a commitment: a build signed with a different key cannot update one already installed; it has to be uninstalled first, which deletes the user’s banked minutes. Release builds fall back to the debug key when there is no keystore, so a fresh clone still produces something installable, and the README says plainly that anything given to another person must be built with the real one.',
+          },
+          {
+            head: 'From 82MB down to 29MB',
+            body:
+              'ML Kit ships native inference for four ABIs and two of them only ever run on emulators, which made the universal APK 82MB — more than half of it code no phone can execute. Filtering at the source, not only in the split, brings the safe-for-anything build to 44MB and the arm64 one to 29MB. The APKs are also named after the app and its version instead of the build system, because handed over in a chat the filename is the only label they have.',
+          },
+        ],
       },
       {
-        head: 'From 82MB down to 29MB',
-        body:
-          'ML Kit ships native inference for four ABIs and two of them only ever run on emulators, which made the universal APK 82MB — more than half of it code no phone can execute. Filtering at the source, not only in the split, brings the safe-for-anything build to 44MB and the arm64 one to 29MB. The APKs are also named after the app and its version instead of the build system, because handed over in a chat the filename is the only label they have.',
-      },
-      {
-        head: 'A commitment device, not a jail',
-        body:
-          'The README says so first, not last: on Android you can disable the accessibility service or uninstall the app in under a minute. It works by adding friction at the moment of the impulse. Expiry rides the wall clock and you own the wall clock. Winding it back cannot mint minutes, since a credit stamped in the future is pulled back to now, so the worst it buys is one ordinary day. Nothing here pretends to be tamper-proof.',
+        title: 'What it can’t do',
+        caption: 'A camera that sees in 2D, and a lock you can turn off in under a minute.',
+        notes: [
+          {
+            head: 'Thresholds bent for a camera that sees in 2D',
+            body:
+              'The body-line thresholds look lenient on paper and are not. This is a 2D estimate from a single camera: unless the lens sits exactly perpendicular to you, perspective foreshortens your torso and a genuinely straight back measures well under 180°. Thresholds that are correct in geometry reject real push-ups at real phone placements.',
+          },
+          {
+            head: 'A commitment device, not a jail',
+            body:
+              'The README says so first, not last: on Android you can disable the accessibility service or uninstall the app in under a minute. It works by adding friction at the moment of the impulse. Expiry rides the wall clock and you own the wall clock. Winding it back cannot mint minutes, since a credit stamped in the future is pulled back to now, so the worst it buys is one ordinary day. Nothing here pretends to be tamper-proof.',
+          },
+        ],
       },
     ],
     trailer: '/media/fitscroll-trailer.mp4',
